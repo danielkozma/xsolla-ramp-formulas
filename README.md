@@ -3,47 +3,33 @@
 Reverse-engineered HSL formulas for the Xsolla colour palette
 (Figma: *Redesign Color Palette — Pentagram*, file `DDMmWPCTdJpmuYZ8IkrlDa`).
 
-Two versions ship side by side — switch them from the header dropdown.
+Three versions ship side by side — switch them from the header dropdown.
 
 ## v1 — discrete step ladders
 
 Hue is constant down each ramp; lightness and saturation follow ladders shared by
 every family, so one parameter per family — its hue — regenerates the whole set.
 
-```
-L(step) = 96                       if step = 25
-        = 95 − step/10             if step ≤ 800
-        = 15 − (step − 800)/20     below 800
+## v2 — continuous functions + lightness ladder
 
-S(step) = clamp(120 − step/10, 70, 100)
+`L(t)`, `S(t)`, `H₀` define a continuous ramp. Named steps are still placed on a
+hard-coded even lightness ladder inverted through `L(t)`.
 
-chromatic   hsl( H,   S(step),          L(step) )
-neutral·lt  hsl( 75,  L/10,             L )
-neutral·dk  hsl( 190, 11 + (100−L)/9,   L )
-greyscale   hsl( 0,   0%,               L )
-```
+## v3 — pure curves (no step tables)
 
-109 of 137 ramp swatches regenerate within ΔE < 1.
-
-## v2 — continuous gradient functions
-
-A single parameter `t ∈ [0, 1]` defines the full ramp. Hue, saturation and
-lightness each have their own function, fitted to the majority Figma pattern:
+Hue is fixed per family. Saturation and lightness are continuous functions of
+gradient progression `t` only — no per-step lookup tables:
 
 ```
-L(t) = 96 − 81·t^1.25
-S(t) = clamp(100 − (75 − L(t)), 70, 100)
+L(t) = 96 − 81·t^1.2
+S(t) = 100 − 30·smoothstep(0.28, 0.55, t)
 H(t) = H₀
 
-chromatic   hsl( H₀, S(t), L(t) )
-neutral·lt  hsl( 75,  L(t)/10,            L(t) )
-neutral·dk  hsl( 190, 11+(100−L(t))/9,    L(t) )
-greyscale   hsl( 0,   0%,                 L(t) )
+tᵢ = i/(N−1)   # named tokens are equal samples, not a ladder
 ```
 
-Named steps (25, 50, 100, …) are **not** at equal `t`. They sit where `L(t)`
-hits the even lightness ladder `96, 90, 85, 75, …, 15` — so early stops stay
-light and consecutive tokens feel evenly paced. One shared table for every family.
+A diagram above the palettes plots **lightness (red)** and **saturation (blue)**
+against gradient progression.
 
 Each family card shows three columns: Figma · Formula · full continuous Gradient.
 
@@ -53,7 +39,7 @@ Each family card shows three columns: Figma · Formula · full continuous Gradie
 |---|---|
 | `index.html` | the built page — open it directly, no build step needed to view |
 | `template.html` | page source; `/*__DATA__*/` and `/*__STAT__*/` are the injection points |
-| `build.py` | reads `data/palette.json`, applies v1 + v2 formulas, writes `data/generated.json` |
+| `build.py` | reads `data/palette.json`, applies v1–v3 formulas, writes `data/generated.json` |
 | `page.py` | injects the generated data into the template and writes `index.html` |
 | `data/palette.json` | the values as they stand in Figma |
 
@@ -62,7 +48,3 @@ Rebuild after changing a formula:
 ```bash
 python3 build.py && python3 page.py
 ```
-
-Styling follows the Xsolla Digital Language dashboard
-(Figma `DjKP20nZbMAfwXwddlCOSt`, frame `2789:7057`): Pilat for display,
-Aktiv Grotesk for UI, and the frame's own colour and radius tokens.

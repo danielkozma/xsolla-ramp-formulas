@@ -255,22 +255,157 @@ def build_v2():
     }
     return out
 
+# =====================================================================
+# v3 — pure continuous curves, no hard-coded step ladders
+#
+# Everything is a function of t ∈ [0, 1]. Hue is fixed per family.
+# Saturation and lightness are smooth curves (no per-step tables).
+# Named Figma tokens are only labels: they sample the curve at equal
+# progression t = i/(N−1).
+# =====================================================================
+
+def smoothstep(edge0, edge1, x):
+    """Hermite smoothstep — C¹ ease between edge0 and edge1."""
+    if x <= edge0: return 0.0
+    if x >= edge1: return 1.0
+    u = (x - edge0) / (edge1 - edge0)
+    return u * u * (3.0 - 2.0 * u)
+
+def L_v3(t):
+    """Lightness curve: eased fade from near-white to near-black.
+    Endpoints and ease are fitted to the Figma majority ramp as a whole,
+    not to individual named steps."""
+    return 96.0 - 81.0 * (t ** 1.2)
+
+def S_v3(t):
+    """Saturation curve: holds full chroma, then eases down to a floor.
+    The ease window is a property of the curve shape (fitted to the
+    overall Figma envelope), not a list of step values."""
+    drop = smoothstep(0.28, 0.55, t)
+    return 100.0 - 30.0 * drop   # 100 → 70
+
+def H_v3(H0, t):
+    return H0
+
+def neutral_S_v3(theme, t):
+    L = L_v3(t)
+    return L / 10.0 if theme == "light" else 11.0 + (100.0 - L) / 9.0
+
+def sample_hex_v3(kind, hue, theme, t):
+    L = L_v3(t)
+    if kind == "chromatic":
+        return hsl2hex(H_v3(hue, t), S_v3(t), L)
+    if kind == "neutral":
+        return hsl2hex(hue, neutral_S_v3(theme, t), L)
+    return hsl2hex(0, 0, L)
+
+def equal_t_positions(n):
+    """Named tokens sample the curve at equal progression — no ladder."""
+    if n <= 1: return [0.0]
+    return [i / (n - 1) for i in range(n)]
+
+def gradient_css_v3(kind, hue, theme, n=32):
+    stops = []
+    for i in range(n):
+        t = i / (n - 1)
+        stops.append(f"{sample_hex_v3(kind, hue, theme, t)} {round(100 * t, 2)}%")
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def curve_samples(kind="chromatic", theme="both", n=64):
+    """Dense samples of L(t) and S(t) for the diagram."""
+    ts, Ls, Ss = [], [], []
+    for i in range(n):
+        t = i / (n - 1)
+        ts.append(round(t, 4))
+        Ls.append(round(L_v3(t), 3))
+        if kind == "chromatic":
+            Ss.append(round(S_v3(t), 3))
+        elif kind == "neutral":
+            Ss.append(round(neutral_S_v3(theme, t), 3))
+        else:
+            Ss.append(0.0)
+    return {"t": ts, "L": Ls, "S": Ss}
+
+def build_family_v3(name, kind, theme, hue, step_keys, orig_map):
+    n = len(step_keys)
+    positions = equal_t_positions(n)
+    rows = []
+    for k, t in zip(step_keys, positions):
+        o = orig_map[k]
+        gen = sample_hex_v3(kind, hue, theme, t)
+        L = L_v3(t)
+        S = (S_v3(t) if kind == "chromatic"
+             else (neutral_S_v3(theme, t) if kind == "neutral" else 0.0))
+        rows.append({
+            "step": k,
+            **entry(o, gen, {
+                "t": round(t, 4),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(H_v3(hue, t) if kind != "grey" else 0, 1),
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue, "rows": rows,
+        "gradient": gradient_css_v3(kind, hue, theme),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v3():
+    out = {
+        "id": "v3", "label": "v3", "families": [], "hues": HUES,
+        "meta": {
+            "L": "L(t) = 96 − 81·t^1.2",
+            "S": "S(t) = 100 − 30·smoothstep(0.28, 0.55, t)",
+            "H": "H(t) = H₀  (constant per family)",
+            "steps": "tᵢ = i/(N−1)  — equal progression, no step ladder",
+        },
+        "curves": {
+            "chromatic": curve_samples("chromatic"),
+            "neutral_light": curve_samples("neutral", "light"),
+            "neutral_dark": curve_samples("neutral", "dark"),
+            "grey": curve_samples("grey"),
+        },
+    }
+
+    for fam in CHROM:
+        steps = P["light"][fam]
+        keys = [str(s) for s in CHROMATIC_STEPS]
+        out["families"].append(
+            build_family_v3(fam, "chromatic", "both", HUES[fam], keys, steps))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Neutral"]
+        keys = [k for k in steps if k not in ("White", "Black")]
+        out["families"].append(
+            build_family_v3("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Greyscale"]
+        keys = list(steps.keys())
+        out["families"].append(
+            build_family_v3("Greyscale", "grey", theme, 0, keys, steps))
+
+    return out
+
 # ---------- assemble ----------
 def main():
-    out = {"v1": build_v1(), "v2": build_v2(), "default": "v2"}
-    json.dump(out, open('data/generated.json','w'), indent=1)
+    out = {"v1": build_v1(), "v2": build_v2(), "v3": build_v3(), "default": "v3"}
+    json.dump(out, open('data/generated.json', 'w'), indent=1)
 
-    for ver_id in ("v1","v2"):
+    for ver_id in ("v1", "v2", "v3"):
         ver = out[ver_id]
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
         for f in ver["families"]:
-            dh=[r["dE_hsl"] for r in f["rows"]]
-            w = max(f["rows"], key=lambda r:r["dE_hsl"])
+            dh = [r["dE_hsl"] for r in f["rows"]]
+            w = max(f["rows"], key=lambda r: r["dE_hsl"])
             print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   '
                   f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255)')
         if ver_id == "v2":
             print("shared t (10):", out["v2"]["shared_positions"].get("10"))
+        if ver_id == "v3":
+            print("equal t (10):", [round(i/9, 4) for i in range(10)])
 
 if __name__ == "__main__":
     main()
