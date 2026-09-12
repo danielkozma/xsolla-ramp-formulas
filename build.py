@@ -57,12 +57,22 @@ CHROM = ["Brand","Core","Mindaro","Pulse","Flash","Edge","Pink","Yellow","Mint"]
 P = json.load(open('data/palette.json'))
 
 def entry(orig, gen, extra=None):
-    e = {"orig":orig, "hsl":gen}
-    for k in ("orig","hsl"):
-        H,S,L = hex2hsl(e[k]); e[k+"_hsl"] = [round(H), round(S), round(L)]
-    e["dE_hsl"] = round(dE(orig, gen), 2)
-    e["px_hsl"] = maxch(orig, gen)
-    if extra: e.update(extra)
+    """Build a comparison row. orig may be None when Figma has no swatch
+    (e.g. chromatic step 900) — formula is still sampled, ΔE left blank."""
+    e = {"orig": orig, "hsl": gen, "missing": orig is None}
+    H, S, L = hex2hsl(gen)
+    e["hsl_hsl"] = [round(H), round(S), round(L)]
+    if orig is None:
+        e["orig_hsl"] = None
+        e["dE_hsl"] = None
+        e["px_hsl"] = None
+    else:
+        H, S, L = hex2hsl(orig)
+        e["orig_hsl"] = [round(H), round(S), round(L)]
+        e["dE_hsl"] = round(dE(orig, gen), 2)
+        e["px_hsl"] = maxch(orig, gen)
+    if extra:
+        e.update(extra)
     return e
 
 # =====================================================================
@@ -527,16 +537,24 @@ def build_v4():
 # v5 — full 0→100 domain; named steps are interior samples; sine S
 #
 # The continuous scale runs from 0 to 100 (t ∈ [0, 1]). Token numbers
-# map as scale = step/10 (so 25 → 2.5, 800 → 80) — 25 and 800 are just
-# steps on the curve, not the ends. Saturation uses a raised-cosine
-# S-curve (flat derivatives at both ends, continuous in between).
+# map as scale = step/10 (so 25 → 2.5, 800 → 80, 900 → 90). Chromatic
+# 900 is formula-only (Figma has no swatch). Saturation uses an
+# asymmetric raised-cosine: flat at both ends, but the drop is front-
+# loaded so half the unit curve is done by t = 1/3.
 # =====================================================================
+
+# Chromatic samples on the 0→100 scale (900 is formula-only).
+CHROMATIC_STEPS_V5 = [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
 
 # Saturation drop gain per chromatic family (fitted to Figma on t=step/1000).
 S_GAIN_V5 = {
     "Brand": 1.25, "Core": 1.25, "Edge": 1.25, "Yellow": 1.25, "Mint": 1.25,
     "Mindaro": 1.30, "Flash": 1.65, "Pulse": 2.00, "Pink": 1.95,
 }
+
+# Power bias so g(1/3) = 1/2 → half the S-drop by one-third of the ramp.
+# g(t) = t^p keeps u flat at both ends (u'(0)=u'(1)=0) while breaking symmetry.
+S_POWER_V5 = math.log(0.5) / math.log(1.0 / 3.0)  # ≈ 0.6309
 
 def step_to_t_v5(step_key):
     """Map a Figma token onto the 0→100 scale. White=0, Black=100,
@@ -554,12 +572,14 @@ def L_v5(t):
     return 99.0 - 98.0 * (t ** 0.83)
 
 def S_unit_v5(t):
-    """Raised-cosine unit S-curve: u(0)=0, u(1)=1, u'(0)=u'(1)=0.
-    Flat-ish at both ends, continuous sine-like ease through the middle."""
-    return (1.0 - math.cos(math.pi * t)) / 2.0
+    """Asymmetric raised-cosine unit curve: u(0)=0, u(1)=1, u'(0)=u'(1)=0.
+    g(t)=t^p with p=log(1/2)/log(1/3) so g(1/3)=1/2 — the drop is already
+    halfway by one-third of the ramp, then flattens into the dark end."""
+    g = t ** S_POWER_V5
+    return (1.0 - math.cos(math.pi * g)) / 2.0
 
 def S_v5(t, k=1.0):
-    """S(t) = clamp(100 − 30·k_H·u(t), 0, 100) with sine u(t)."""
+    """S(t) = clamp(100 − 30·k_H·u(t), 0, 100) with asymmetric sine u(t)."""
     return clamp(100.0 - 30.0 * k * S_unit_v5(t), 0.0, 100.0)
 
 def H_v5(H0, t):
@@ -605,7 +625,7 @@ def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
-        o = orig_map[key]
+        o = orig_map.get(key)  # None when Figma has no swatch (chromatic 900)
         gen = sample_hex_v5(kind, hue, theme, t, k)
         L = L_v5(t)
         S = (S_v5(t, k) if kind == "chromatic"
@@ -632,12 +652,14 @@ def build_v5():
     out = {
         "id": "v5", "label": "v5", "families": [], "hues": HUES,
         "s_gain": S_GAIN_V5,
+        "s_power": round(S_POWER_V5, 6),
         "meta": {
             "L": "L(t) = 99 − 98·t^0.83",
-            "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t))/2, 0, 100)",
+            "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t^p))/2, 0, 100)",
+            "p": "p = log(1/2)/log(1/3) ≈ 0.631  →  half the S-drop by t = 1/3",
             "H": "H(t) = H₀  (constant per family)",
             "k": "k_H = per-family saturation gain (fitted to Figma)",
-            "steps": "scale = step/10 ∈ (0,100); t = scale/100 — 25 & 800 are interior samples",
+            "steps": "scale = step/10 ∈ (0,100); t = scale/100 — includes 900 (formula-only on chromatics)",
             "domain": "full gradient 0 → 100",
         },
         "curves": {
@@ -651,7 +673,7 @@ def build_v5():
 
     for fam in CHROM:
         steps = P["light"][fam]
-        keys = [str(s) for s in CHROMATIC_STEPS]
+        keys = [str(s) for s in CHROMATIC_STEPS_V5]
         k = S_GAIN_V5[fam]
         out["families"].append(
             build_family_v5(fam, "chromatic", "both", HUES[fam], keys, steps, k))
@@ -683,12 +705,15 @@ def main():
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
         for f in ver["families"]:
-            dh = [r["dE_hsl"] for r in f["rows"]]
-            w = max(f["rows"], key=lambda r: r["dE_hsl"])
+            dh = [r["dE_hsl"] for r in f["rows"] if r["dE_hsl"] is not None]
+            compared = [r for r in f["rows"] if r["dE_hsl"] is not None]
+            w = max(compared, key=lambda r: r["dE_hsl"]) if compared else f["rows"][0]
             extra = ""
             if ver_id in ("v4", "v5") and f["kind"] == "chromatic":
                 extra = f"  k={f['k']}"
-            print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   '
+            mean = (sum(dh) / len(dh)) if dh else 0.0
+            mx = max(dh) if dh else 0.0
+            print(f'{f["name"]:<12}{f["theme"]:<7}{mean:9.2f}{mx:7.2f}   '
                   f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255){extra}')
         if ver_id == "v2":
             print("shared t (10):", out["v2"]["shared_positions"].get("10"))
@@ -699,12 +724,13 @@ def main():
             print(f"L(1/9)={L_v4(1/9):.2f}  (step 50 target ~92)")
         if ver_id == "v5":
             print("S gains:", out["v5"]["s_gain"])
+            print("S power p:", out["v5"]["s_power"])
             brand = next(f for f in out["v5"]["families"] if f["name"] == "Brand")
-            print("Brand samples:", [(r["step"], r["scale"], r["L"], r["S"]) for r in brand["rows"]])
+            print("Brand samples:", [(r["step"], r["scale"], r["L"], r["S"], r.get("missing")) for r in brand["rows"]])
             print(f"L(0)={L_v5(0):.1f}  L(0.025)={L_v5(0.025):.1f}  "
-                  f"L(0.8)={L_v5(0.8):.1f}  L(1)={L_v5(1):.1f}")
-            print(f"S_unit(0)={S_unit_v5(0):.3f}  S_unit(0.5)={S_unit_v5(0.5):.3f}  "
-                  f"S_unit(1)={S_unit_v5(1):.3f}")
+                  f"L(0.8)={L_v5(0.8):.1f}  L(0.9)={L_v5(0.9):.1f}  L(1)={L_v5(1):.1f}")
+            print(f"S_unit(0)={S_unit_v5(0):.3f}  S_unit(1/3)={S_unit_v5(1/3):.3f}  "
+                  f"S_unit(0.5)={S_unit_v5(0.5):.3f}  S_unit(1)={S_unit_v5(1):.3f}")
 
 if __name__ == "__main__":
     main()

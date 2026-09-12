@@ -202,10 +202,12 @@ table.ladder tbody tr:last-child td{border-bottom:0}
           font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
 /* Figma value and formula value share an edge — no gap, no radius, so the
    seam only appears where the two actually differ. */
-.tile{height:32px;display:flex;align-items:center;padding:0 4px;min-width:0;
-      font:500 9.5px/1 var(--body);font-variant-numeric:tabular-nums;
-      white-space:nowrap;overflow:hidden}
-.tile.b{justify-content:flex-end}
+.tile.empty{background:
+  repeating-linear-gradient(-45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ink-3) 18%, transparent) 5px 6px);
+  color:var(--ink-3); justify-content:center; box-shadow:inset 0 0 0 1px var(--rule)}
+.tile.empty::after{content:'—'}
 .grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
           box-shadow:none;position:relative}
 .dl{display:flex;align-items:center;justify-content:flex-end;padding-left:2px}
@@ -450,18 +452,20 @@ const COPY = {
   <code>k_H ≈ 1.25</code>; Pulse/Pink ≈ 2.4–2.45; Flash ≈ 1.8; Mindaro ≈ 1.2 — fitted to Figma saturation.</p>`
   },
   v5: {
-    title: 'Full 0–100 scale with a sine-shaped saturation curve',
-    lead: 'v5 runs lightness and saturation across the whole 0→100 domain. Named tokens (25, 800, …) are interior samples — not the ends of the gradient. Saturation follows a raised-cosine S-curve: flat at both ends, continuous through the middle, scaled per family by k_H.',
-    eyebrow: 'v5 · full 0–100 domain · sine saturation',
-    chip: 'Solid ramps · 0–100 · sine S',
-    fHead: 'The curve functions',
-    ladHead: 'Interior samples on 0–100',
-    chrom: 'Nine hues on one 0→100 continuous scale. Steps 25 and 800 sit inside the ramp (scale 2.5 and 80). Saturation is a raised-cosine S-curve with per-family gain k_H.',
-    theme: 'Neutral and Greyscale reuse the same L(t) on 0→100. Numeric tokens map as scale = step/10; White→0 and Black→100 when present.',
+    title: "Full 0\u2013100 scale with a front-loaded sine saturation curve",
+    lead: "v5 runs lightness and saturation across the whole 0\u2192100 domain. Named tokens (25, 800, 900, \u2026) are interior samples \u2014 not the ends of the gradient. Saturation follows an asymmetric raised-cosine: still flat at both ends, but the drop is front-loaded so half of it is done by one-third of the ramp.",
+    eyebrow: "v5 \u00b7 full 0\u2013100 domain \u00b7 asymmetric sine S",
+    chip: "Solid ramps \u00b7 0\u2013100 \u00b7 early S drop",
+    fHead: "The curve functions",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "Nine hues on one 0\u2192100 continuous scale. Steps 25 / 800 / 900 sit inside the ramp (scale 2.5 / 80 / 90). Chromatic 900 is formula-only \u2014 Figma has no swatch. Saturation is an asymmetric raised-cosine with per-family gain k_H.",
+    theme: "Neutral and Greyscale reuse the same L(t) on 0\u2192100. Numeric tokens map as scale = step/10; White\u21920 and Black\u2192100 when present.",
     foot: `<p><b>0→100 domain.</b> Functions and the gradient column span the full scale. Token
-  <code>25</code> samples at 2.5 and <code>800</code> at 80 — neither is an endpoint.</p>
-  <p><b>Sine saturation.</b> <code>u(t) = (1 − cos(π·t))/2</code> is flat at both ends (zero derivatives)
-  and continuous in between — an S-shape rather than a linear drop or a mid-window plateau.</p>
+  <code>25</code> samples at 2.5, <code>800</code> at 80, and <code>900</code> at 90 — none are endpoints.
+  Chromatic 900 has no Figma original, so that cell is left blank.</p>
+  <p><b>Asymmetric sine saturation.</b> <code>u(t) = (1 − cos(π·t^p))/2</code> with
+  <code>p = log(½)/log(⅓) ≈ 0.631</code> stays flat at both ends, but is no longer symmetric —
+  half the unit drop is already done by <code>t = 1/3</code>, so mid-ramp is less saturated.</p>
   <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority ≈ 1.25;
   Flash ≈ 1.65; Pulse/Pink ≈ 2.0 / 1.95; Mindaro ≈ 1.3.</p>`
   }
@@ -608,12 +612,13 @@ Pink   H ${V('350')}  k ${V('2.40')}`;
       `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
     ).join('');
   } else {
-    // v5 — 0→100 domain, interior step samples, raised-cosine S
+    // v5 — 0→100 domain, interior samples incl. 900, asymmetric raised-cosine S
     document.getElementById('f-body').innerHTML =
 `${K('// scale ∈ [0, 100]  ·  t = scale/100')}
-${K('// 25 and 800 are interior samples — not the ends')}
+${K('// 25 / 800 / 900 are interior samples — not the ends')}
 L(t) = ${V('99 − 98·t^0.83')}
-u(t) = ${V('(1 − cos(π·t))/2')}     ${K('raised-cosine S-curve')}
+p    = ${V('log(½) / log(⅓)')} ≈ 0.631   ${K('half the S-drop by t = 1/3')}
+u(t) = ${V('(1 − cos(π·t^p))/2')}       ${K('asymmetric raised-cosine')}
 S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
 H(t) = ${V('H₀')}
 
@@ -623,7 +628,7 @@ neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
 neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
 
 ${K('// named tokens sample the scale')}
-scale = step / 10                 ${K('25 → 2.5, 800 → 80')}
+scale = step / 10                 ${K('25 → 2.5, 800 → 80, 900 → 90')}
 t     = scale / 100
 
 ${K('// H₀ and k_H per family')}
@@ -634,14 +639,16 @@ Flash  H ${V('32')}   k ${V('1.65')}    Pulse  H ${V('110')}  k ${V('2.00')}
 Pink   H ${V('350')}  k ${V('1.95')}`;
 
     document.getElementById('f-note').innerHTML =
-`The gradient runs 0→100. Token labels are just sample points on that continuum —
- <code>u(t)</code> is a sine-shaped ease with flat ends; <code>k_H</code> scales the drop per palette.`;
+`The gradient runs 0→100. <code>t^p</code> front-loads the cosine so saturation is already halfway down
+ by one-third of the ramp — still flat at both ends, just not symmetric. Chromatic <code>900</code> is
+ formula-only (no Figma swatch).`;
 
     const brand5 = ALL.v5.families.find(f=>f.name==='Brand');
     document.getElementById('lad-head').innerHTML =
       `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>k<sub>H</sub></th></tr>`;
     document.getElementById('lad').innerHTML = brand5.rows.map(r=>
-      `<tr><td>${r.step}</td><td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+      `<tr><td>${r.step}${r.missing?' <span style="color:var(--ink-3)">(new)</span>':''}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
     ).join('');
   }
 }
@@ -722,7 +729,7 @@ function renderCurves(){
 
   document.getElementById('curves-hint').textContent =
     ver==='v5'
-      ? 'X = scale 0–100 · Y = value (0–100). Red = L. Solid blue = S at k=1; dashed = S at k=2 (Pulse). Steps 25 and 800 sit inside the domain.'
+      ? 'X = scale 0–100 · Y = value (0–100). Red = L. Solid blue = S at k=1; dashed = S at k=2. Drop is front-loaded (half by ~33). Steps 25 / 800 / 900 sit inside the domain.'
       : ver==='v4'
       ? 'X = gradient progression t · Y = value (0–100). Red = L(t). Solid blue = S(t) at k=1; dashed blue = S at k≈2.45 (Pulse). Each family uses its own k_H.'
       : ver==='v3'
@@ -758,11 +765,14 @@ function ink(hex){
   return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
 }
 function label(r,key,mode){
+  if(key==='orig' && (r.missing || r.orig==null)) return '';
   if(mode==='none') return '';
   if(mode==='hex')  return r[key];
-  const [h,s,l]=r[key+'_hsl']; return `${h} ${s} ${l}`;
+  const hsl=r[key+'_hsl'];
+  if(!hsl) return '';
+  const [h,s,l]=hsl; return `${h} ${s} ${l}`;
 }
-const band=d=> d<1?'':d<3?'s':d<6?'v':'b';
+const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 
 /* ---------- v1 synthetic gradient ---------- */
 function v1Gradient(f){
@@ -773,7 +783,8 @@ function v1Gradient(f){
 
 /* ---------- render ---------- */
 function famCard(f){
-  const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
+  const compared = f.rows.filter(r=>r.dE_hsl!=null);
+  const worst = compared.length ? Math.max(...compared.map(r=>r.dE_hsl)) : 0;
   const param = f.kind==='grey' ? 'achromatic'
     : (ver==='v4' || ver==='v5') && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
     : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
@@ -781,13 +792,22 @@ function famCard(f){
   const n = f.rows.length;
 
   const body = f.rows.map((r,i)=>{
+    const missing = !!(r.missing || r.orig==null);
     const d=r.dE_hsl, b=band(d);
     const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
-    const tip=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
+    const tip = missing
+      ? `${r.step} · no Figma swatch → formula ${r.hsl}${tPos}`
+      : `${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
+    const figmaTile = missing
+      ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`;
+    const deCell = missing
+      ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No Figma original">—</span>`
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
     return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
-      `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`+
+      figmaTile+
       `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}">${label(r,'hsl',vals)}</span>`+
-      `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+      deCell;
   }).join('');
 
   const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
@@ -803,7 +823,10 @@ function famCard(f){
 function render(){
   const D = ALL[ver];
   const put=(id,list)=>{
-    const l = flt==='dev' ? list.filter(f=>Math.max(...f.rows.map(r=>r.dE_hsl))>=1) : list;
+    const l = flt==='dev' ? list.filter(f=>{
+      const ds=f.rows.map(r=>r.dE_hsl).filter(d=>d!=null);
+      return ds.length && Math.max(...ds)>=1;
+    }) : list;
     document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
   };
@@ -811,7 +834,7 @@ function render(){
   put('g-theme',     D.families.filter(f=>['neutral','grey'].includes(f.kind)));
 
   const devs=[];
-  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl>=1) devs.push([f,r]); }));
+  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl!=null && r.dE_hsl>=1) devs.push([f,r]); }));
   devs.sort((a,b)=>b[1].dE_hsl-a[1].dE_hsl);
   document.getElementById('devlist').innerHTML =
     `<div class="devrow devhead"><span>Family</span><span class="stp">Step</span>`+

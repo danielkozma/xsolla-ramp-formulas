@@ -34,15 +34,20 @@ H(t) = H₀
 tᵢ = i/(N−1)
 ```
 
-## v5 — full 0→100 domain + sine saturation (default)
+## v5 — full 0→100 domain + asymmetric sine saturation (default)
 
 Functions and the gradient span **0→100**. Named tokens map as
-`scale = step/10` (so 25 → 2.5, 800 → 80) — interior samples, not ends.
-Saturation is a raised-cosine S-curve (flat derivatives at both ends):
+`scale = step/10` (so 25 → 2.5, 800 → 80, 900 → 90) — interior samples,
+not ends. Chromatic **900** is formula-only (Figma has no swatch).
+
+Saturation is a raised-cosine that stays flat at both ends but is
+**front-loaded**: `g(t) = t^p` with `p = log(½)/log(⅓)` so half the unit
+drop is done by `t = 1/3`.
 
 ```
 L(t) = 99 − 98·t^0.83
-u(t) = (1 − cos(π·t))/2
+p    = log(1/2) / log(1/3) ≈ 0.631
+u(t) = (1 − cos(π·t^p))/2
 S(t) = clamp(100 − 30·k_H·u(t), 0, 100)
 H(t) = H₀
 
