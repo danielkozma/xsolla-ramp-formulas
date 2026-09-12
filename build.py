@@ -36,47 +36,6 @@ def rgb2oklab(r,g,b):
             1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_,
             0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_)
 
-def oklab2rgb(L,a,b):
-    l_ = L + 0.3963377774*a + 0.2158037573*b
-    m_ = L - 0.1055613458*a - 0.0638541728*b
-    s_ = L - 0.0894841775*a - 1.2914855480*b
-    l,m,s = l_**3, m_**3, s_**3
-    r =  4.0767416621*l - 3.3077115913*m + 0.2309699292*s
-    g = -1.2684380046*l + 2.6097574011*m - 0.3413193965*s
-    bb=-0.0041960863*l - 0.7034186147*m + 1.7076147010*s
-    return _unlin(r), _unlin(g), _unlin(bb)
-
-def hex2oklch(h):
-    L,a,b = rgb2oklab(*hex2rgb(h))
-    return L*100, math.hypot(a,b), (math.degrees(math.atan2(b,a))) % 360
-
-def oklch2rgb_raw(L,C,H):
-    a = C*math.cos(math.radians(H)); b = C*math.sin(math.radians(H))
-    return oklab2rgb(L/100,a,b)
-
-def in_gamut(rgb, tol=0.5):
-    return all(-tol <= v <= 255+tol for v in rgb)
-
-def oklch2hex(L,C,H):
-    """Gamut-map by reducing chroma until sRGB-representable."""
-    rgb = oklch2rgb_raw(L,C,H)
-    if not in_gamut(rgb):
-        lo, hi = 0.0, C
-        for _ in range(40):
-            mid = (lo+hi)/2
-            if in_gamut(oklch2rgb_raw(L,mid,H)): lo = mid
-            else: hi = mid
-        rgb = oklch2rgb_raw(L,lo,H)
-    return rgb2hex(*rgb)
-
-def max_chroma(L,H):
-    lo, hi = 0.0, 0.5
-    for _ in range(40):
-        mid = (lo+hi)/2
-        if in_gamut(oklch2rgb_raw(L,mid,H)): lo = mid
-        else: hi = mid
-    return lo
-
 def dE(h1,h2):
     """OKLab Euclidean distance x100 — ~1.0 is a just-noticeable difference."""
     a = rgb2oklab(*hex2rgb(h1)); b = rgb2oklab(*hex2rgb(h2))
@@ -85,90 +44,242 @@ def dE(h1,h2):
 def maxch(h1,h2):
     return max(abs(x-y) for x,y in zip(hex2rgb(h1), hex2rgb(h2)))
 
-# ---------- the formulas ----------
+def clamp(x, lo, hi):
+    return max(lo, min(hi, x))
+
+# ---------- shared constants ----------
 CHROMATIC_STEPS = [25,50,100,200,300,400,500,600,700,800]
-
-def L_of(step):
-    return 96.0 if step == 25 else 95 - step/10
-
-def S_of(step):
-    return max(70.0, min(100.0, 120 - step/10))
-
 HUES = {"Edge":10, "Flash":32, "Yellow":50, "Mindaro":75, "Pulse":110,
         "Mint":145, "Brand":190, "Core":250, "Pink":350}
-
-def hsl_formula(fam, step):
-    return hsl2hex(HUES[fam], S_of(step), L_of(step))
-
-# neutrals
 NEUTRAL_H = {"light":75, "dark":190}
-def neutral_S(theme, L):
-    # light: tint fades with lightness.  dark: tint grows into the shadows.
-    return L/10 if theme=="light" else 11 + (100-L)/9
-
-def neutral_formula(theme, step):
-    L = L_of(step)
-    return hsl2hex(NEUTRAL_H[theme], neutral_S(theme,L), L)
-
-def greyscale_formula(theme, step):
-    return hsl2hex(0, 0, L_of(step))
-
-# ---------- ladder, extended ----------
-def L_ladder(step):
-    if step == 25: return 96.0
-    if step <= 800: return 95 - step/10
-    return 15 - (step-800)/20          # half-rate tail for the near-black surface steps
-
-def L_of(step): return L_ladder(step)   # rebind
-
-# ---------- assemble ----------
-P = json.load(open('data/palette.json'))
 CHROM = ["Brand","Core","Mindaro","Pulse","Flash","Edge","Pink","Yellow","Mint"]
 
-def entry(orig, gen):
+P = json.load(open('data/palette.json'))
+
+def entry(orig, gen, extra=None):
     e = {"orig":orig, "hsl":gen}
     for k in ("orig","hsl"):
         H,S,L = hex2hsl(e[k]); e[k+"_hsl"] = [round(H), round(S), round(L)]
     e["dE_hsl"] = round(dE(orig, gen), 2)
     e["px_hsl"] = maxch(orig, gen)
+    if extra: e.update(extra)
     return e
 
-out = {"families":[], "hues":HUES}
+# =====================================================================
+# v1 — discrete step ladders (the original reconstruction)
+# =====================================================================
+def L_ladder(step):
+    if step == 25: return 96.0
+    if step <= 800: return 95 - step/10
+    return 15 - (step-800)/20
 
-for fam in CHROM:
-    steps = P["light"][fam]
-    rows=[]
-    for s in CHROMATIC_STEPS:
-        o = steps[str(s)]
-        rows.append({"step":str(s), **entry(o, hsl_formula(fam,s))})
-    out["families"].append({
-        "name":fam, "kind":"chromatic", "theme":"both", "hue":HUES[fam], "rows":rows})
+def S_of(step):
+    return max(70.0, min(100.0, 120 - step/10))
 
-for theme in ("light","dark"):
-    steps = P[theme]["Neutral"]
-    rows=[]
-    for k,v in steps.items():
-        if k in ("White","Black"): continue
-        s=int(k)
-        rows.append({"step":k, **entry(v, neutral_formula(theme,s))})
-    out["families"].append({"name":"Neutral", "kind":"neutral", "theme":theme,
-        "hue":NEUTRAL_H[theme], "rows":rows})
+def hsl_formula_v1(fam, step):
+    return hsl2hex(HUES[fam], S_of(step), L_ladder(step))
 
-for theme in ("light","dark"):
-    steps = P[theme]["Greyscale"]
-    rows=[]
-    for k,v in steps.items():
-        s=int(k)
-        g = greyscale_formula(theme,s)
-        rows.append({"step":k, **entry(v, g)})
-    out["families"].append({"name":"Greyscale", "kind":"grey", "theme":theme,
-        "hue":0, "rows":rows})
+def neutral_S(theme, L):
+    return L/10 if theme=="light" else 11 + (100-L)/9
 
-json.dump(out, open('data/generated.json','w'), indent=1)
+def neutral_formula_v1(theme, step):
+    L = L_ladder(step)
+    return hsl2hex(NEUTRAL_H[theme], neutral_S(theme,L), L)
 
-# ---------- report ----------
-print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
-for f in out["families"]:
-    dh=[r["dE_hsl"] for r in f["rows"]]
-    w = max(f["rows"], key=lambda r:r["dE_hsl"])
-    print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   {w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255)')
+def greyscale_formula_v1(theme, step):
+    return hsl2hex(0, 0, L_ladder(step))
+
+def build_v1():
+    out = {"id":"v1", "label":"v1", "families":[], "hues":HUES}
+    for fam in CHROM:
+        steps = P["light"][fam]
+        rows=[]
+        for s in CHROMATIC_STEPS:
+            o = steps[str(s)]
+            rows.append({"step":str(s), **entry(o, hsl_formula_v1(fam,s))})
+        out["families"].append({
+            "name":fam, "kind":"chromatic", "theme":"both", "hue":HUES[fam], "rows":rows})
+
+    for theme in ("light","dark"):
+        steps = P[theme]["Neutral"]
+        rows=[]
+        for k,v in steps.items():
+            if k in ("White","Black"): continue
+            s=int(k)
+            rows.append({"step":k, **entry(v, neutral_formula_v1(theme,s))})
+        out["families"].append({"name":"Neutral", "kind":"neutral", "theme":theme,
+            "hue":NEUTRAL_H[theme], "rows":rows})
+
+    for theme in ("light","dark"):
+        steps = P[theme]["Greyscale"]
+        rows=[]
+        for k,v in steps.items():
+            s=int(k)
+            g = greyscale_formula_v1(theme,s)
+            rows.append({"step":k, **entry(v, g)})
+        out["families"].append({"name":"Greyscale", "kind":"grey", "theme":theme,
+            "hue":0, "rows":rows})
+    return out
+
+# =====================================================================
+# v2 — continuous H/S/L gradient functions + even arc-length steps
+#
+# Parameter t ∈ [0, 1] runs light → dark along a continuous ramp.
+# Named steps (25, 50, …) are placed by equal OKLab arc length so they
+# feel as evenly spaced as the continuous curve allows.
+# =====================================================================
+
+def L_cont(t):
+    """Lightness: near-linear fade from Figma's light end (~96) to dark (~15)."""
+    return 96.0 - 81.0 * t
+
+def S_cont(t):
+    """Saturation: full chroma in the lights, eases down to a floor of 70.
+    The drop starts around t = 1/3 (≈ step 200–300 in the old ladder) and
+    reaches the floor by t ≈ 7/12 — matching the Figma majority pattern
+    100 → 90 → 80 → 70."""
+    return clamp(100.0 - 120.0 * max(0.0, t - 1.0/3.0), 70.0, 100.0)
+
+def H_cont(H0, t):
+    """Hue is constant down each family (Figma holds it to within rounding)."""
+    return H0
+
+def neutral_S_cont(theme, t):
+    L = L_cont(t)
+    return L/10 if theme=="light" else 11 + (100-L)/9
+
+def sample_hex(kind, hue, theme, t):
+    L = L_cont(t)
+    if kind == "chromatic":
+        return hsl2hex(H_cont(hue, t), S_cont(t), L)
+    if kind == "neutral":
+        return hsl2hex(hue, neutral_S_cont(theme, t), L)
+    return hsl2hex(0, 0, L)
+
+def oklab_of_hex(h):
+    return rgb2oklab(*hex2rgb(h))
+
+def equal_oklab_L_positions(n, samples=512):
+    """Shared step placement for every family.
+
+    Sample the greyscale continuous ramp (pure L(t)) and place n stops so
+    OKLab lightness is equally spaced from light → dark. Because the ramp is
+    primarily a lightness scale, equal ΔL_OKLab is what makes consecutive
+    named steps feel even — and a single shared table keeps every family
+    aligned on the same tᵢ.
+    """
+    ts = [i/(samples-1) for i in range(samples)]
+    # Greyscale: H=0, S=0, L=L_cont(t)
+    Ls = [oklab_of_hex(sample_hex("grey", 0, "light", t))[0] for t in ts]
+    L0, L1 = Ls[0], Ls[-1]
+    targets = [L0 + (L1 - L0) * i/(n-1) for i in range(n)]
+    out = []
+    j = 0
+    for target in targets:
+        # Ls decreases with t
+        while j < samples-1 and Ls[j] > target:
+            j += 1
+        if j == 0:
+            out.append(0.0)
+        else:
+            l0, l1 = Ls[j-1], Ls[j]
+            if abs(l1 - l0) < 1e-12:
+                out.append(ts[j])
+            else:
+                u = (target - l0) / (l1 - l0)
+                out.append(ts[j-1] + u * (ts[j] - ts[j-1]))
+    out[0], out[-1] = 0.0, 1.0
+    return out
+
+def gradient_css_stops(kind, hue, theme, n=24):
+    stops = []
+    for i in range(n):
+        t = i/(n-1)
+        hexv = sample_hex(kind, hue, theme, t)
+        stops.append(f"{hexv} {round(100*t, 2)}%")
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def build_family_v2(name, kind, theme, hue, step_keys, orig_map, positions):
+    rows = []
+    for k, t in zip(step_keys, positions):
+        o = orig_map[k]
+        gen = sample_hex(kind, hue, theme, t)
+        L, S = L_cont(t), (S_cont(t) if kind=="chromatic"
+                           else (neutral_S_cont(theme,t) if kind=="neutral" else 0.0))
+        rows.append({
+            "step": k,
+            **entry(o, gen, {
+                "t": round(t, 4),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(H_cont(hue, t) if kind!="grey" else 0, 1),
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue, "rows": rows,
+        "gradient": gradient_css_stops(kind, hue, theme),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v2():
+    out = {
+        "id": "v2", "label": "v2", "families": [], "hues": HUES,
+        "meta": {
+            "L": "L(t) = 96 − 81·t",
+            "S": "S(t) = clamp(100 − 120·max(0, t − ⅓), 70, 100)",
+            "H": "H(t) = H₀  (constant per family)",
+            "steps": "tᵢ from equal OKLab lightness on the greyscale L(t) curve (shared)",
+        },
+    }
+    # One shared placement table per step-count so every family lines up
+    pos_cache = {}
+    def positions_for(n):
+        if n not in pos_cache:
+            pos_cache[n] = equal_oklab_L_positions(n)
+        return pos_cache[n]
+
+    for fam in CHROM:
+        steps = P["light"][fam]
+        keys = [str(s) for s in CHROMATIC_STEPS]
+        out["families"].append(
+            build_family_v2(fam, "chromatic", "both", HUES[fam], keys, steps,
+                            positions_for(len(keys))))
+
+    for theme in ("light","dark"):
+        steps = P[theme]["Neutral"]
+        keys = [k for k in steps if k not in ("White","Black")]
+        out["families"].append(
+            build_family_v2("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
+                            positions_for(len(keys))))
+
+    for theme in ("light","dark"):
+        steps = P[theme]["Greyscale"]
+        keys = list(steps.keys())
+        out["families"].append(
+            build_family_v2("Greyscale", "grey", theme, 0, keys, steps,
+                            positions_for(len(keys))))
+
+    out["shared_positions"] = {
+        str(n): [round(t, 4) for t in pos] for n, pos in pos_cache.items()
+    }
+    return out
+
+# ---------- assemble ----------
+def main():
+    out = {"v1": build_v1(), "v2": build_v2(), "default": "v2"}
+    json.dump(out, open('data/generated.json','w'), indent=1)
+
+    for ver_id in ("v1","v2"):
+        ver = out[ver_id]
+        print(f"\n=== {ver_id} ===")
+        print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
+        for f in ver["families"]:
+            dh=[r["dE_hsl"] for r in f["rows"]]
+            w = max(f["rows"], key=lambda r:r["dE_hsl"])
+            print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   '
+                  f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255)')
+        if ver_id == "v2":
+            print("shared t (10):", out["v2"]["shared_positions"].get("10"))
+
+if __name__ == "__main__":
+    main()

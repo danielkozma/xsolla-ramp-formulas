@@ -1,2448 +1,5674 @@
 {
- "families": [
-  {
-   "name": "Brand",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 190,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#EBFCFF",
-     "hsl": "#EBFCFF",
-     "orig_hsl": [
-      189,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      189,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#D6F8FF",
-     "hsl": "#CCF6FF",
-     "orig_hsl": [
-      190,
-      100,
-      92
-     ],
-     "hsl_hsl": [
-      191,
-      100,
-      90
-     ],
-     "dE_hsl": 1.35,
-     "px_hsl": 10
-    },
-    {
-     "step": "100",
-     "orig": "#B2F2FF",
-     "hsl": "#B2F2FF",
-     "orig_hsl": [
-      190,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      190,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#80EAFF",
-     "hsl": "#80EAFF",
-     "orig_hsl": [
-      190,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      190,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#55DCF6",
-     "hsl": "#55DBF6",
-     "orig_hsl": [
-      190,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      190,
-      90,
-      65
-     ],
-     "dE_hsl": 0.28,
-     "px_hsl": 1
-    },
-    {
-     "step": "400",
-     "orig": "#31CAE8",
-     "hsl": "#30C9E8",
-     "orig_hsl": [
-      190,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      190,
-      80,
-      55
-     ],
-     "dE_hsl": 0.29,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#22A8C3",
-     "hsl": "#22A8C3",
-     "orig_hsl": [
-      190,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      190,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#1B8398",
-     "hsl": "#1B8398",
-     "orig_hsl": [
-      190,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      190,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#135D6C",
-     "hsl": "#135D6C",
-     "orig_hsl": [
-      190,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      190,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#0B3841",
-     "hsl": "#0B3841",
-     "orig_hsl": [
-      190,
-      71,
-      15
-     ],
-     "hsl_hsl": [
-      190,
-      71,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
+ "v1": {
+  "id": "v1",
+  "label": "v1",
+  "families": [
+   {
+    "name": "Brand",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 190,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EBFCFF",
+      "hsl": "#EBFCFF",
+      "orig_hsl": [
+       189,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       189,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#D6F8FF",
+      "hsl": "#CCF6FF",
+      "orig_hsl": [
+       190,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       191,
+       100,
+       90
+      ],
+      "dE_hsl": 1.35,
+      "px_hsl": 10
+     },
+     {
+      "step": "100",
+      "orig": "#B2F2FF",
+      "hsl": "#B2F2FF",
+      "orig_hsl": [
+       190,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       190,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#80EAFF",
+      "hsl": "#80EAFF",
+      "orig_hsl": [
+       190,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       190,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#55DCF6",
+      "hsl": "#55DBF6",
+      "orig_hsl": [
+       190,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       190,
+       90,
+       65
+      ],
+      "dE_hsl": 0.28,
+      "px_hsl": 1
+     },
+     {
+      "step": "400",
+      "orig": "#31CAE8",
+      "hsl": "#30C9E8",
+      "orig_hsl": [
+       190,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       190,
+       80,
+       55
+      ],
+      "dE_hsl": 0.29,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#22A8C3",
+      "hsl": "#22A8C3",
+      "orig_hsl": [
+       190,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#1B8398",
+      "hsl": "#1B8398",
+      "orig_hsl": [
+       190,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#135D6C",
+      "hsl": "#135D6C",
+      "orig_hsl": [
+       190,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#0B3841",
+      "hsl": "#0B3841",
+      "orig_hsl": [
+       190,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       190,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Core",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 250,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EEEBFF",
+      "hsl": "#EEEBFF",
+      "orig_hsl": [
+       249,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       249,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#DDD6FF",
+      "hsl": "#D4CCFF",
+      "orig_hsl": [
+       250,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       249,
+       100,
+       90
+      ],
+      "dE_hsl": 2.99,
+      "px_hsl": 10
+     },
+     {
+      "step": "100",
+      "orig": "#BFB2FF",
+      "hsl": "#BFB2FF",
+      "orig_hsl": [
+       250,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       250,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#9580FF",
+      "hsl": "#9580FF",
+      "orig_hsl": [
+       250,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       250,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#7055F6",
+      "hsl": "#7055F6",
+      "orig_hsl": [
+       250,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       250,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#5031E8",
+      "hsl": "#4F30E8",
+      "orig_hsl": [
+       250,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       250,
+       80,
+       55
+      ],
+      "dE_hsl": 0.23,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#3D22C3",
+      "hsl": "#3D22C3",
+      "orig_hsl": [
+       250,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#301B98",
+      "hsl": "#301B98",
+      "orig_hsl": [
+       250,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#22136C",
+      "hsl": "#22136C",
+      "orig_hsl": [
+       250,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#140B41",
+      "hsl": "#140B41",
+      "orig_hsl": [
+       250,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       250,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Mindaro",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 75,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FAFFEB",
+      "hsl": "#FAFFEB",
+      "orig_hsl": [
+       75,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#F2FFCC",
+      "hsl": "#F2FFCC",
+      "orig_hsl": [
+       75,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       90
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "100",
+      "orig": "#E6FF99",
+      "hsl": "#ECFFB2",
+      "orig_hsl": [
+       75,
+       100,
+       80
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       85
+      ],
+      "dE_hsl": 3.09,
+      "px_hsl": 25
+     },
+     {
+      "step": "200",
+      "orig": "#D9FF66",
+      "hsl": "#DFFF80",
+      "orig_hsl": [
+       75,
+       100,
+       70
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       75
+      ],
+      "dE_hsl": 2.57,
+      "px_hsl": 26
+     },
+     {
+      "step": "300",
+      "orig": "#C7F53D",
+      "hsl": "#CEF655",
+      "orig_hsl": [
+       75,
+       90,
+       60
+      ],
+      "hsl_hsl": [
+       75,
+       90,
+       65
+      ],
+      "dE_hsl": 1.85,
+      "px_hsl": 24
+     },
+     {
+      "step": "400",
+      "orig": "#B2E51A",
+      "hsl": "#BAE830",
+      "orig_hsl": [
+       75,
+       80,
+       50
+      ],
+      "hsl_hsl": [
+       75,
+       80,
+       55
+      ],
+      "dE_hsl": 1.54,
+      "px_hsl": 22
+     },
+     {
+      "step": "500",
+      "orig": "#8AAD1F",
+      "hsl": "#9BC322",
+      "orig_hsl": [
+       75,
+       70,
+       40
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       45
+      ],
+      "dE_hsl": 6.62,
+      "px_hsl": 22
+     },
+     {
+      "step": "600",
+      "orig": "#678217",
+      "hsl": "#78981B",
+      "orig_hsl": [
+       75,
+       70,
+       30
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       35
+      ],
+      "dE_hsl": 6.95,
+      "px_hsl": 22
+     },
+     {
+      "step": "700",
+      "orig": "#45570F",
+      "hsl": "#566C13",
+      "orig_hsl": [
+       75,
+       71,
+       20
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       25
+      ],
+      "dE_hsl": 7.13,
+      "px_hsl": 21
+     },
+     {
+      "step": "800",
+      "orig": "#222B08",
+      "hsl": "#34410B",
+      "orig_hsl": [
+       75,
+       69,
+       10
+      ],
+      "hsl_hsl": [
+       74,
+       71,
+       15
+      ],
+      "dE_hsl": 8.28,
+      "px_hsl": 22
+     }
+    ]
+   },
+   {
+    "name": "Pulse",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 110,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EEFFEB",
+      "hsl": "#EEFFEB",
+      "orig_hsl": [
+       111,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       111,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#D5FFCC",
+      "hsl": "#D5FFCC",
+      "orig_hsl": [
+       109,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       109,
+       100,
+       90
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "100",
+      "orig": "#BFFFB2",
+      "hsl": "#BFFFB2",
+      "orig_hsl": [
+       110,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       110,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#95FF80",
+      "hsl": "#95FF80",
+      "orig_hsl": [
+       110,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       110,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#70F655",
+      "hsl": "#70F655",
+      "orig_hsl": [
+       110,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       110,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#50E831",
+      "hsl": "#4FE830",
+      "orig_hsl": [
+       110,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       110,
+       80,
+       55
+      ],
+      "dE_hsl": 0.08,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#3DC322",
+      "hsl": "#3DC322",
+      "orig_hsl": [
+       110,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#368F24",
+      "hsl": "#30981B",
+      "orig_hsl": [
+       110,
+       60,
+       35
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       35
+      ],
+      "dE_hsl": 2.85,
+      "px_hsl": 9
+     },
+     {
+      "step": "700",
+      "orig": "#2F5827",
+      "hsl": "#226C13",
+      "orig_hsl": [
+       110,
+       39,
+       25
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       25
+      ],
+      "dE_hsl": 7.14,
+      "px_hsl": 20
+     },
+     {
+      "step": "800",
+      "orig": "#1F301C",
+      "hsl": "#14410B",
+      "orig_hsl": [
+       111,
+       26,
+       15
+      ],
+      "hsl_hsl": [
+       110,
+       71,
+       15
+      ],
+      "dE_hsl": 6.92,
+      "px_hsl": 17
+     }
+    ]
+   },
+   {
+    "name": "Flash",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 32,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFF5EB",
+      "hsl": "#FFF5EB",
+      "orig_hsl": [
+       30,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       30,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#FFE7CC",
+      "hsl": "#FFE7CC",
+      "orig_hsl": [
+       32,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       32,
+       100,
+       90
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "100",
+      "orig": "#FFDBB2",
+      "hsl": "#FFDBB2",
+      "orig_hsl": [
+       32,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       32,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#FFC380",
+      "hsl": "#FFC380",
+      "orig_hsl": [
+       32,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       32,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#F6AB55",
+      "hsl": "#F6AB55",
+      "orig_hsl": [
+       32,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       32,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#E89331",
+      "hsl": "#E89230",
+      "orig_hsl": [
+       32,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       32,
+       80,
+       55
+      ],
+      "dE_hsl": 0.23,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#C37822",
+      "hsl": "#C37822",
+      "orig_hsl": [
+       32,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#985D1B",
+      "hsl": "#985D1B",
+      "orig_hsl": [
+       32,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#6C4313",
+      "hsl": "#6C4313",
+      "orig_hsl": [
+       32,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#30271C",
+      "hsl": "#41280B",
+      "orig_hsl": [
+       33,
+       26,
+       15
+      ],
+      "hsl_hsl": [
+       32,
+       71,
+       15
+      ],
+      "dE_hsl": 3.98,
+      "px_hsl": 17
+     }
+    ]
+   },
+   {
+    "name": "Edge",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 10,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFEEEB",
+      "hsl": "#FFEEEB",
+      "orig_hsl": [
+       9,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       9,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#FFDDD6",
+      "hsl": "#FFD5CC",
+      "orig_hsl": [
+       10,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       11,
+       100,
+       90
+      ],
+      "dE_hsl": 2.01,
+      "px_hsl": 10
+     },
+     {
+      "step": "100",
+      "orig": "#FFBFB2",
+      "hsl": "#FFBFB2",
+      "orig_hsl": [
+       10,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       10,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#FF9580",
+      "hsl": "#FF9580",
+      "orig_hsl": [
+       10,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       10,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#F67055",
+      "hsl": "#F67055",
+      "orig_hsl": [
+       10,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       10,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#E84F30",
+      "hsl": "#E84F30",
+      "orig_hsl": [
+       10,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       10,
+       80,
+       55
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "500",
+      "orig": "#C33D22",
+      "hsl": "#C33D22",
+      "orig_hsl": [
+       10,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#98301B",
+      "hsl": "#98301B",
+      "orig_hsl": [
+       10,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#6C2213",
+      "hsl": "#6C2213",
+      "orig_hsl": [
+       10,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#41140B",
+      "hsl": "#41140B",
+      "orig_hsl": [
+       10,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       10,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Pink",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 350,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFEBEE",
+      "hsl": "#FFEBEE",
+      "orig_hsl": [
+       351,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       351,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#FFD6DD",
+      "hsl": "#FFCCD5",
+      "orig_hsl": [
+       350,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       349,
+       100,
+       90
+      ],
+      "dE_hsl": 2.39,
+      "px_hsl": 10
+     },
+     {
+      "step": "100",
+      "orig": "#FFB2BF",
+      "hsl": "#FFB2BF",
+      "orig_hsl": [
+       350,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       350,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#FF8095",
+      "hsl": "#FF8095",
+      "orig_hsl": [
+       350,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       350,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#F65570",
+      "hsl": "#F65570",
+      "orig_hsl": [
+       350,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       350,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#E8304F",
+      "hsl": "#E8304F",
+      "orig_hsl": [
+       350,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       350,
+       80,
+       55
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "500",
+      "orig": "#C3223D",
+      "hsl": "#C3223D",
+      "orig_hsl": [
+       350,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#8F2436",
+      "hsl": "#981B30",
+      "orig_hsl": [
+       350,
+       60,
+       35
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       35
+      ],
+      "dE_hsl": 1.96,
+      "px_hsl": 9
+     },
+     {
+      "step": "700",
+      "orig": "#58272F",
+      "hsl": "#6C1322",
+      "orig_hsl": [
+       350,
+       39,
+       25
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       25
+      ],
+      "dE_hsl": 5.04,
+      "px_hsl": 20
+     },
+     {
+      "step": "800",
+      "orig": "#311C1F",
+      "hsl": "#410B14",
+      "orig_hsl": [
+       351,
+       27,
+       15
+      ],
+      "hsl_hsl": [
+       350,
+       71,
+       15
+      ],
+      "dE_hsl": 4.89,
+      "px_hsl": 17
+     }
+    ]
+   },
+   {
+    "name": "Yellow",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 50,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFFCEB",
+      "hsl": "#FFFCEB",
+      "orig_hsl": [
+       51,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       51,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#FFF7CC",
+      "hsl": "#FFF6CC",
+      "orig_hsl": [
+       51,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       49,
+       100,
+       90
+      ],
+      "dE_hsl": 0.26,
+      "px_hsl": 1
+     },
+     {
+      "step": "100",
+      "orig": "#FFF2B2",
+      "hsl": "#FFF2B2",
+      "orig_hsl": [
+       50,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       50,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#FFEA80",
+      "hsl": "#FFEA80",
+      "orig_hsl": [
+       50,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       50,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#F6DB55",
+      "hsl": "#F6DB55",
+      "orig_hsl": [
+       50,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       50,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#E8CA31",
+      "hsl": "#E8C930",
+      "orig_hsl": [
+       50,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       50,
+       80,
+       55
+      ],
+      "dE_hsl": 0.24,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#C3A822",
+      "hsl": "#C3A822",
+      "orig_hsl": [
+       50,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       50,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#98831B",
+      "hsl": "#98831B",
+      "orig_hsl": [
+       50,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       50,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#6C5E13",
+      "hsl": "#6C5E13",
+      "orig_hsl": [
+       51,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       51,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#41380B",
+      "hsl": "#41380B",
+      "orig_hsl": [
+       50,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       50,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Mint",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 145,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EBFFF3",
+      "hsl": "#EBFFF3",
+      "orig_hsl": [
+       144,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       144,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#CCFFE1",
+      "hsl": "#CCFFE1",
+      "orig_hsl": [
+       145,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       145,
+       100,
+       90
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "100",
+      "orig": "#B2FFD2",
+      "hsl": "#B2FFD2",
+      "orig_hsl": [
+       145,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       145,
+       100,
+       85
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "200",
+      "orig": "#80FFB5",
+      "hsl": "#80FFB5",
+      "orig_hsl": [
+       145,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       145,
+       100,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#55F698",
+      "hsl": "#55F698",
+      "orig_hsl": [
+       145,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       145,
+       90,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#31E87E",
+      "hsl": "#30E87D",
+      "orig_hsl": [
+       145,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       145,
+       80,
+       55
+      ],
+      "dE_hsl": 0.13,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#22C365",
+      "hsl": "#22C365",
+      "orig_hsl": [
+       145,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#1B984F",
+      "hsl": "#1B984F",
+      "orig_hsl": [
+       145,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#136C38",
+      "hsl": "#136C38",
+      "orig_hsl": [
+       145,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#0B4122",
+      "hsl": "#0B4122",
+      "orig_hsl": [
+       146,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       146,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Neutral",
+    "kind": "neutral",
+    "theme": "light",
+    "hue": 75,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F6F4",
+      "hsl": "#F5F6F4",
+      "orig_hsl": [
+       90,
+       10,
+       96
+      ],
+      "hsl_hsl": [
+       90,
+       10,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#ECEDE9",
+      "hsl": "#E7E8E3",
+      "orig_hsl": [
+       75,
+       10,
+       92
+      ],
+      "hsl_hsl": [
+       72,
+       10,
+       90
+      ],
+      "dE_hsl": 1.55,
+      "px_hsl": 6
+     },
+     {
+      "step": "100",
+      "orig": "#DDDFD8",
+      "hsl": "#DADCD5",
+      "orig_hsl": [
+       77,
+       10,
+       86
+      ],
+      "hsl_hsl": [
+       77,
+       9,
+       85
+      ],
+      "dE_hsl": 0.92,
+      "px_hsl": 3
+     },
+     {
+      "step": "200",
+      "orig": "#C2C4BA",
+      "hsl": "#C2C4BA",
+      "orig_hsl": [
+       72,
+       8,
+       75
+      ],
+      "hsl_hsl": [
+       72,
+       8,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#A9ACA0",
+      "hsl": "#A9ACA0",
+      "orig_hsl": [
+       75,
+       7,
+       65
+      ],
+      "hsl_hsl": [
+       75,
+       7,
+       65
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "400",
+      "orig": "#909385",
+      "hsl": "#8F9386",
+      "orig_hsl": [
+       73,
+       6,
+       55
+      ],
+      "hsl_hsl": [
+       78,
+       6,
+       55
+      ],
+      "dE_hsl": 0.19,
+      "px_hsl": 1
+     },
+     {
+      "step": "500",
+      "orig": "#76786D",
+      "hsl": "#75786E",
+      "orig_hsl": [
+       71,
+       5,
+       45
+      ],
+      "hsl_hsl": [
+       78,
+       4,
+       45
+      ],
+      "dE_hsl": 0.2,
+      "px_hsl": 1
+     },
+     {
+      "step": "600",
+      "orig": "#5B5D56",
+      "hsl": "#5B5C56",
+      "orig_hsl": [
+       77,
+       4,
+       35
+      ],
+      "hsl_hsl": [
+       70,
+       3,
+       35
+      ],
+      "dE_hsl": 0.31,
+      "px_hsl": 1
+     },
+     {
+      "step": "700",
+      "orig": "#41423E",
+      "hsl": "#41413E",
+      "orig_hsl": [
+       75,
+       3,
+       25
+      ],
+      "hsl_hsl": [
+       60,
+       2,
+       25
+      ],
+      "dE_hsl": 0.33,
+      "px_hsl": 1
+     },
+     {
+      "step": "800",
+      "orig": "#272725",
+      "hsl": "#272726",
+      "orig_hsl": [
+       60,
+       3,
+       15
+      ],
+      "hsl_hsl": [
+       60,
+       1,
+       15
+      ],
+      "dE_hsl": 0.18,
+      "px_hsl": 1
+     },
+     {
+      "step": "900",
+      "orig": "#1A1A19",
+      "hsl": "#1A1A19",
+      "orig_hsl": [
+       60,
+       2,
+       10
+      ],
+      "hsl_hsl": [
+       60,
+       2,
+       10
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Neutral",
+    "kind": "neutral",
+    "theme": "dark",
+    "hue": 190,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F4F5F6",
+      "hsl": "#F4F6F6",
+      "orig_hsl": [
+       210,
+       10,
+       96
+      ],
+      "hsl_hsl": [
+       180,
+       10,
+       96
+      ],
+      "dE_hsl": 0.26,
+      "px_hsl": 1
+     },
+     {
+      "step": "50",
+      "orig": "#E8ECED",
+      "hsl": "#E2E8E9",
+      "orig_hsl": [
+       192,
+       12,
+       92
+      ],
+      "hsl_hsl": [
+       189,
+       14,
+       90
+      ],
+      "dE_hsl": 1.38,
+      "px_hsl": 6
+     },
+     {
+      "step": "100",
+      "orig": "#D7DEE0",
+      "hsl": "#D4DCDE",
+      "orig_hsl": [
+       193,
+       13,
+       86
+      ],
+      "hsl_hsl": [
+       192,
+       13,
+       85
+      ],
+      "dE_hsl": 0.7,
+      "px_hsl": 3
+     },
+     {
+      "step": "200",
+      "orig": "#B7C5C8",
+      "hsl": "#B6C5C8",
+      "orig_hsl": [
+       191,
+       13,
+       75
+      ],
+      "hsl_hsl": [
+       190,
+       14,
+       75
+      ],
+      "dE_hsl": 0.13,
+      "px_hsl": 1
+     },
+     {
+      "step": "300",
+      "orig": "#99AEB2",
+      "hsl": "#98AFB3",
+      "orig_hsl": [
+       190,
+       14,
+       65
+      ],
+      "hsl_hsl": [
+       189,
+       15,
+       65
+      ],
+      "dE_hsl": 0.28,
+      "px_hsl": 1
+     },
+     {
+      "step": "400",
+      "orig": "#7B989D",
+      "hsl": "#7A989F",
+      "orig_hsl": [
+       189,
+       15,
+       55
+      ],
+      "hsl_hsl": [
+       191,
+       16,
+       55
+      ],
+      "dE_hsl": 0.31,
+      "px_hsl": 2
+     },
+     {
+      "step": "500",
+      "orig": "#607F85",
+      "hsl": "#5F8086",
+      "orig_hsl": [
+       190,
+       16,
+       45
+      ],
+      "hsl_hsl": [
+       189,
+       17,
+       45
+      ],
+      "dE_hsl": 0.29,
+      "px_hsl": 1
+     },
+     {
+      "step": "600",
+      "orig": "#4A6368",
+      "hsl": "#49646A",
+      "orig_hsl": [
+       190,
+       17,
+       35
+      ],
+      "hsl_hsl": [
+       191,
+       18,
+       35
+      ],
+      "dE_hsl": 0.37,
+      "px_hsl": 2
+     },
+     {
+      "step": "700",
+      "orig": "#34474B",
+      "hsl": "#33484C",
+      "orig_hsl": [
+       190,
+       18,
+       25
+      ],
+      "hsl_hsl": [
+       190,
+       20,
+       25
+      ],
+      "dE_hsl": 0.32,
+      "px_hsl": 1
+     },
+     {
+      "step": "800",
+      "orig": "#233134",
+      "hsl": "#1E2B2E",
+      "orig_hsl": [
+       191,
+       20,
+       17
+      ],
+      "hsl_hsl": [
+       191,
+       21,
+       15
+      ],
+      "dE_hsl": 2.34,
+      "px_hsl": 6
+     },
+     {
+      "step": "850",
+      "orig": "#1B2628",
+      "hsl": "#192426",
+      "orig_hsl": [
+       189,
+       19,
+       13
+      ],
+      "hsl_hsl": [
+       189,
+       21,
+       12
+      ],
+      "dE_hsl": 0.83,
+      "px_hsl": 2
+     },
+     {
+      "step": "900",
+      "orig": "#141D1F",
+      "hsl": "#141D1F",
+      "orig_hsl": [
+       191,
+       22,
+       10
+      ],
+      "hsl_hsl": [
+       191,
+       22,
+       10
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     }
+    ]
+   },
+   {
+    "name": "Greyscale",
+    "kind": "grey",
+    "theme": "light",
+    "hue": 0,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F5F5",
+      "hsl": "#F5F5F5",
+      "orig_hsl": [
+       0,
+       0,
+       96
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#EBEBEB",
+      "hsl": "#E6E6E6",
+      "orig_hsl": [
+       0,
+       0,
+       92
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       90
+      ],
+      "dE_hsl": 1.51,
+      "px_hsl": 5
+     },
+     {
+      "step": "100",
+      "orig": "#DBDBDB",
+      "hsl": "#D9D9D9",
+      "orig_hsl": [
+       0,
+       0,
+       86
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       85
+      ],
+      "dE_hsl": 0.61,
+      "px_hsl": 2
+     },
+     {
+      "step": "200",
+      "orig": "#BFBFBF",
+      "hsl": "#BFBFBF",
+      "orig_hsl": [
+       0,
+       0,
+       75
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#A5A5A5",
+      "hsl": "#A6A6A6",
+      "orig_hsl": [
+       0,
+       0,
+       65
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       65
+      ],
+      "dE_hsl": 0.32,
+      "px_hsl": 1
+     },
+     {
+      "step": "400",
+      "orig": "#8C8C8C",
+      "hsl": "#8C8C8C",
+      "orig_hsl": [
+       0,
+       0,
+       55
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       55
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "500",
+      "orig": "#737373",
+      "hsl": "#737373",
+      "orig_hsl": [
+       0,
+       0,
+       45
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#5A5A5A",
+      "hsl": "#595959",
+      "orig_hsl": [
+       0,
+       0,
+       35
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       35
+      ],
+      "dE_hsl": 0.36,
+      "px_hsl": 1
+     },
+     {
+      "step": "700",
+      "orig": "#404040",
+      "hsl": "#404040",
+      "orig_hsl": [
+       0,
+       0,
+       25
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#262626",
+      "hsl": "#262626",
+      "orig_hsl": [
+       0,
+       0,
+       15
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "900",
+      "orig": "#1A1A1A",
+      "hsl": "#1A1A1A",
+      "orig_hsl": [
+       0,
+       0,
+       10
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       10
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "950",
+      "orig": "#000000",
+      "hsl": "#131313",
+      "orig_hsl": [
+       0,
+       0,
+       0
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       7
+      ],
+      "dE_hsl": 18.67,
+      "px_hsl": 19
+     }
+    ]
+   },
+   {
+    "name": "Greyscale",
+    "kind": "grey",
+    "theme": "dark",
+    "hue": 0,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F5F5",
+      "hsl": "#F5F5F5",
+      "orig_hsl": [
+       0,
+       0,
+       96
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "50",
+      "orig": "#EBEBEB",
+      "hsl": "#E6E6E6",
+      "orig_hsl": [
+       0,
+       0,
+       92
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       90
+      ],
+      "dE_hsl": 1.51,
+      "px_hsl": 5
+     },
+     {
+      "step": "100",
+      "orig": "#DBDBDB",
+      "hsl": "#D9D9D9",
+      "orig_hsl": [
+       0,
+       0,
+       86
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       85
+      ],
+      "dE_hsl": 0.61,
+      "px_hsl": 2
+     },
+     {
+      "step": "200",
+      "orig": "#BFBFBF",
+      "hsl": "#BFBFBF",
+      "orig_hsl": [
+       0,
+       0,
+       75
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       75
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "300",
+      "orig": "#A5A5A5",
+      "hsl": "#A6A6A6",
+      "orig_hsl": [
+       0,
+       0,
+       65
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       65
+      ],
+      "dE_hsl": 0.32,
+      "px_hsl": 1
+     },
+     {
+      "step": "400",
+      "orig": "#8C8C8C",
+      "hsl": "#8C8C8C",
+      "orig_hsl": [
+       0,
+       0,
+       55
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       55
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "500",
+      "orig": "#737373",
+      "hsl": "#737373",
+      "orig_hsl": [
+       0,
+       0,
+       45
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       45
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "600",
+      "orig": "#595959",
+      "hsl": "#595959",
+      "orig_hsl": [
+       0,
+       0,
+       35
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       35
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "700",
+      "orig": "#404040",
+      "hsl": "#404040",
+      "orig_hsl": [
+       0,
+       0,
+       25
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       25
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0
+     },
+     {
+      "step": "800",
+      "orig": "#2C2C2C",
+      "hsl": "#262626",
+      "orig_hsl": [
+       0,
+       0,
+       17
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       15
+      ],
+      "dE_hsl": 2.45,
+      "px_hsl": 6
+     },
+     {
+      "step": "900",
+      "orig": "#222222",
+      "hsl": "#1A1A1A",
+      "orig_hsl": [
+       0,
+       0,
+       13
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       10
+      ],
+      "dE_hsl": 3.42,
+      "px_hsl": 8
+     },
+     {
+      "step": "950",
+      "orig": "#1A1A1A",
+      "hsl": "#131313",
+      "orig_hsl": [
+       0,
+       0,
+       10
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       7
+      ],
+      "dE_hsl": 3.1,
+      "px_hsl": 7
+     }
+    ]
+   }
+  ],
+  "hues": {
+   "Edge": 10,
+   "Flash": 32,
+   "Yellow": 50,
+   "Mindaro": 75,
+   "Pulse": 110,
+   "Mint": 145,
+   "Brand": 190,
+   "Core": 250,
+   "Pink": 350
+  }
+ },
+ "v2": {
+  "id": "v2",
+  "label": "v2",
+  "families": [
+   {
+    "name": "Brand",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 190,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EBFCFF",
+      "hsl": "#EBFCFF",
+      "orig_hsl": [
+       189,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       189,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 190
+     },
+     {
+      "step": "50",
+      "orig": "#D6F8FF",
+      "hsl": "#B8F3FF",
+      "orig_hsl": [
+       190,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       190,
+       100,
+       86
+      ],
+      "dE_hsl": 3.83,
+      "px_hsl": 30,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 190
+     },
+     {
+      "step": "100",
+      "orig": "#B2F2FF",
+      "hsl": "#86EBFF",
+      "orig_hsl": [
+       190,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       190,
+       100,
+       76
+      ],
+      "dE_hsl": 4.89,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 190
+     },
+     {
+      "step": "200",
+      "orig": "#80EAFF",
+      "hsl": "#57E0FC",
+      "orig_hsl": [
+       190,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       190,
+       96,
+       66
+      ],
+      "dE_hsl": 4.31,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 190
+     },
+     {
+      "step": "300",
+      "orig": "#55DCF6",
+      "hsl": "#37CEEC",
+      "orig_hsl": [
+       190,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       190,
+       83,
+       57
+      ],
+      "dE_hsl": 4.41,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 190
+     },
+     {
+      "step": "400",
+      "orig": "#31CAE8",
+      "hsl": "#25B4D0",
+      "orig_hsl": [
+       190,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       48
+      ],
+      "dE_hsl": 6.49,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 190
+     },
+     {
+      "step": "500",
+      "orig": "#22A8C3",
+      "hsl": "#1E92A9",
+      "orig_hsl": [
+       190,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       39
+      ],
+      "dE_hsl": 6.73,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 190
+     },
+     {
+      "step": "600",
+      "orig": "#1B8398",
+      "hsl": "#177385",
+      "orig_hsl": [
+       190,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       190,
+       71,
+       31
+      ],
+      "dE_hsl": 5.13,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 190
+     },
+     {
+      "step": "700",
+      "orig": "#135D6C",
+      "hsl": "#115462",
+      "orig_hsl": [
+       190,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       190,
+       70,
+       23
+      ],
+      "dE_hsl": 3.02,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 190
+     },
+     {
+      "step": "800",
+      "orig": "#0B3841",
+      "hsl": "#0B3841",
+      "orig_hsl": [
+       190,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       190,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 190
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #EBFCFF 0.0%, #D9F9FF 4.35%, #C7F6FF 8.7%, #B5F3FF 13.04%, #A3F0FF 17.39%, #91EDFF 21.74%, #7FEAFF 26.09%, #6DE7FF 30.43%, #5CE3FE 34.78%, #4FDCF9 39.13%, #43D6F3 43.48%, #38CEEC 47.83%, #2EC6E4 52.17%, #24BDDC 56.52%, #24AFCA 60.87%, #21A1BB 65.22%, #1E94AC 69.57%, #1C879D 73.91%, #197A8D 78.26%, #166D7E 82.61%, #14606F 86.96%, #115260 91.3%, #0E4550 95.65%, #0B3841 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Core",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 250,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EEEBFF",
+      "hsl": "#EEEBFF",
+      "orig_hsl": [
+       249,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       249,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 250
+     },
+     {
+      "step": "50",
+      "orig": "#DDD6FF",
+      "hsl": "#C4B8FF",
+      "orig_hsl": [
+       250,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       250,
+       100,
+       86
+      ],
+      "dE_hsl": 8.83,
+      "px_hsl": 30,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 250
+     },
+     {
+      "step": "100",
+      "orig": "#BFB2FF",
+      "hsl": "#9A86FF",
+      "orig_hsl": [
+       250,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       250,
+       100,
+       76
+      ],
+      "dE_hsl": 12.8,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 250
+     },
+     {
+      "step": "200",
+      "orig": "#9580FF",
+      "hsl": "#7357FC",
+      "orig_hsl": [
+       250,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       250,
+       96,
+       66
+      ],
+      "dE_hsl": 10.95,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 250
+     },
+     {
+      "step": "300",
+      "orig": "#7055F6",
+      "hsl": "#5537EC",
+      "orig_hsl": [
+       250,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       250,
+       83,
+       57
+      ],
+      "dE_hsl": 7.54,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 250
+     },
+     {
+      "step": "400",
+      "orig": "#5031E8",
+      "hsl": "#4125D0",
+      "orig_hsl": [
+       250,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       48
+      ],
+      "dE_hsl": 5.14,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 250
+     },
+     {
+      "step": "500",
+      "orig": "#3D22C3",
+      "hsl": "#351EA9",
+      "orig_hsl": [
+       250,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       39
+      ],
+      "dE_hsl": 4.63,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 250
+     },
+     {
+      "step": "600",
+      "orig": "#301B98",
+      "hsl": "#2A1785",
+      "orig_hsl": [
+       250,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       250,
+       71,
+       31
+      ],
+      "dE_hsl": 3.59,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 250
+     },
+     {
+      "step": "700",
+      "orig": "#22136C",
+      "hsl": "#1F1162",
+      "orig_hsl": [
+       250,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       250,
+       70,
+       23
+      ],
+      "dE_hsl": 1.98,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 250
+     },
+     {
+      "step": "800",
+      "orig": "#140B41",
+      "hsl": "#140B41",
+      "orig_hsl": [
+       250,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       250,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 250
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #EEEBFF 0.0%, #DFD9FF 4.35%, #D0C7FF 8.7%, #C1B5FF 13.04%, #B2A3FF 17.39%, #A391FF 21.74%, #947FFF 26.09%, #856DFF 30.43%, #775CFE 34.78%, #6C4FF9 39.13%, #6043F3 43.48%, #5638EC 47.83%, #4C2EE4 52.17%, #4324DC 56.52%, #4024CA 60.87%, #3B21BB 65.22%, #361EAC 69.57%, #311C9D 73.91%, #2C198D 78.26%, #28167E 82.61%, #23146F 86.96%, #1E1160 91.3%, #190E50 95.65%, #140B41 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Mindaro",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 75,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FAFFEB",
+      "hsl": "#FAFFEB",
+      "orig_hsl": [
+       75,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 75
+     },
+     {
+      "step": "50",
+      "orig": "#F2FFCC",
+      "hsl": "#EDFFB8",
+      "orig_hsl": [
+       75,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       86
+      ],
+      "dE_hsl": 2.66,
+      "px_hsl": 20,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 75
+     },
+     {
+      "step": "100",
+      "orig": "#E6FF99",
+      "hsl": "#E1FF86",
+      "orig_hsl": [
+       75,
+       100,
+       80
+      ],
+      "hsl_hsl": [
+       75,
+       100,
+       76
+      ],
+      "dE_hsl": 2.2,
+      "px_hsl": 19,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 75
+     },
+     {
+      "step": "200",
+      "orig": "#D9FF66",
+      "hsl": "#D3FC57",
+      "orig_hsl": [
+       75,
+       100,
+       70
+      ],
+      "hsl_hsl": [
+       75,
+       96,
+       66
+      ],
+      "dE_hsl": 1.55,
+      "px_hsl": 15,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 75
+     },
+     {
+      "step": "300",
+      "orig": "#C7F53D",
+      "hsl": "#BFEC37",
+      "orig_hsl": [
+       75,
+       90,
+       60
+      ],
+      "hsl_hsl": [
+       75,
+       83,
+       57
+      ],
+      "dE_hsl": 2.62,
+      "px_hsl": 9,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 75
+     },
+     {
+      "step": "400",
+      "orig": "#B2E51A",
+      "hsl": "#A5D025",
+      "orig_hsl": [
+       75,
+       80,
+       50
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       48
+      ],
+      "dE_hsl": 6.05,
+      "px_hsl": 21,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 75
+     },
+     {
+      "step": "500",
+      "orig": "#8AAD1F",
+      "hsl": "#86A91E",
+      "orig_hsl": [
+       75,
+       70,
+       40
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       39
+      ],
+      "dE_hsl": 1.27,
+      "px_hsl": 4,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 75
+     },
+     {
+      "step": "600",
+      "orig": "#678217",
+      "hsl": "#6A8517",
+      "orig_hsl": [
+       75,
+       70,
+       30
+      ],
+      "hsl_hsl": [
+       75,
+       71,
+       31
+      ],
+      "dE_hsl": 1.01,
+      "px_hsl": 3,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 75
+     },
+     {
+      "step": "700",
+      "orig": "#45570F",
+      "hsl": "#4E6211",
+      "orig_hsl": [
+       75,
+       71,
+       20
+      ],
+      "hsl_hsl": [
+       75,
+       70,
+       23
+      ],
+      "dE_hsl": 3.78,
+      "px_hsl": 11,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 75
+     },
+     {
+      "step": "800",
+      "orig": "#222B08",
+      "hsl": "#34410B",
+      "orig_hsl": [
+       75,
+       69,
+       10
+      ],
+      "hsl_hsl": [
+       74,
+       71,
+       15
+      ],
+      "dE_hsl": 8.28,
+      "px_hsl": 22,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 75
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #FAFFEB 0.0%, #F5FFD9 4.35%, #F1FFC7 8.7%, #ECFFB5 13.04%, #E8FFA3 17.39%, #E3FF91 21.74%, #DFFF7F 26.09%, #DAFF6D 30.43%, #D5FE5C 34.78%, #CEF94F 39.13%, #C7F343 43.48%, #BFEC38 47.83%, #B7E42E 52.17%, #AEDC24 56.52%, #A1CA24 60.87%, #95BB21 65.22%, #89AC1E 69.57%, #7C9D1C 73.91%, #708D19 78.26%, #647E16 82.61%, #586F14 86.96%, #4C6011 91.3%, #40500E 95.65%, #34410B 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Pulse",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 110,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EEFFEB",
+      "hsl": "#EEFFEB",
+      "orig_hsl": [
+       111,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       111,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 110
+     },
+     {
+      "step": "50",
+      "orig": "#D5FFCC",
+      "hsl": "#C4FFB8",
+      "orig_hsl": [
+       109,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       110,
+       100,
+       86
+      ],
+      "dE_hsl": 3.46,
+      "px_hsl": 20,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 110
+     },
+     {
+      "step": "100",
+      "orig": "#BFFFB2",
+      "hsl": "#9AFF86",
+      "orig_hsl": [
+       110,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       110,
+       100,
+       76
+      ],
+      "dE_hsl": 6.92,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 110
+     },
+     {
+      "step": "200",
+      "orig": "#95FF80",
+      "hsl": "#73FC57",
+      "orig_hsl": [
+       110,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       110,
+       96,
+       66
+      ],
+      "dE_hsl": 5.12,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 110
+     },
+     {
+      "step": "300",
+      "orig": "#70F655",
+      "hsl": "#55EC37",
+      "orig_hsl": [
+       110,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       110,
+       83,
+       57
+      ],
+      "dE_hsl": 3.94,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 110
+     },
+     {
+      "step": "400",
+      "orig": "#50E831",
+      "hsl": "#41D025",
+      "orig_hsl": [
+       110,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       48
+      ],
+      "dE_hsl": 6.81,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 110
+     },
+     {
+      "step": "500",
+      "orig": "#3DC322",
+      "hsl": "#35A91E",
+      "orig_hsl": [
+       110,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       39
+      ],
+      "dE_hsl": 7.56,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 110
+     },
+     {
+      "step": "600",
+      "orig": "#368F24",
+      "hsl": "#2A8517",
+      "orig_hsl": [
+       110,
+       60,
+       35
+      ],
+      "hsl_hsl": [
+       110,
+       71,
+       31
+      ],
+      "dE_hsl": 3.26,
+      "px_hsl": 13,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 110
+     },
+     {
+      "step": "700",
+      "orig": "#2F5827",
+      "hsl": "#1F6211",
+      "orig_hsl": [
+       110,
+       39,
+       25
+      ],
+      "hsl_hsl": [
+       110,
+       70,
+       23
+      ],
+      "dE_hsl": 4.52,
+      "px_hsl": 22,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 110
+     },
+     {
+      "step": "800",
+      "orig": "#1F301C",
+      "hsl": "#14410B",
+      "orig_hsl": [
+       111,
+       26,
+       15
+      ],
+      "hsl_hsl": [
+       110,
+       71,
+       15
+      ],
+      "dE_hsl": 6.92,
+      "px_hsl": 17,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 110
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #EEFFEB 0.0%, #DFFFD9 4.35%, #D0FFC7 8.7%, #C1FFB5 13.04%, #B2FFA3 17.39%, #A3FF91 21.74%, #94FF7F 26.09%, #85FF6D 30.43%, #77FE5C 34.78%, #6CF94F 39.13%, #60F343 43.48%, #56EC38 47.83%, #4CE42E 52.17%, #43DC24 56.52%, #40CA24 60.87%, #3BBB21 65.22%, #36AC1E 69.57%, #319D1C 73.91%, #2C8D19 78.26%, #287E16 82.61%, #236F14 86.96%, #1E6011 91.3%, #19500E 95.65%, #14410B 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Flash",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 32,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFF5EB",
+      "hsl": "#FFF5EB",
+      "orig_hsl": [
+       30,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       30,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 32
+     },
+     {
+      "step": "50",
+      "orig": "#FFE7CC",
+      "hsl": "#FFDEB8",
+      "orig_hsl": [
+       32,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       32,
+       100,
+       86
+      ],
+      "dE_hsl": 2.79,
+      "px_hsl": 20,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 32
+     },
+     {
+      "step": "100",
+      "orig": "#FFDBB2",
+      "hsl": "#FFC686",
+      "orig_hsl": [
+       32,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       32,
+       100,
+       76
+      ],
+      "dE_hsl": 6.06,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 32
+     },
+     {
+      "step": "200",
+      "orig": "#FFC380",
+      "hsl": "#FCAF57",
+      "orig_hsl": [
+       32,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       32,
+       96,
+       66
+      ],
+      "dE_hsl": 5.37,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 32
+     },
+     {
+      "step": "300",
+      "orig": "#F6AB55",
+      "hsl": "#EC9837",
+      "orig_hsl": [
+       32,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       32,
+       83,
+       57
+      ],
+      "dE_hsl": 5.03,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 32
+     },
+     {
+      "step": "400",
+      "orig": "#E89331",
+      "hsl": "#D08025",
+      "orig_hsl": [
+       32,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       48
+      ],
+      "dE_hsl": 6.48,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 32
+     },
+     {
+      "step": "500",
+      "orig": "#C37822",
+      "hsl": "#A9681E",
+      "orig_hsl": [
+       32,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       39
+      ],
+      "dE_hsl": 6.47,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 32
+     },
+     {
+      "step": "600",
+      "orig": "#985D1B",
+      "hsl": "#855217",
+      "orig_hsl": [
+       32,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       32,
+       71,
+       31
+      ],
+      "dE_hsl": 4.82,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 32
+     },
+     {
+      "step": "700",
+      "orig": "#6C4313",
+      "hsl": "#623C11",
+      "orig_hsl": [
+       32,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       32,
+       70,
+       23
+      ],
+      "dE_hsl": 2.92,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 32
+     },
+     {
+      "step": "800",
+      "orig": "#30271C",
+      "hsl": "#41280B",
+      "orig_hsl": [
+       33,
+       26,
+       15
+      ],
+      "hsl_hsl": [
+       32,
+       71,
+       15
+      ],
+      "dE_hsl": 3.98,
+      "px_hsl": 17,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 32
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #FFF5EB 0.0%, #FFEDD9 4.35%, #FFE5C7 8.7%, #FFDCB5 13.04%, #FFD4A3 17.39%, #FFCC91 21.74%, #FFC37F 26.09%, #FFBB6D 30.43%, #FEB25C 34.78%, #F9AA4F 39.13%, #F3A143 43.48%, #EC9838 47.83%, #E48F2E 52.17%, #DC8624 56.52%, #CA7D24 60.87%, #BB7321 65.22%, #AC6A1E 69.57%, #9D601C 73.91%, #8D5719 78.26%, #7E4E16 82.61%, #6F4414 86.96%, #603B11 91.3%, #50310E 95.65%, #41280B 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Edge",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 10,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFEEEB",
+      "hsl": "#FFEEEB",
+      "orig_hsl": [
+       9,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       9,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 10
+     },
+     {
+      "step": "50",
+      "orig": "#FFDDD6",
+      "hsl": "#FFC4B8",
+      "orig_hsl": [
+       10,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       10,
+       100,
+       86
+      ],
+      "dE_hsl": 6.21,
+      "px_hsl": 30,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 10
+     },
+     {
+      "step": "100",
+      "orig": "#FFBFB2",
+      "hsl": "#FF9A86",
+      "orig_hsl": [
+       10,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       10,
+       100,
+       76
+      ],
+      "dE_hsl": 8.83,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 10
+     },
+     {
+      "step": "200",
+      "orig": "#FF9580",
+      "hsl": "#FC7357",
+      "orig_hsl": [
+       10,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       10,
+       96,
+       66
+      ],
+      "dE_hsl": 7.47,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 10
+     },
+     {
+      "step": "300",
+      "orig": "#F67055",
+      "hsl": "#EC5537",
+      "orig_hsl": [
+       10,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       10,
+       83,
+       57
+      ],
+      "dE_hsl": 5.76,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 10
+     },
+     {
+      "step": "400",
+      "orig": "#E84F30",
+      "hsl": "#D04125",
+      "orig_hsl": [
+       10,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       48
+      ],
+      "dE_hsl": 5.68,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 10
+     },
+     {
+      "step": "500",
+      "orig": "#C33D22",
+      "hsl": "#A9351E",
+      "orig_hsl": [
+       10,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       39
+      ],
+      "dE_hsl": 5.73,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 10
+     },
+     {
+      "step": "600",
+      "orig": "#98301B",
+      "hsl": "#852A17",
+      "orig_hsl": [
+       10,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       10,
+       71,
+       31
+      ],
+      "dE_hsl": 4.38,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 10
+     },
+     {
+      "step": "700",
+      "orig": "#6C2213",
+      "hsl": "#621F11",
+      "orig_hsl": [
+       10,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       10,
+       70,
+       23
+      ],
+      "dE_hsl": 2.42,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 10
+     },
+     {
+      "step": "800",
+      "orig": "#41140B",
+      "hsl": "#41140B",
+      "orig_hsl": [
+       10,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       10,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 10
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #FFEEEB 0.0%, #FFDFD9 4.35%, #FFD0C7 8.7%, #FFC1B5 13.04%, #FFB2A3 17.39%, #FFA391 21.74%, #FF947F 26.09%, #FF856D 30.43%, #FE775C 34.78%, #F96C4F 39.13%, #F36043 43.48%, #EC5638 47.83%, #E44C2E 52.17%, #DC4324 56.52%, #CA4024 60.87%, #BB3B21 65.22%, #AC361E 69.57%, #9D311C 73.91%, #8D2C19 78.26%, #7E2816 82.61%, #6F2314 86.96%, #601E11 91.3%, #50190E 95.65%, #41140B 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Pink",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 350,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFEBEE",
+      "hsl": "#FFEBEE",
+      "orig_hsl": [
+       351,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       351,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 350
+     },
+     {
+      "step": "50",
+      "orig": "#FFD6DD",
+      "hsl": "#FFB8C4",
+      "orig_hsl": [
+       350,
+       100,
+       92
+      ],
+      "hsl_hsl": [
+       350,
+       100,
+       86
+      ],
+      "dE_hsl": 7.13,
+      "px_hsl": 30,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 350
+     },
+     {
+      "step": "100",
+      "orig": "#FFB2BF",
+      "hsl": "#FF869A",
+      "orig_hsl": [
+       350,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       350,
+       100,
+       76
+      ],
+      "dE_hsl": 9.85,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 350
+     },
+     {
+      "step": "200",
+      "orig": "#FF8095",
+      "hsl": "#FC5773",
+      "orig_hsl": [
+       350,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       350,
+       96,
+       66
+      ],
+      "dE_hsl": 7.89,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 350
+     },
+     {
+      "step": "300",
+      "orig": "#F65570",
+      "hsl": "#EC3755",
+      "orig_hsl": [
+       350,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       350,
+       83,
+       57
+      ],
+      "dE_hsl": 5.42,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 350
+     },
+     {
+      "step": "400",
+      "orig": "#E8304F",
+      "hsl": "#D02541",
+      "orig_hsl": [
+       350,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       48
+      ],
+      "dE_hsl": 5.41,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 350
+     },
+     {
+      "step": "500",
+      "orig": "#C3223D",
+      "hsl": "#A91E35",
+      "orig_hsl": [
+       350,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       39
+      ],
+      "dE_hsl": 5.61,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 350
+     },
+     {
+      "step": "600",
+      "orig": "#8F2436",
+      "hsl": "#85172A",
+      "orig_hsl": [
+       350,
+       60,
+       35
+      ],
+      "hsl_hsl": [
+       350,
+       71,
+       31
+      ],
+      "dE_hsl": 3.3,
+      "px_hsl": 13,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 350
+     },
+     {
+      "step": "700",
+      "orig": "#58272F",
+      "hsl": "#62111F",
+      "orig_hsl": [
+       350,
+       39,
+       25
+      ],
+      "hsl_hsl": [
+       350,
+       70,
+       23
+      ],
+      "dE_hsl": 4.38,
+      "px_hsl": 22,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 350
+     },
+     {
+      "step": "800",
+      "orig": "#311C1F",
+      "hsl": "#410B14",
+      "orig_hsl": [
+       351,
+       27,
+       15
+      ],
+      "hsl_hsl": [
+       350,
+       71,
+       15
+      ],
+      "dE_hsl": 4.89,
+      "px_hsl": 17,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 350
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #FFEBEE 0.0%, #FFD9DF 4.35%, #FFC7D0 8.7%, #FFB5C1 13.04%, #FFA3B2 17.39%, #FF91A3 21.74%, #FF7F94 26.09%, #FF6D85 30.43%, #FE5C77 34.78%, #F94F6C 39.13%, #F34360 43.48%, #EC3856 47.83%, #E42E4C 52.17%, #DC2443 56.52%, #CA2440 60.87%, #BB213B 65.22%, #AC1E36 69.57%, #9D1C31 73.91%, #8D192C 78.26%, #7E1628 82.61%, #6F1423 86.96%, #60111E 91.3%, #500E19 95.65%, #410B14 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Yellow",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 50,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#FFFCEB",
+      "hsl": "#FFFCEB",
+      "orig_hsl": [
+       51,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       51,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 50
+     },
+     {
+      "step": "50",
+      "orig": "#FFF7CC",
+      "hsl": "#FFF3B8",
+      "orig_hsl": [
+       51,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       50,
+       100,
+       86
+      ],
+      "dE_hsl": 2.35,
+      "px_hsl": 20,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 50
+     },
+     {
+      "step": "100",
+      "orig": "#FFF2B2",
+      "hsl": "#FFEB86",
+      "orig_hsl": [
+       50,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       50,
+       100,
+       76
+      ],
+      "dE_hsl": 4.65,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 50
+     },
+     {
+      "step": "200",
+      "orig": "#FFEA80",
+      "hsl": "#FCE057",
+      "orig_hsl": [
+       50,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       50,
+       96,
+       66
+      ],
+      "dE_hsl": 3.79,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 50
+     },
+     {
+      "step": "300",
+      "orig": "#F6DB55",
+      "hsl": "#ECCE37",
+      "orig_hsl": [
+       50,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       50,
+       83,
+       57
+      ],
+      "dE_hsl": 3.85,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 50
+     },
+     {
+      "step": "400",
+      "orig": "#E8CA31",
+      "hsl": "#D0B425",
+      "orig_hsl": [
+       50,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       50,
+       70,
+       48
+      ],
+      "dE_hsl": 6.93,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 50
+     },
+     {
+      "step": "500",
+      "orig": "#C3A822",
+      "hsl": "#A9921E",
+      "orig_hsl": [
+       50,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       50,
+       70,
+       39
+      ],
+      "dE_hsl": 7.4,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 50
+     },
+     {
+      "step": "600",
+      "orig": "#98831B",
+      "hsl": "#857317",
+      "orig_hsl": [
+       50,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       50,
+       71,
+       31
+      ],
+      "dE_hsl": 5.63,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 50
+     },
+     {
+      "step": "700",
+      "orig": "#6C5E13",
+      "hsl": "#625411",
+      "orig_hsl": [
+       51,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       50,
+       70,
+       23
+      ],
+      "dE_hsl": 3.54,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 50
+     },
+     {
+      "step": "800",
+      "orig": "#41380B",
+      "hsl": "#41380B",
+      "orig_hsl": [
+       50,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       50,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 50
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #FFFCEB 0.0%, #FFF9D9 4.35%, #FFF6C7 8.7%, #FFF3B5 13.04%, #FFF0A3 17.39%, #FFED91 21.74%, #FFEA7F 26.09%, #FFE76D 30.43%, #FEE35C 34.78%, #F9DC4F 39.13%, #F3D643 43.48%, #ECCE38 47.83%, #E4C62E 52.17%, #DCBD24 56.52%, #CAAF24 60.87%, #BBA121 65.22%, #AC941E 69.57%, #9D871C 73.91%, #8D7A19 78.26%, #7E6D16 82.61%, #6F6014 86.96%, #605211 91.3%, #50450E 95.65%, #41380B 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Mint",
+    "kind": "chromatic",
+    "theme": "both",
+    "hue": 145,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#EBFFF3",
+      "hsl": "#EBFFF3",
+      "orig_hsl": [
+       144,
+       100,
+       96
+      ],
+      "hsl_hsl": [
+       144,
+       100,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 100.0,
+      "H": 145
+     },
+     {
+      "step": "50",
+      "orig": "#CCFFE1",
+      "hsl": "#B8FFD6",
+      "orig_hsl": [
+       145,
+       100,
+       90
+      ],
+      "hsl_hsl": [
+       145,
+       100,
+       86
+      ],
+      "dE_hsl": 2.83,
+      "px_hsl": 20,
+      "t": 0.1228,
+      "L": 86.05,
+      "S": 100.0,
+      "H": 145
+     },
+     {
+      "step": "100",
+      "orig": "#B2FFD2",
+      "hsl": "#86FFB8",
+      "orig_hsl": [
+       145,
+       100,
+       85
+      ],
+      "hsl_hsl": [
+       145,
+       100,
+       76
+      ],
+      "dE_hsl": 5.75,
+      "px_hsl": 44,
+      "t": 0.2445,
+      "L": 76.2,
+      "S": 100.0,
+      "H": 145
+     },
+     {
+      "step": "200",
+      "orig": "#80FFB5",
+      "hsl": "#57FC9C",
+      "orig_hsl": [
+       145,
+       100,
+       75
+      ],
+      "hsl_hsl": [
+       145,
+       96,
+       66
+      ],
+      "dE_hsl": 4.5,
+      "px_hsl": 41,
+      "t": 0.365,
+      "L": 66.43,
+      "S": 96.2,
+      "H": 145
+     },
+     {
+      "step": "300",
+      "orig": "#55F698",
+      "hsl": "#37EC83",
+      "orig_hsl": [
+       145,
+       90,
+       65
+      ],
+      "hsl_hsl": [
+       145,
+       83,
+       57
+      ],
+      "dE_hsl": 3.84,
+      "px_hsl": 30,
+      "t": 0.4804,
+      "L": 57.09,
+      "S": 82.35,
+      "H": 145
+     },
+     {
+      "step": "400",
+      "orig": "#31E87E",
+      "hsl": "#25D06C",
+      "orig_hsl": [
+       145,
+       80,
+       55
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       48
+      ],
+      "dE_hsl": 6.72,
+      "px_hsl": 24,
+      "t": 0.5924,
+      "L": 48.01,
+      "S": 70.0,
+      "H": 145
+     },
+     {
+      "step": "500",
+      "orig": "#22C365",
+      "hsl": "#1EA958",
+      "orig_hsl": [
+       145,
+       70,
+       45
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       39
+      ],
+      "dE_hsl": 7.47,
+      "px_hsl": 26,
+      "t": 0.703,
+      "L": 39.06,
+      "S": 70.0,
+      "H": 145
+     },
+     {
+      "step": "600",
+      "orig": "#1B984F",
+      "hsl": "#178545",
+      "orig_hsl": [
+       145,
+       70,
+       35
+      ],
+      "hsl_hsl": [
+       145,
+       71,
+       31
+      ],
+      "dE_hsl": 5.71,
+      "px_hsl": 19,
+      "t": 0.8059,
+      "L": 30.72,
+      "S": 70.0,
+      "H": 145
+     },
+     {
+      "step": "700",
+      "orig": "#136C38",
+      "hsl": "#116233",
+      "orig_hsl": [
+       145,
+       70,
+       25
+      ],
+      "hsl_hsl": [
+       145,
+       70,
+       23
+      ],
+      "dE_hsl": 3.19,
+      "px_hsl": 10,
+      "t": 0.907,
+      "L": 22.53,
+      "S": 70.0,
+      "H": 145
+     },
+     {
+      "step": "800",
+      "orig": "#0B4122",
+      "hsl": "#0B4122",
+      "orig_hsl": [
+       146,
+       71,
+       15
+      ],
+      "hsl_hsl": [
+       146,
+       71,
+       15
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 70.0,
+      "H": 145
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #EBFFF3 0.0%, #D9FFE9 4.35%, #C7FFDE 8.7%, #B5FFD4 13.04%, #A3FFC9 17.39%, #91FFBF 21.74%, #7FFFB4 26.09%, #6DFFAA 30.43%, #5CFEA0 34.78%, #4FF996 39.13%, #43F38C 43.48%, #38EC83 47.83%, #2EE47A 52.17%, #24DC71 56.52%, #24CA69 60.87%, #21BB61 65.22%, #1EAC59 69.57%, #1C9D51 73.91%, #198D49 78.26%, #167E42 82.61%, #146F3A 86.96%, #116032 91.3%, #0E502A 95.65%, #0B4122 100.0%)",
+    "positions": [
+     0.0,
+     0.1228,
+     0.2445,
+     0.365,
+     0.4804,
+     0.5924,
+     0.703,
+     0.8059,
+     0.907,
+     1.0
+    ]
+   },
+   {
+    "name": "Neutral",
+    "kind": "neutral",
+    "theme": "light",
+    "hue": 75,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F6F4",
+      "hsl": "#F5F6F4",
+      "orig_hsl": [
+       90,
+       10,
+       96
+      ],
+      "hsl_hsl": [
+       90,
+       10,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 9.6,
+      "H": 75
+     },
+     {
+      "step": "50",
+      "orig": "#ECEDE9",
+      "hsl": "#DFE1DB",
+      "orig_hsl": [
+       75,
+       10,
+       92
+      ],
+      "hsl_hsl": [
+       80,
+       9,
+       87
+      ],
+      "dE_hsl": 3.78,
+      "px_hsl": 14,
+      "t": 0.1119,
+      "L": 86.93,
+      "S": 8.69,
+      "H": 75
+     },
+     {
+      "step": "100",
+      "orig": "#DDDFD8",
+      "hsl": "#C9CCC3",
+      "orig_hsl": [
+       77,
+       10,
+       86
+      ],
+      "hsl_hsl": [
+       80,
+       8,
+       78
+      ],
+      "dE_hsl": 5.99,
+      "px_hsl": 21,
+      "t": 0.221,
+      "L": 78.1,
+      "S": 7.81,
+      "H": 75
+     },
+     {
+      "step": "200",
+      "orig": "#C2C4BA",
+      "hsl": "#B4B6AB",
+      "orig_hsl": [
+       72,
+       8,
+       75
+      ],
+      "hsl_hsl": [
+       71,
+       7,
+       69
+      ],
+      "dE_hsl": 4.44,
+      "px_hsl": 15,
+      "t": 0.3292,
+      "L": 69.33,
+      "S": 6.93,
+      "H": 75
+     },
+     {
+      "step": "300",
+      "orig": "#A9ACA0",
+      "hsl": "#9FA295",
+      "orig_hsl": [
+       75,
+       7,
+       65
+      ],
+      "hsl_hsl": [
+       74,
+       7,
+       61
+      ],
+      "dE_hsl": 3.26,
+      "px_hsl": 11,
+      "t": 0.4325,
+      "L": 60.97,
+      "S": 6.1,
+      "H": 75
+     },
+     {
+      "step": "400",
+      "orig": "#909385",
+      "hsl": "#898C7F",
+      "orig_hsl": [
+       73,
+       6,
+       55
+      ],
+      "hsl_hsl": [
+       74,
+       5,
+       52
+      ],
+      "dE_hsl": 2.3,
+      "px_hsl": 7,
+      "t": 0.5386,
+      "L": 52.38,
+      "S": 5.24,
+      "H": 75
+     },
+     {
+      "step": "500",
+      "orig": "#76786D",
+      "hsl": "#74776C",
+      "orig_hsl": [
+       71,
+       5,
+       45
+      ],
+      "hsl_hsl": [
+       76,
+       5,
+       45
+      ],
+      "dE_hsl": 0.45,
+      "px_hsl": 2,
+      "t": 0.6357,
+      "L": 44.51,
+      "S": 4.45,
+      "H": 75
+     },
+     {
+      "step": "600",
+      "orig": "#5B5D56",
+      "hsl": "#5F615A",
+      "orig_hsl": [
+       77,
+       4,
+       35
+      ],
+      "hsl_hsl": [
+       77,
+       4,
+       37
+      ],
+      "dE_hsl": 1.43,
+      "px_hsl": 4,
+      "t": 0.7335,
+      "L": 36.59,
+      "S": 3.66,
+      "H": 75
+     },
+     {
+      "step": "700",
+      "orig": "#41423E",
+      "hsl": "#4B4C48",
+      "orig_hsl": [
+       75,
+       3,
+       25
+      ],
+      "hsl_hsl": [
+       75,
+       3,
+       29
+      ],
+      "dE_hsl": 3.75,
+      "px_hsl": 10,
+      "t": 0.8279,
+      "L": 28.94,
+      "S": 2.89,
+      "H": 75
+     },
+     {
+      "step": "800",
+      "orig": "#272725",
+      "hsl": "#383936",
+      "orig_hsl": [
+       60,
+       3,
+       15
+      ],
+      "hsl_hsl": [
+       80,
+       3,
+       22
+      ],
+      "dE_hsl": 7.06,
+      "px_hsl": 18,
+      "t": 0.9168,
+      "L": 21.74,
+      "S": 2.17,
+      "H": 75
+     },
+     {
+      "step": "900",
+      "orig": "#1A1A19",
+      "hsl": "#272726",
+      "orig_hsl": [
+       60,
+       2,
+       10
+      ],
+      "hsl_hsl": [
+       60,
+       1,
+       15
+      ],
+      "dE_hsl": 5.5,
+      "px_hsl": 13,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 1.5,
+      "H": 75
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #F5F6F4 0.0%, #EDEEEA 4.35%, #E4E5E0 8.7%, #DBDDD7 13.04%, #D3D5CD 17.39%, #CACCC4 21.74%, #C1C4BA 26.09%, #B9BBB1 30.43%, #B0B3A7 34.78%, #A7AA9E 39.13%, #9EA195 43.48%, #95988C 47.83%, #8C8F83 52.17%, #83867A 56.52%, #7A7D72 60.87%, #707369 65.22%, #676961 69.57%, #5E5F59 73.91%, #555650 78.26%, #4B4C48 82.61%, #424340 86.96%, #393937 91.3%, #30302E 95.65%, #272726 100.0%)",
+    "positions": [
+     0.0,
+     0.1119,
+     0.221,
+     0.3292,
+     0.4325,
+     0.5386,
+     0.6357,
+     0.7335,
+     0.8279,
+     0.9168,
+     1.0
+    ]
+   },
+   {
+    "name": "Neutral",
+    "kind": "neutral",
+    "theme": "dark",
+    "hue": 190,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F4F5F6",
+      "hsl": "#F4F6F6",
+      "orig_hsl": [
+       210,
+       10,
+       96
+      ],
+      "hsl_hsl": [
+       180,
+       10,
+       96
+      ],
+      "dE_hsl": 0.26,
+      "px_hsl": 1,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 11.44,
+      "H": 190
+     },
+     {
+      "step": "50",
+      "orig": "#E8ECED",
+      "hsl": "#DCE2E4",
+      "orig_hsl": [
+       192,
+       12,
+       92
+      ],
+      "hsl_hsl": [
+       195,
+       13,
+       88
+      ],
+      "dE_hsl": 3.17,
+      "px_hsl": 12,
+      "t": 0.102,
+      "L": 87.74,
+      "S": 12.36,
+      "H": 190
+     },
+     {
+      "step": "100",
+      "orig": "#D7DEE0",
+      "hsl": "#C4D0D2",
+      "orig_hsl": [
+       193,
+       13,
+       86
+      ],
+      "hsl_hsl": [
+       189,
+       13,
+       80
+      ],
+      "dE_hsl": 4.71,
+      "px_hsl": 19,
+      "t": 0.2013,
+      "L": 79.7,
+      "S": 13.26,
+      "H": 190
+     },
+     {
+      "step": "200",
+      "orig": "#B7C5C8",
+      "hsl": "#ACBDC1",
+      "orig_hsl": [
+       191,
+       13,
+       75
+      ],
+      "hsl_hsl": [
+       191,
+       14,
+       72
+      ],
+      "dE_hsl": 2.73,
+      "px_hsl": 11,
+      "t": 0.3018,
+      "L": 71.56,
+      "S": 14.16,
+      "H": 190
+     },
+     {
+      "step": "300",
+      "orig": "#99AEB2",
+      "hsl": "#95ACB1",
+      "orig_hsl": [
+       190,
+       14,
+       65
+      ],
+      "hsl_hsl": [
+       191,
+       15,
+       64
+      ],
+      "dE_hsl": 0.8,
+      "px_hsl": 4,
+      "t": 0.3975,
+      "L": 63.8,
+      "S": 15.02,
+      "H": 190
+     },
+     {
+      "step": "400",
+      "orig": "#7B989D",
+      "hsl": "#7E9BA1",
+      "orig_hsl": [
+       189,
+       15,
+       55
+      ],
+      "hsl_hsl": [
+       190,
+       16,
+       56
+      ],
+      "dE_hsl": 1.03,
+      "px_hsl": 4,
+      "t": 0.4905,
+      "L": 56.27,
+      "S": 15.86,
+      "H": 190
+     },
+     {
+      "step": "500",
+      "orig": "#607F85",
+      "hsl": "#688A91",
+      "orig_hsl": [
+       190,
+       16,
+       45
+      ],
+      "hsl_hsl": [
+       190,
+       16,
+       49
+      ],
+      "dE_hsl": 3.55,
+      "px_hsl": 12,
+      "t": 0.5825,
+      "L": 48.82,
+      "S": 16.69,
+      "H": 190
+     },
+     {
+      "step": "600",
+      "orig": "#4A6368",
+      "hsl": "#57767C",
+      "orig_hsl": [
+       190,
+       17,
+       35
+      ],
+      "hsl_hsl": [
+       190,
+       18,
+       41
+      ],
+      "dE_hsl": 6.29,
+      "px_hsl": 20,
+      "t": 0.6735,
+      "L": 41.45,
+      "S": 17.51,
+      "H": 190
+     },
+     {
+      "step": "700",
+      "orig": "#34474B",
+      "hsl": "#476268",
+      "orig_hsl": [
+       190,
+       18,
+       25
+      ],
+      "hsl_hsl": [
+       191,
+       19,
+       34
+      ],
+      "dE_hsl": 9.4,
+      "px_hsl": 29,
+      "t": 0.7615,
+      "L": 34.32,
+      "S": 18.3,
+      "H": 190
+     },
+     {
+      "step": "800",
+      "orig": "#233134",
+      "hsl": "#394F54",
+      "orig_hsl": [
+       191,
+       20,
+       17
+      ],
+      "hsl_hsl": [
+       191,
+       19,
+       28
+      ],
+      "dE_hsl": 10.99,
+      "px_hsl": 32,
+      "t": 0.8444,
+      "L": 27.61,
+      "S": 19.04,
+      "H": 190
+     },
+     {
+      "step": "850",
+      "orig": "#1B2628",
+      "hsl": "#2B3D40",
+      "orig_hsl": [
+       189,
+       19,
+       13
+      ],
+      "hsl_hsl": [
+       189,
+       20,
+       21
+      ],
+      "dE_hsl": 8.7,
+      "px_hsl": 24,
+      "t": 0.9259,
+      "L": 21.0,
+      "S": 19.78,
+      "H": 190
+     },
+     {
+      "step": "900",
+      "orig": "#141D1F",
+      "hsl": "#1E2B2E",
+      "orig_hsl": [
+       191,
+       22,
+       10
+      ],
+      "hsl_hsl": [
+       191,
+       21,
+       15
+      ],
+      "dE_hsl": 5.58,
+      "px_hsl": 15,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 20.44,
+      "H": 190
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #F4F6F6 0.0%, #EAEDEE 4.35%, #DFE5E6 8.7%, #D5DDDF 13.04%, #CBD5D7 17.39%, #C1CDCF 21.74%, #B6C5C8 26.09%, #ACBDC0 30.43%, #A1B5B9 34.78%, #96ADB2 39.13%, #8CA5AA 43.48%, #819DA3 47.83%, #76969C 52.17%, #6B8E95 56.52%, #63858B 60.87%, #5B7B81 65.22%, #537177 69.57%, #4B676D 73.91%, #445D63 78.26%, #3C5458 82.61%, #354A4E 86.96%, #2D4043 91.3%, #263639 95.65%, #1E2B2E 100.0%)",
+    "positions": [
+     0.0,
+     0.102,
+     0.2013,
+     0.3018,
+     0.3975,
+     0.4905,
+     0.5825,
+     0.6735,
+     0.7615,
+     0.8444,
+     0.9259,
+     1.0
+    ]
+   },
+   {
+    "name": "Greyscale",
+    "kind": "grey",
+    "theme": "light",
+    "hue": 0,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F5F5",
+      "hsl": "#F5F5F5",
+      "orig_hsl": [
+       0,
+       0,
+       96
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "50",
+      "orig": "#EBEBEB",
+      "hsl": "#E0E0E0",
+      "orig_hsl": [
+       0,
+       0,
+       92
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       88
+      ],
+      "dE_hsl": 3.34,
+      "px_hsl": 11,
+      "t": 0.102,
+      "L": 87.74,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "100",
+      "orig": "#DBDBDB",
+      "hsl": "#CBCBCB",
+      "orig_hsl": [
+       0,
+       0,
+       86
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       80
+      ],
+      "dE_hsl": 4.93,
+      "px_hsl": 16,
+      "t": 0.2013,
+      "L": 79.7,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "200",
+      "orig": "#BFBFBF",
+      "hsl": "#B6B6B6",
+      "orig_hsl": [
+       0,
+       0,
+       75
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       71
+      ],
+      "dE_hsl": 2.84,
+      "px_hsl": 9,
+      "t": 0.3018,
+      "L": 71.56,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "300",
+      "orig": "#A5A5A5",
+      "hsl": "#A3A3A3",
+      "orig_hsl": [
+       0,
+       0,
+       65
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       64
+      ],
+      "dE_hsl": 0.65,
+      "px_hsl": 2,
+      "t": 0.3975,
+      "L": 63.8,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "400",
+      "orig": "#8C8C8C",
+      "hsl": "#8F8F8F",
+      "orig_hsl": [
+       0,
+       0,
+       55
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       56
+      ],
+      "dE_hsl": 1.0,
+      "px_hsl": 3,
+      "t": 0.4905,
+      "L": 56.27,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "500",
+      "orig": "#737373",
+      "hsl": "#7C7C7C",
+      "orig_hsl": [
+       0,
+       0,
+       45
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       49
+      ],
+      "dE_hsl": 3.08,
+      "px_hsl": 9,
+      "t": 0.5825,
+      "L": 48.82,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "600",
+      "orig": "#5A5A5A",
+      "hsl": "#6A6A6A",
+      "orig_hsl": [
+       0,
+       0,
+       35
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       42
+      ],
+      "dE_hsl": 5.67,
+      "px_hsl": 16,
+      "t": 0.6735,
+      "L": 41.45,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "700",
+      "orig": "#404040",
+      "hsl": "#585858",
+      "orig_hsl": [
+       0,
+       0,
+       25
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       35
+      ],
+      "dE_hsl": 8.89,
+      "px_hsl": 24,
+      "t": 0.7615,
+      "L": 34.32,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "800",
+      "orig": "#262626",
+      "hsl": "#464646",
+      "orig_hsl": [
+       0,
+       0,
+       15
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       27
+      ],
+      "dE_hsl": 12.56,
+      "px_hsl": 32,
+      "t": 0.8444,
+      "L": 27.61,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "900",
+      "orig": "#1A1A1A",
+      "hsl": "#363636",
+      "orig_hsl": [
+       0,
+       0,
+       10
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       21
+      ],
+      "dE_hsl": 11.51,
+      "px_hsl": 28,
+      "t": 0.9259,
+      "L": 21.0,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "950",
+      "orig": "#000000",
+      "hsl": "#262626",
+      "orig_hsl": [
+       0,
+       0,
+       0
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       15
+      ],
+      "dE_hsl": 26.86,
+      "px_hsl": 38,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 0.0,
+      "H": 0
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #F5F5F5 0.0%, #ECECEC 4.35%, #E3E3E3 8.7%, #DADADA 13.04%, #D1D1D1 17.39%, #C8C8C8 21.74%, #BFBFBF 26.09%, #B6B6B6 30.43%, #ADADAD 34.78%, #A4A4A4 39.13%, #9B9B9B 43.48%, #929292 47.83%, #898989 52.17%, #808080 56.52%, #777777 60.87%, #6E6E6E 65.22%, #656565 69.57%, #5C5C5C 73.91%, #535353 78.26%, #4A4A4A 82.61%, #414141 86.96%, #383838 91.3%, #2F2F2F 95.65%, #262626 100.0%)",
+    "positions": [
+     0.0,
+     0.102,
+     0.2013,
+     0.3018,
+     0.3975,
+     0.4905,
+     0.5825,
+     0.6735,
+     0.7615,
+     0.8444,
+     0.9259,
+     1.0
+    ]
+   },
+   {
+    "name": "Greyscale",
+    "kind": "grey",
+    "theme": "dark",
+    "hue": 0,
+    "rows": [
+     {
+      "step": "25",
+      "orig": "#F5F5F5",
+      "hsl": "#F5F5F5",
+      "orig_hsl": [
+       0,
+       0,
+       96
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       96
+      ],
+      "dE_hsl": 0.0,
+      "px_hsl": 0,
+      "t": 0.0,
+      "L": 96.0,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "50",
+      "orig": "#EBEBEB",
+      "hsl": "#E0E0E0",
+      "orig_hsl": [
+       0,
+       0,
+       92
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       88
+      ],
+      "dE_hsl": 3.34,
+      "px_hsl": 11,
+      "t": 0.102,
+      "L": 87.74,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "100",
+      "orig": "#DBDBDB",
+      "hsl": "#CBCBCB",
+      "orig_hsl": [
+       0,
+       0,
+       86
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       80
+      ],
+      "dE_hsl": 4.93,
+      "px_hsl": 16,
+      "t": 0.2013,
+      "L": 79.7,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "200",
+      "orig": "#BFBFBF",
+      "hsl": "#B6B6B6",
+      "orig_hsl": [
+       0,
+       0,
+       75
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       71
+      ],
+      "dE_hsl": 2.84,
+      "px_hsl": 9,
+      "t": 0.3018,
+      "L": 71.56,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "300",
+      "orig": "#A5A5A5",
+      "hsl": "#A3A3A3",
+      "orig_hsl": [
+       0,
+       0,
+       65
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       64
+      ],
+      "dE_hsl": 0.65,
+      "px_hsl": 2,
+      "t": 0.3975,
+      "L": 63.8,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "400",
+      "orig": "#8C8C8C",
+      "hsl": "#8F8F8F",
+      "orig_hsl": [
+       0,
+       0,
+       55
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       56
+      ],
+      "dE_hsl": 1.0,
+      "px_hsl": 3,
+      "t": 0.4905,
+      "L": 56.27,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "500",
+      "orig": "#737373",
+      "hsl": "#7C7C7C",
+      "orig_hsl": [
+       0,
+       0,
+       45
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       49
+      ],
+      "dE_hsl": 3.08,
+      "px_hsl": 9,
+      "t": 0.5825,
+      "L": 48.82,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "600",
+      "orig": "#595959",
+      "hsl": "#6A6A6A",
+      "orig_hsl": [
+       0,
+       0,
+       35
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       42
+      ],
+      "dE_hsl": 6.03,
+      "px_hsl": 17,
+      "t": 0.6735,
+      "L": 41.45,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "700",
+      "orig": "#404040",
+      "hsl": "#585858",
+      "orig_hsl": [
+       0,
+       0,
+       25
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       35
+      ],
+      "dE_hsl": 8.89,
+      "px_hsl": 24,
+      "t": 0.7615,
+      "L": 34.32,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "800",
+      "orig": "#2C2C2C",
+      "hsl": "#464646",
+      "orig_hsl": [
+       0,
+       0,
+       17
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       27
+      ],
+      "dE_hsl": 10.1,
+      "px_hsl": 26,
+      "t": 0.8444,
+      "L": 27.61,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "900",
+      "orig": "#222222",
+      "hsl": "#363636",
+      "orig_hsl": [
+       0,
+       0,
+       13
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       21
+      ],
+      "dE_hsl": 8.09,
+      "px_hsl": 20,
+      "t": 0.9259,
+      "L": 21.0,
+      "S": 0.0,
+      "H": 0
+     },
+     {
+      "step": "950",
+      "orig": "#1A1A1A",
+      "hsl": "#262626",
+      "orig_hsl": [
+       0,
+       0,
+       10
+      ],
+      "hsl_hsl": [
+       0,
+       0,
+       15
+      ],
+      "dE_hsl": 5.08,
+      "px_hsl": 12,
+      "t": 1.0,
+      "L": 15.0,
+      "S": 0.0,
+      "H": 0
+     }
+    ],
+    "gradient": "linear-gradient(to bottom, #F5F5F5 0.0%, #ECECEC 4.35%, #E3E3E3 8.7%, #DADADA 13.04%, #D1D1D1 17.39%, #C8C8C8 21.74%, #BFBFBF 26.09%, #B6B6B6 30.43%, #ADADAD 34.78%, #A4A4A4 39.13%, #9B9B9B 43.48%, #929292 47.83%, #898989 52.17%, #808080 56.52%, #777777 60.87%, #6E6E6E 65.22%, #656565 69.57%, #5C5C5C 73.91%, #535353 78.26%, #4A4A4A 82.61%, #414141 86.96%, #383838 91.3%, #2F2F2F 95.65%, #262626 100.0%)",
+    "positions": [
+     0.0,
+     0.102,
+     0.2013,
+     0.3018,
+     0.3975,
+     0.4905,
+     0.5825,
+     0.6735,
+     0.7615,
+     0.8444,
+     0.9259,
+     1.0
+    ]
+   }
+  ],
+  "hues": {
+   "Edge": 10,
+   "Flash": 32,
+   "Yellow": 50,
+   "Mindaro": 75,
+   "Pulse": 110,
+   "Mint": 145,
+   "Brand": 190,
+   "Core": 250,
+   "Pink": 350
   },
-  {
-   "name": "Core",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 250,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#EEEBFF",
-     "hsl": "#EEEBFF",
-     "orig_hsl": [
-      249,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      249,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#DDD6FF",
-     "hsl": "#D4CCFF",
-     "orig_hsl": [
-      250,
-      100,
-      92
-     ],
-     "hsl_hsl": [
-      249,
-      100,
-      90
-     ],
-     "dE_hsl": 2.99,
-     "px_hsl": 10
-    },
-    {
-     "step": "100",
-     "orig": "#BFB2FF",
-     "hsl": "#BFB2FF",
-     "orig_hsl": [
-      250,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      250,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#9580FF",
-     "hsl": "#9580FF",
-     "orig_hsl": [
-      250,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      250,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#7055F6",
-     "hsl": "#7055F6",
-     "orig_hsl": [
-      250,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      250,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#5031E8",
-     "hsl": "#4F30E8",
-     "orig_hsl": [
-      250,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      250,
-      80,
-      55
-     ],
-     "dE_hsl": 0.23,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#3D22C3",
-     "hsl": "#3D22C3",
-     "orig_hsl": [
-      250,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      250,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#301B98",
-     "hsl": "#301B98",
-     "orig_hsl": [
-      250,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      250,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#22136C",
-     "hsl": "#22136C",
-     "orig_hsl": [
-      250,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      250,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#140B41",
-     "hsl": "#140B41",
-     "orig_hsl": [
-      250,
-      71,
-      15
-     ],
-     "hsl_hsl": [
-      250,
-      71,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
+  "meta": {
+   "L": "L(t) = 96 \u2212 81\u00b7t",
+   "S": "S(t) = clamp(100 \u2212 120\u00b7max(0, t \u2212 \u2153), 70, 100)",
+   "H": "H(t) = H\u2080  (constant per family)",
+   "steps": "t\u1d62 from equal OKLab lightness on the greyscale L(t) curve (shared)"
   },
-  {
-   "name": "Mindaro",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 75,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#FAFFEB",
-     "hsl": "#FAFFEB",
-     "orig_hsl": [
-      75,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      75,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#F2FFCC",
-     "hsl": "#F2FFCC",
-     "orig_hsl": [
-      75,
-      100,
-      90
-     ],
-     "hsl_hsl": [
-      75,
-      100,
-      90
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "100",
-     "orig": "#E6FF99",
-     "hsl": "#ECFFB2",
-     "orig_hsl": [
-      75,
-      100,
-      80
-     ],
-     "hsl_hsl": [
-      75,
-      100,
-      85
-     ],
-     "dE_hsl": 3.09,
-     "px_hsl": 25
-    },
-    {
-     "step": "200",
-     "orig": "#D9FF66",
-     "hsl": "#DFFF80",
-     "orig_hsl": [
-      75,
-      100,
-      70
-     ],
-     "hsl_hsl": [
-      75,
-      100,
-      75
-     ],
-     "dE_hsl": 2.57,
-     "px_hsl": 26
-    },
-    {
-     "step": "300",
-     "orig": "#C7F53D",
-     "hsl": "#CEF655",
-     "orig_hsl": [
-      75,
-      90,
-      60
-     ],
-     "hsl_hsl": [
-      75,
-      90,
-      65
-     ],
-     "dE_hsl": 1.85,
-     "px_hsl": 24
-    },
-    {
-     "step": "400",
-     "orig": "#B2E51A",
-     "hsl": "#BAE830",
-     "orig_hsl": [
-      75,
-      80,
-      50
-     ],
-     "hsl_hsl": [
-      75,
-      80,
-      55
-     ],
-     "dE_hsl": 1.54,
-     "px_hsl": 22
-    },
-    {
-     "step": "500",
-     "orig": "#8AAD1F",
-     "hsl": "#9BC322",
-     "orig_hsl": [
-      75,
-      70,
-      40
-     ],
-     "hsl_hsl": [
-      75,
-      70,
-      45
-     ],
-     "dE_hsl": 6.62,
-     "px_hsl": 22
-    },
-    {
-     "step": "600",
-     "orig": "#678217",
-     "hsl": "#78981B",
-     "orig_hsl": [
-      75,
-      70,
-      30
-     ],
-     "hsl_hsl": [
-      75,
-      70,
-      35
-     ],
-     "dE_hsl": 6.95,
-     "px_hsl": 22
-    },
-    {
-     "step": "700",
-     "orig": "#45570F",
-     "hsl": "#566C13",
-     "orig_hsl": [
-      75,
-      71,
-      20
-     ],
-     "hsl_hsl": [
-      75,
-      70,
-      25
-     ],
-     "dE_hsl": 7.13,
-     "px_hsl": 21
-    },
-    {
-     "step": "800",
-     "orig": "#222B08",
-     "hsl": "#34410B",
-     "orig_hsl": [
-      75,
-      69,
-      10
-     ],
-     "hsl_hsl": [
-      74,
-      71,
-      15
-     ],
-     "dE_hsl": 8.28,
-     "px_hsl": 22
-    }
-   ]
-  },
-  {
-   "name": "Pulse",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 110,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#EEFFEB",
-     "hsl": "#EEFFEB",
-     "orig_hsl": [
-      111,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      111,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#D5FFCC",
-     "hsl": "#D5FFCC",
-     "orig_hsl": [
-      109,
-      100,
-      90
-     ],
-     "hsl_hsl": [
-      109,
-      100,
-      90
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "100",
-     "orig": "#BFFFB2",
-     "hsl": "#BFFFB2",
-     "orig_hsl": [
-      110,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      110,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#95FF80",
-     "hsl": "#95FF80",
-     "orig_hsl": [
-      110,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      110,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#70F655",
-     "hsl": "#70F655",
-     "orig_hsl": [
-      110,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      110,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#50E831",
-     "hsl": "#4FE830",
-     "orig_hsl": [
-      110,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      110,
-      80,
-      55
-     ],
-     "dE_hsl": 0.08,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#3DC322",
-     "hsl": "#3DC322",
-     "orig_hsl": [
-      110,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      110,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#368F24",
-     "hsl": "#30981B",
-     "orig_hsl": [
-      110,
-      60,
-      35
-     ],
-     "hsl_hsl": [
-      110,
-      70,
-      35
-     ],
-     "dE_hsl": 2.85,
-     "px_hsl": 9
-    },
-    {
-     "step": "700",
-     "orig": "#2F5827",
-     "hsl": "#226C13",
-     "orig_hsl": [
-      110,
-      39,
-      25
-     ],
-     "hsl_hsl": [
-      110,
-      70,
-      25
-     ],
-     "dE_hsl": 7.14,
-     "px_hsl": 20
-    },
-    {
-     "step": "800",
-     "orig": "#1F301C",
-     "hsl": "#14410B",
-     "orig_hsl": [
-      111,
-      26,
-      15
-     ],
-     "hsl_hsl": [
-      110,
-      71,
-      15
-     ],
-     "dE_hsl": 6.92,
-     "px_hsl": 17
-    }
-   ]
-  },
-  {
-   "name": "Flash",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 32,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#FFF5EB",
-     "hsl": "#FFF5EB",
-     "orig_hsl": [
-      30,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      30,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#FFE7CC",
-     "hsl": "#FFE7CC",
-     "orig_hsl": [
-      32,
-      100,
-      90
-     ],
-     "hsl_hsl": [
-      32,
-      100,
-      90
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "100",
-     "orig": "#FFDBB2",
-     "hsl": "#FFDBB2",
-     "orig_hsl": [
-      32,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      32,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#FFC380",
-     "hsl": "#FFC380",
-     "orig_hsl": [
-      32,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      32,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#F6AB55",
-     "hsl": "#F6AB55",
-     "orig_hsl": [
-      32,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      32,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#E89331",
-     "hsl": "#E89230",
-     "orig_hsl": [
-      32,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      32,
-      80,
-      55
-     ],
-     "dE_hsl": 0.23,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#C37822",
-     "hsl": "#C37822",
-     "orig_hsl": [
-      32,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      32,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#985D1B",
-     "hsl": "#985D1B",
-     "orig_hsl": [
-      32,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      32,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#6C4313",
-     "hsl": "#6C4313",
-     "orig_hsl": [
-      32,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      32,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#30271C",
-     "hsl": "#41280B",
-     "orig_hsl": [
-      33,
-      26,
-      15
-     ],
-     "hsl_hsl": [
-      32,
-      71,
-      15
-     ],
-     "dE_hsl": 3.98,
-     "px_hsl": 17
-    }
-   ]
-  },
-  {
-   "name": "Edge",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 10,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#FFEEEB",
-     "hsl": "#FFEEEB",
-     "orig_hsl": [
-      9,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      9,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#FFDDD6",
-     "hsl": "#FFD5CC",
-     "orig_hsl": [
-      10,
-      100,
-      92
-     ],
-     "hsl_hsl": [
-      11,
-      100,
-      90
-     ],
-     "dE_hsl": 2.01,
-     "px_hsl": 10
-    },
-    {
-     "step": "100",
-     "orig": "#FFBFB2",
-     "hsl": "#FFBFB2",
-     "orig_hsl": [
-      10,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      10,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#FF9580",
-     "hsl": "#FF9580",
-     "orig_hsl": [
-      10,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      10,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#F67055",
-     "hsl": "#F67055",
-     "orig_hsl": [
-      10,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      10,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#E84F30",
-     "hsl": "#E84F30",
-     "orig_hsl": [
-      10,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      10,
-      80,
-      55
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "500",
-     "orig": "#C33D22",
-     "hsl": "#C33D22",
-     "orig_hsl": [
-      10,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      10,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#98301B",
-     "hsl": "#98301B",
-     "orig_hsl": [
-      10,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      10,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#6C2213",
-     "hsl": "#6C2213",
-     "orig_hsl": [
-      10,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      10,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#41140B",
-     "hsl": "#41140B",
-     "orig_hsl": [
-      10,
-      71,
-      15
-     ],
-     "hsl_hsl": [
-      10,
-      71,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
-  },
-  {
-   "name": "Pink",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 350,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#FFEBEE",
-     "hsl": "#FFEBEE",
-     "orig_hsl": [
-      351,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      351,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#FFD6DD",
-     "hsl": "#FFCCD5",
-     "orig_hsl": [
-      350,
-      100,
-      92
-     ],
-     "hsl_hsl": [
-      349,
-      100,
-      90
-     ],
-     "dE_hsl": 2.39,
-     "px_hsl": 10
-    },
-    {
-     "step": "100",
-     "orig": "#FFB2BF",
-     "hsl": "#FFB2BF",
-     "orig_hsl": [
-      350,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      350,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#FF8095",
-     "hsl": "#FF8095",
-     "orig_hsl": [
-      350,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      350,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#F65570",
-     "hsl": "#F65570",
-     "orig_hsl": [
-      350,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      350,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#E8304F",
-     "hsl": "#E8304F",
-     "orig_hsl": [
-      350,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      350,
-      80,
-      55
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "500",
-     "orig": "#C3223D",
-     "hsl": "#C3223D",
-     "orig_hsl": [
-      350,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      350,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#8F2436",
-     "hsl": "#981B30",
-     "orig_hsl": [
-      350,
-      60,
-      35
-     ],
-     "hsl_hsl": [
-      350,
-      70,
-      35
-     ],
-     "dE_hsl": 1.96,
-     "px_hsl": 9
-    },
-    {
-     "step": "700",
-     "orig": "#58272F",
-     "hsl": "#6C1322",
-     "orig_hsl": [
-      350,
-      39,
-      25
-     ],
-     "hsl_hsl": [
-      350,
-      70,
-      25
-     ],
-     "dE_hsl": 5.04,
-     "px_hsl": 20
-    },
-    {
-     "step": "800",
-     "orig": "#311C1F",
-     "hsl": "#410B14",
-     "orig_hsl": [
-      351,
-      27,
-      15
-     ],
-     "hsl_hsl": [
-      350,
-      71,
-      15
-     ],
-     "dE_hsl": 4.89,
-     "px_hsl": 17
-    }
-   ]
-  },
-  {
-   "name": "Yellow",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 50,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#FFFCEB",
-     "hsl": "#FFFCEB",
-     "orig_hsl": [
-      51,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      51,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#FFF7CC",
-     "hsl": "#FFF6CC",
-     "orig_hsl": [
-      51,
-      100,
-      90
-     ],
-     "hsl_hsl": [
-      49,
-      100,
-      90
-     ],
-     "dE_hsl": 0.26,
-     "px_hsl": 1
-    },
-    {
-     "step": "100",
-     "orig": "#FFF2B2",
-     "hsl": "#FFF2B2",
-     "orig_hsl": [
-      50,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      50,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#FFEA80",
-     "hsl": "#FFEA80",
-     "orig_hsl": [
-      50,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      50,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#F6DB55",
-     "hsl": "#F6DB55",
-     "orig_hsl": [
-      50,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      50,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#E8CA31",
-     "hsl": "#E8C930",
-     "orig_hsl": [
-      50,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      50,
-      80,
-      55
-     ],
-     "dE_hsl": 0.24,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#C3A822",
-     "hsl": "#C3A822",
-     "orig_hsl": [
-      50,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      50,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#98831B",
-     "hsl": "#98831B",
-     "orig_hsl": [
-      50,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      50,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#6C5E13",
-     "hsl": "#6C5E13",
-     "orig_hsl": [
-      51,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      51,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#41380B",
-     "hsl": "#41380B",
-     "orig_hsl": [
-      50,
-      71,
-      15
-     ],
-     "hsl_hsl": [
-      50,
-      71,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
-  },
-  {
-   "name": "Mint",
-   "kind": "chromatic",
-   "theme": "both",
-   "hue": 145,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#EBFFF3",
-     "hsl": "#EBFFF3",
-     "orig_hsl": [
-      144,
-      100,
-      96
-     ],
-     "hsl_hsl": [
-      144,
-      100,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#CCFFE1",
-     "hsl": "#CCFFE1",
-     "orig_hsl": [
-      145,
-      100,
-      90
-     ],
-     "hsl_hsl": [
-      145,
-      100,
-      90
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "100",
-     "orig": "#B2FFD2",
-     "hsl": "#B2FFD2",
-     "orig_hsl": [
-      145,
-      100,
-      85
-     ],
-     "hsl_hsl": [
-      145,
-      100,
-      85
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "200",
-     "orig": "#80FFB5",
-     "hsl": "#80FFB5",
-     "orig_hsl": [
-      145,
-      100,
-      75
-     ],
-     "hsl_hsl": [
-      145,
-      100,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#55F698",
-     "hsl": "#55F698",
-     "orig_hsl": [
-      145,
-      90,
-      65
-     ],
-     "hsl_hsl": [
-      145,
-      90,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#31E87E",
-     "hsl": "#30E87D",
-     "orig_hsl": [
-      145,
-      80,
-      55
-     ],
-     "hsl_hsl": [
-      145,
-      80,
-      55
-     ],
-     "dE_hsl": 0.13,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#22C365",
-     "hsl": "#22C365",
-     "orig_hsl": [
-      145,
-      70,
-      45
-     ],
-     "hsl_hsl": [
-      145,
-      70,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#1B984F",
-     "hsl": "#1B984F",
-     "orig_hsl": [
-      145,
-      70,
-      35
-     ],
-     "hsl_hsl": [
-      145,
-      70,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#136C38",
-     "hsl": "#136C38",
-     "orig_hsl": [
-      145,
-      70,
-      25
-     ],
-     "hsl_hsl": [
-      145,
-      70,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#0B4122",
-     "hsl": "#0B4122",
-     "orig_hsl": [
-      146,
-      71,
-      15
-     ],
-     "hsl_hsl": [
-      146,
-      71,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
-  },
-  {
-   "name": "Neutral",
-   "kind": "neutral",
-   "theme": "light",
-   "hue": 75,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#F5F6F4",
-     "hsl": "#F5F6F4",
-     "orig_hsl": [
-      90,
-      10,
-      96
-     ],
-     "hsl_hsl": [
-      90,
-      10,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#ECEDE9",
-     "hsl": "#E7E8E3",
-     "orig_hsl": [
-      75,
-      10,
-      92
-     ],
-     "hsl_hsl": [
-      72,
-      10,
-      90
-     ],
-     "dE_hsl": 1.55,
-     "px_hsl": 6
-    },
-    {
-     "step": "100",
-     "orig": "#DDDFD8",
-     "hsl": "#DADCD5",
-     "orig_hsl": [
-      77,
-      10,
-      86
-     ],
-     "hsl_hsl": [
-      77,
-      9,
-      85
-     ],
-     "dE_hsl": 0.92,
-     "px_hsl": 3
-    },
-    {
-     "step": "200",
-     "orig": "#C2C4BA",
-     "hsl": "#C2C4BA",
-     "orig_hsl": [
-      72,
-      8,
-      75
-     ],
-     "hsl_hsl": [
-      72,
-      8,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#A9ACA0",
-     "hsl": "#A9ACA0",
-     "orig_hsl": [
-      75,
-      7,
-      65
-     ],
-     "hsl_hsl": [
-      75,
-      7,
-      65
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "400",
-     "orig": "#909385",
-     "hsl": "#8F9386",
-     "orig_hsl": [
-      73,
-      6,
-      55
-     ],
-     "hsl_hsl": [
-      78,
-      6,
-      55
-     ],
-     "dE_hsl": 0.19,
-     "px_hsl": 1
-    },
-    {
-     "step": "500",
-     "orig": "#76786D",
-     "hsl": "#75786E",
-     "orig_hsl": [
-      71,
-      5,
-      45
-     ],
-     "hsl_hsl": [
-      78,
-      4,
-      45
-     ],
-     "dE_hsl": 0.2,
-     "px_hsl": 1
-    },
-    {
-     "step": "600",
-     "orig": "#5B5D56",
-     "hsl": "#5B5C56",
-     "orig_hsl": [
-      77,
-      4,
-      35
-     ],
-     "hsl_hsl": [
-      70,
-      3,
-      35
-     ],
-     "dE_hsl": 0.31,
-     "px_hsl": 1
-    },
-    {
-     "step": "700",
-     "orig": "#41423E",
-     "hsl": "#41413E",
-     "orig_hsl": [
-      75,
-      3,
-      25
-     ],
-     "hsl_hsl": [
-      60,
-      2,
-      25
-     ],
-     "dE_hsl": 0.33,
-     "px_hsl": 1
-    },
-    {
-     "step": "800",
-     "orig": "#272725",
-     "hsl": "#272726",
-     "orig_hsl": [
-      60,
-      3,
-      15
-     ],
-     "hsl_hsl": [
-      60,
-      1,
-      15
-     ],
-     "dE_hsl": 0.18,
-     "px_hsl": 1
-    },
-    {
-     "step": "900",
-     "orig": "#1A1A19",
-     "hsl": "#1A1A19",
-     "orig_hsl": [
-      60,
-      2,
-      10
-     ],
-     "hsl_hsl": [
-      60,
-      2,
-      10
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
-  },
-  {
-   "name": "Neutral",
-   "kind": "neutral",
-   "theme": "dark",
-   "hue": 190,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#F4F5F6",
-     "hsl": "#F4F6F6",
-     "orig_hsl": [
-      210,
-      10,
-      96
-     ],
-     "hsl_hsl": [
-      180,
-      10,
-      96
-     ],
-     "dE_hsl": 0.26,
-     "px_hsl": 1
-    },
-    {
-     "step": "50",
-     "orig": "#E8ECED",
-     "hsl": "#E2E8E9",
-     "orig_hsl": [
-      192,
-      12,
-      92
-     ],
-     "hsl_hsl": [
-      189,
-      14,
-      90
-     ],
-     "dE_hsl": 1.38,
-     "px_hsl": 6
-    },
-    {
-     "step": "100",
-     "orig": "#D7DEE0",
-     "hsl": "#D4DCDE",
-     "orig_hsl": [
-      193,
-      13,
-      86
-     ],
-     "hsl_hsl": [
-      192,
-      13,
-      85
-     ],
-     "dE_hsl": 0.7,
-     "px_hsl": 3
-    },
-    {
-     "step": "200",
-     "orig": "#B7C5C8",
-     "hsl": "#B6C5C8",
-     "orig_hsl": [
-      191,
-      13,
-      75
-     ],
-     "hsl_hsl": [
-      190,
-      14,
-      75
-     ],
-     "dE_hsl": 0.13,
-     "px_hsl": 1
-    },
-    {
-     "step": "300",
-     "orig": "#99AEB2",
-     "hsl": "#98AFB3",
-     "orig_hsl": [
-      190,
-      14,
-      65
-     ],
-     "hsl_hsl": [
-      189,
-      15,
-      65
-     ],
-     "dE_hsl": 0.28,
-     "px_hsl": 1
-    },
-    {
-     "step": "400",
-     "orig": "#7B989D",
-     "hsl": "#7A989F",
-     "orig_hsl": [
-      189,
-      15,
-      55
-     ],
-     "hsl_hsl": [
-      191,
-      16,
-      55
-     ],
-     "dE_hsl": 0.31,
-     "px_hsl": 2
-    },
-    {
-     "step": "500",
-     "orig": "#607F85",
-     "hsl": "#5F8086",
-     "orig_hsl": [
-      190,
-      16,
-      45
-     ],
-     "hsl_hsl": [
-      189,
-      17,
-      45
-     ],
-     "dE_hsl": 0.29,
-     "px_hsl": 1
-    },
-    {
-     "step": "600",
-     "orig": "#4A6368",
-     "hsl": "#49646A",
-     "orig_hsl": [
-      190,
-      17,
-      35
-     ],
-     "hsl_hsl": [
-      191,
-      18,
-      35
-     ],
-     "dE_hsl": 0.37,
-     "px_hsl": 2
-    },
-    {
-     "step": "700",
-     "orig": "#34474B",
-     "hsl": "#33484C",
-     "orig_hsl": [
-      190,
-      18,
-      25
-     ],
-     "hsl_hsl": [
-      190,
-      20,
-      25
-     ],
-     "dE_hsl": 0.32,
-     "px_hsl": 1
-    },
-    {
-     "step": "800",
-     "orig": "#233134",
-     "hsl": "#1E2B2E",
-     "orig_hsl": [
-      191,
-      20,
-      17
-     ],
-     "hsl_hsl": [
-      191,
-      21,
-      15
-     ],
-     "dE_hsl": 2.34,
-     "px_hsl": 6
-    },
-    {
-     "step": "850",
-     "orig": "#1B2628",
-     "hsl": "#192426",
-     "orig_hsl": [
-      189,
-      19,
-      13
-     ],
-     "hsl_hsl": [
-      189,
-      21,
-      12
-     ],
-     "dE_hsl": 0.83,
-     "px_hsl": 2
-    },
-    {
-     "step": "900",
-     "orig": "#141D1F",
-     "hsl": "#141D1F",
-     "orig_hsl": [
-      191,
-      22,
-      10
-     ],
-     "hsl_hsl": [
-      191,
-      22,
-      10
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    }
-   ]
-  },
-  {
-   "name": "Greyscale",
-   "kind": "grey",
-   "theme": "light",
-   "hue": 0,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#F5F5F5",
-     "hsl": "#F5F5F5",
-     "orig_hsl": [
-      0,
-      0,
-      96
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#EBEBEB",
-     "hsl": "#E6E6E6",
-     "orig_hsl": [
-      0,
-      0,
-      92
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      90
-     ],
-     "dE_hsl": 1.51,
-     "px_hsl": 5
-    },
-    {
-     "step": "100",
-     "orig": "#DBDBDB",
-     "hsl": "#D9D9D9",
-     "orig_hsl": [
-      0,
-      0,
-      86
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      85
-     ],
-     "dE_hsl": 0.61,
-     "px_hsl": 2
-    },
-    {
-     "step": "200",
-     "orig": "#BFBFBF",
-     "hsl": "#BFBFBF",
-     "orig_hsl": [
-      0,
-      0,
-      75
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#A5A5A5",
-     "hsl": "#A6A6A6",
-     "orig_hsl": [
-      0,
-      0,
-      65
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      65
-     ],
-     "dE_hsl": 0.32,
-     "px_hsl": 1
-    },
-    {
-     "step": "400",
-     "orig": "#8C8C8C",
-     "hsl": "#8C8C8C",
-     "orig_hsl": [
-      0,
-      0,
-      55
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      55
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "500",
-     "orig": "#737373",
-     "hsl": "#737373",
-     "orig_hsl": [
-      0,
-      0,
-      45
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#5A5A5A",
-     "hsl": "#595959",
-     "orig_hsl": [
-      0,
-      0,
-      35
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      35
-     ],
-     "dE_hsl": 0.36,
-     "px_hsl": 1
-    },
-    {
-     "step": "700",
-     "orig": "#404040",
-     "hsl": "#404040",
-     "orig_hsl": [
-      0,
-      0,
-      25
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#262626",
-     "hsl": "#262626",
-     "orig_hsl": [
-      0,
-      0,
-      15
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      15
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "900",
-     "orig": "#1A1A1A",
-     "hsl": "#1A1A1A",
-     "orig_hsl": [
-      0,
-      0,
-      10
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      10
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "950",
-     "orig": "#000000",
-     "hsl": "#131313",
-     "orig_hsl": [
-      0,
-      0,
-      0
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      7
-     ],
-     "dE_hsl": 18.67,
-     "px_hsl": 19
-    }
-   ]
-  },
-  {
-   "name": "Greyscale",
-   "kind": "grey",
-   "theme": "dark",
-   "hue": 0,
-   "rows": [
-    {
-     "step": "25",
-     "orig": "#F5F5F5",
-     "hsl": "#F5F5F5",
-     "orig_hsl": [
-      0,
-      0,
-      96
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      96
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "50",
-     "orig": "#EBEBEB",
-     "hsl": "#E6E6E6",
-     "orig_hsl": [
-      0,
-      0,
-      92
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      90
-     ],
-     "dE_hsl": 1.51,
-     "px_hsl": 5
-    },
-    {
-     "step": "100",
-     "orig": "#DBDBDB",
-     "hsl": "#D9D9D9",
-     "orig_hsl": [
-      0,
-      0,
-      86
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      85
-     ],
-     "dE_hsl": 0.61,
-     "px_hsl": 2
-    },
-    {
-     "step": "200",
-     "orig": "#BFBFBF",
-     "hsl": "#BFBFBF",
-     "orig_hsl": [
-      0,
-      0,
-      75
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      75
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "300",
-     "orig": "#A5A5A5",
-     "hsl": "#A6A6A6",
-     "orig_hsl": [
-      0,
-      0,
-      65
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      65
-     ],
-     "dE_hsl": 0.32,
-     "px_hsl": 1
-    },
-    {
-     "step": "400",
-     "orig": "#8C8C8C",
-     "hsl": "#8C8C8C",
-     "orig_hsl": [
-      0,
-      0,
-      55
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      55
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "500",
-     "orig": "#737373",
-     "hsl": "#737373",
-     "orig_hsl": [
-      0,
-      0,
-      45
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      45
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "600",
-     "orig": "#595959",
-     "hsl": "#595959",
-     "orig_hsl": [
-      0,
-      0,
-      35
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      35
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "700",
-     "orig": "#404040",
-     "hsl": "#404040",
-     "orig_hsl": [
-      0,
-      0,
-      25
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      25
-     ],
-     "dE_hsl": 0.0,
-     "px_hsl": 0
-    },
-    {
-     "step": "800",
-     "orig": "#2C2C2C",
-     "hsl": "#262626",
-     "orig_hsl": [
-      0,
-      0,
-      17
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      15
-     ],
-     "dE_hsl": 2.45,
-     "px_hsl": 6
-    },
-    {
-     "step": "900",
-     "orig": "#222222",
-     "hsl": "#1A1A1A",
-     "orig_hsl": [
-      0,
-      0,
-      13
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      10
-     ],
-     "dE_hsl": 3.42,
-     "px_hsl": 8
-    },
-    {
-     "step": "950",
-     "orig": "#1A1A1A",
-     "hsl": "#131313",
-     "orig_hsl": [
-      0,
-      0,
-      10
-     ],
-     "hsl_hsl": [
-      0,
-      0,
-      7
-     ],
-     "dE_hsl": 3.1,
-     "px_hsl": 7
-    }
+  "shared_positions": {
+   "10": [
+    0.0,
+    0.1228,
+    0.2445,
+    0.365,
+    0.4804,
+    0.5924,
+    0.703,
+    0.8059,
+    0.907,
+    1.0
+   ],
+   "11": [
+    0.0,
+    0.1119,
+    0.221,
+    0.3292,
+    0.4325,
+    0.5386,
+    0.6357,
+    0.7335,
+    0.8279,
+    0.9168,
+    1.0
+   ],
+   "12": [
+    0.0,
+    0.102,
+    0.2013,
+    0.3018,
+    0.3975,
+    0.4905,
+    0.5825,
+    0.6735,
+    0.7615,
+    0.8444,
+    0.9259,
+    1.0
    ]
   }
- ],
- "hues": {
-  "Edge": 10,
-  "Flash": 32,
-  "Yellow": 50,
-  "Mindaro": 75,
-  "Pulse": 110,
-  "Mint": 145,
-  "Brand": 190,
-  "Core": 250,
-  "Pink": 350
- }
+ },
+ "default": "v2"
 }

@@ -1,9 +1,17 @@
 import json
+
 D = json.load(open('data/generated.json'))
-rows = [r for f in D["families"] for r in f["rows"] if f["kind"]!="data"]
-stat = {"n":len(rows), "inv":sum(1 for r in rows if r["dE_hsl"]<1),
-        "sli":sum(1 for r in rows if 1<=r["dE_hsl"]<3),
-        "vis":sum(1 for r in rows if r["dE_hsl"]>=3)}
+
+def stats(ver):
+    rows = [r for f in ver["families"] for r in f["rows"]]
+    return {
+        "n": len(rows),
+        "inv": sum(1 for r in rows if r["dE_hsl"] < 1),
+        "sli": sum(1 for r in rows if 1 <= r["dE_hsl"] < 3),
+        "vis": sum(1 for r in rows if r["dE_hsl"] >= 3),
+    }
+
+stat = {vid: stats(D[vid]) for vid in ("v1", "v2")}
 
 body = open('template.html', encoding='utf-8').read()
 body = body.replace('/*__DATA__*/', json.dumps(D, separators=(',',':')))
