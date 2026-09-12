@@ -46,8 +46,9 @@ drop is done by `t = 1/3`.
 
 ```
 L(t,H) = 99.5 − 98.5·t^p(H)
-p    = log(1/2) / log(1/3) ≈ 0.631
-u(t) = (1 − cos(π·t^p))/2
+p(H) = 0.83 − 0.38·w(H)   # w peaks at hue 75° (Mindaro)
+q    = log(1/2) / log(1/3) ≈ 0.631
+u(t) = (1 − cos(π·t^q))/2
 S(t) = clamp(100 − 30·k_H·u(t), 0, 100)
 H(t) = H₀
 
@@ -59,7 +60,8 @@ Typical gains: majority ≈ 1.25 · Flash ≈ 1.65 · Pulse/Pink ≈ 2.0 / 1.95 
 Mindaro ≈ 1.3.
 
 A diagram above the palettes plots **lightness (red)** and **saturation (blue)**
-against the scale (with a dashed high-`k` S curve on v4/v5).
+against the scale (with a dashed high-`k` S curve and a dashed yellow–green L bias).
+A hue playground between chromatic and neutral families probes the same functions live.
 
 ## Files
 

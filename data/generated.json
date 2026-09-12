@@ -18790,7 +18790,7 @@
   },
   "meta": {
    "L": "L(t,H) = 99.5 \u2212 98.5\u00b7t^p(H)  with p(H) = 0.83 \u2212 0.38\u00b7w(H)",
-   "w": "w(H) = (1 + cos(\u03c0\u00b7\u03b4))/2, \u03b4 = circular distance from hue 75\u00b0 / 180",
+   "w": "w(H) = cos\u00b2(\u03c0\u00b7\u03b4) when cos>0 else 0; \u03b4 = circular |H\u221275\u00b0|/180",
    "S": "S(t) = clamp(100 \u2212 30\u00b7k_H\u00b7(1 \u2212 cos(\u03c0\u00b7t^q))/2, 0, 100)",
    "q": "q = log(1/2)/log(1/3) \u2248 0.631  \u2192  half the S-drop by t = 1/3",
    "H": "H(t) = H\u2080  (constant per family)",

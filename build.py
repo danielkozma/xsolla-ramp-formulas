@@ -699,7 +699,7 @@ def build_v5():
         },
         "meta": {
             "L": "L(t,H) = 99.5 − 98.5·t^p(H)  with p(H) = 0.83 − 0.38·w(H)",
-            "w": "w(H) = (1 + cos(π·δ))/2, δ = circular distance from hue 75° / 180",
+            "w": "w(H) = cos²(π·δ) when cos>0 else 0; δ = circular |H−75°|/180",
             "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t^q))/2, 0, 100)",
             "q": "q = log(1/2)/log(1/3) ≈ 0.631  →  half the S-drop by t = 1/3",
             "H": "H(t) = H₀  (constant per family)",

@@ -122,30 +122,6 @@ a{color:inherit}
 .mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:22ch}
 .mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
 
-.scoreboard{display:flex;flex-wrap:wrap;margin-top:26px;background:var(--panel);
-            border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
-.score{flex:1 1 150px;padding:14px 18px;border-right:1px solid var(--rule);min-width:0}
-.score:last-child{border-right:0}
-.score b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;
-         font-variant-numeric:tabular-nums}
-.score span{display:block;margin-top:4px;font-size:12px;line-height:16px;color:var(--ink-3)}
-.score.g b{color:#2F8F1C} .score.y b{color:#8A6D0B} .score.r b{color:#B3401F}
-
-/* ---- toolbar ---- */
-.bar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;
-     padding:12px 0;margin-bottom:28px;border-bottom:1px solid var(--rule)}
-.grp{display:flex;align-items:center;gap:8px}
-.grp>label{font-size:12px;line-height:16px;color:var(--ink-3);white-space:nowrap}
-.seg{display:flex;background:var(--input);border:1px solid var(--rule);
-     border-radius:var(--r-sm);padding:3px;gap:2px}
-.seg button{appearance:none;border:1px solid transparent;background:transparent;color:var(--ink-2);
-            cursor:pointer;font:400 13px/16px var(--body);padding:6px 10px;
-            border-radius:var(--r-xs);white-space:nowrap;
-            transition:background-color .16s ease,border-color .16s ease,color .16s ease}
-.seg button:hover:not([aria-pressed="true"]){color:var(--ink)}
-.seg button[aria-pressed="true"]{background:var(--panel);border-color:var(--rule);
-                                 color:var(--ink);font-weight:500}
-
 /* ---- formula panel ---- */
 .panel{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(300px,1fr);
        background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);margin-bottom:40px}
@@ -217,7 +193,6 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 .dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
 .dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
 .dl em{font-style:normal;font-size:9px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.fam.dim{opacity:.34}
 
 /* ---- deviation table ---- */
 .dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
@@ -256,20 +231,11 @@ footer b{color:var(--ink);font-weight:500}
 
 /* ---- hue playground ---- */
 .playground{margin:0 0 40px}
-.playground .play-card{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
-.playground .play-head{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;padding:16px 18px;border-bottom:1px solid var(--rule)}
-.playground .play-head h3{margin:0;font-size:16px;font-weight:600}
-.playground .play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.playground .play-slider{display:flex;align-items:center;gap:10px;flex:1 1 240px;min-width:0}
-.playground .play-slider label{font-size:12px;color:var(--ink-3);white-space:nowrap}
-.playground .play-slider input[type=range]{flex:1 1 auto;accent-color:var(--ink);min-width:120px}
-.playground .swatch-hue{width:28px;height:28px;border-radius:6px;border:1px solid var(--rule);flex:0 0 auto}
-
 .play-card .play-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:14px 16px 12px;border-bottom:1px solid var(--rule)}
 .play-card .play-head h3{margin:0;font-size:15px;font-weight:600}
 .play-slider{display:flex;align-items:center;gap:8px;flex:1 1 220px;min-width:0}
 .play-slider label{font-size:12px;color:var(--ink-3)}
-.play-slider input[type=range]{flex:1;accent-color:var(--ink)}
+.play-slider input[type=range]{flex:1;accent-color:var(--ink);min-width:120px}
 .play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
 .swatch-hue{width:26px;height:26px;border-radius:6px;border:1px solid var(--rule);flex:0 0 auto}
 
@@ -372,7 +338,6 @@ const ALL = /*__DATA__*/;
 const ST = /*__STAT__*/;
 
 let ver = ALL.default || 'v5';
-let vals = 'none', flt = 'all';
 
 const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
 const fx=(n,d=0)=> Number(n).toFixed(d);
@@ -766,14 +731,6 @@ function ink(hex){
   const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
   return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
 }
-function label(r,key,mode){
-  if(key==='orig' && (r.missing || r.orig==null)) return '';
-  if(mode==='none') return '';
-  if(mode==='hex')  return r[key];
-  const hsl=r[key+'_hsl'];
-  if(!hsl) return '';
-  const [h,s,l]=hsl; return `${h} ${s} ${l}`;
-}
 const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 
 /* ---------- v1 synthetic gradient ---------- */
@@ -785,8 +742,6 @@ function v1Gradient(f){
 
 /* ---------- render ---------- */
 function famCard(f){
-  const compared = f.rows.filter(r=>r.dE_hsl!=null);
-  const worst = compared.length ? Math.max(...compared.map(r=>r.dE_hsl)) : 0;
   const param = f.kind==='grey' ? 'achromatic'
     : ver==='v5' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · L^p ${Number(f.lp).toFixed(2)}`
     : ver==='v4' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
@@ -803,18 +758,18 @@ function famCard(f){
       : `${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
     const figmaTile = missing
       ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
-      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`;
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}"></span>`;
     const deCell = missing
       ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No Figma original">—</span>`
-      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}"><i class="${b}"></i></span>`;
     return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
       figmaTile+
-      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}">${label(r,'hsl',vals)}</span>`+
+      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}"></span>`+
       deCell;
   }).join('');
 
   const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
-  return `<article class="fam${flt==='dev'&&worst<1?' dim':''}">
+  return `<article class="fam">
     <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
     <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
     <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
@@ -826,11 +781,7 @@ function famCard(f){
 function render(){
   const D = ALL[ver];
   const put=(id,list)=>{
-    const l = flt==='dev' ? list.filter(f=>{
-      const ds=f.rows.map(r=>r.dE_hsl).filter(d=>d!=null);
-      return ds.length && Math.max(...ds)>=1;
-    }) : list;
-    document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
+    document.getElementById(id).innerHTML = list.length ? list.map(famCard).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
   };
   put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
@@ -899,7 +850,13 @@ function renderPlayground(){
     const hex=hsl2hex(playHue, S, L);
     return {step, t, scale:step/10, L, S, hex};
   });
-  const grad=rows.map((r,i)=>`${r.hex} ${(i/(rows.length-1)*100).toFixed(2)}%`).join(', ');
+  // Continuous 0→100 gradient (same sampling idea as build.py), not equal step gaps.
+  const gradStops=[];
+  for(let i=0;i<40;i++){
+    const t=i/39;
+    gradStops.push(`${hsl2hex(playHue, Sv5(t,k,F), Lv5(t,playHue,F))} ${(100*t).toFixed(2)}%`);
+  }
+  const grad=gradStops.join(', ');
   const n=rows.length;
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
