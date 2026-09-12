@@ -65,12 +65,58 @@ a{color:inherit}
               white-space:nowrap;flex:0 0 auto}
 .appbar__spacer{margin-left:auto}
 
+/* version dropdown — leftmost in the header */
+.ver{position:relative;flex:0 0 auto}
+.ver__btn{appearance:none;display:inline-flex;align-items:center;gap:6px;
+          height:28px;padding:0 8px 0 10px;margin:0;border:1px solid var(--rule);
+          background:var(--panel);border-radius:var(--r-sm);color:var(--ink);
+          font:500 13px/16px var(--body);font-variant-numeric:tabular-nums;cursor:pointer}
+.ver__btn:hover{background:var(--sunk)}
+.ver__btn[aria-expanded="true"]{background:var(--sunk);border-color:var(--rule-2)}
+.ver__chev{display:block;width:10px;height:10px;flex:0 0 auto;
+           transition:transform .16s ease}
+.ver__btn[aria-expanded="true"] .ver__chev{transform:rotate(180deg)}
+.ver__menu{position:absolute;top:calc(100% + 6px);left:0;min-width:148px;
+           padding:4px;background:var(--panel);border:1px solid var(--rule);
+           border-radius:var(--r-md);box-shadow:0 8px 24px rgba(0,0,0,.08);display:none;z-index:80}
+.ver__menu[data-open="true"]{display:block}
+.ver__opt{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          width:100%;padding:8px 10px;border:0;background:transparent;border-radius:var(--r-xs);
+          color:var(--ink);font:400 13px/16px var(--body);cursor:pointer;text-align:left}
+.ver__opt:hover{background:var(--sunk)}
+.ver__opt[aria-selected="true"]{font-weight:500;background:var(--brand-soft);color:var(--brand-ink)}
+.ver__opt small{color:var(--ink-3);font-size:11px}
+
+/* ---- curve diagram ---- */
+.curves{display:none;background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+        margin:0 0 28px;padding:18px 20px 14px;overflow:hidden}
+.curves[data-show="true"]{display:block}
+.curves__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin-bottom:12px}
+.curves__head h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;color:var(--ink-3)}
+.curves__legend{display:flex;flex-wrap:wrap;gap:14px;margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-2)}
+.curves__legend span{display:inline-flex;align-items:center;gap:7px}
+.curves__legend i{display:block;width:18px;height:3px;border-radius:1px}
+.curves__legend i.L{background:#E24B4A}
+.curves__legend i.S{background:#2F6FED}
+.curves__svg{display:block;width:100%;height:auto;max-height:280px}
+.curves__svg .axis{stroke:var(--rule-2);stroke-width:1;fill:none}
+.curves__svg .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.curves__svg .label{fill:var(--ink-3);font:400 11px var(--body)}
+.curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
+.curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.Shi{fill:none;stroke:#2F6FED;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+                      stroke-dasharray:5 4;opacity:.45}
+.curves__legend i.Shi{background:#2F6FED;opacity:.4}
+.curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
+.curves__hint{margin:10px 0 0;font-size:12px;line-height:16px;color:var(--ink-3)}
+
 .wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
 
 /* ---- page head ---- */
 .mast{padding:36px 0 26px}
 .eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
-.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:19ch}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:22ch}
 .mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
 
 .scoreboard{display:flex;flex-wrap:wrap;margin-top:26px;background:var(--panel);
@@ -129,8 +175,10 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 .legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
           border:1px solid var(--rule)}
 
-/* ---- family cards ---- */
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));margin:0 0 44px}
+/* ---- family cards ----
+   Three colour columns (Figma · Formula · Gradient) stay side-by-side
+   at every width — never stack. Step label + Δ stay narrow. */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
 .fam{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
 .fam header{display:flex;align-items:baseline;gap:8px;padding:13px 14px 11px;
             border-bottom:1px solid var(--rule)}
@@ -141,25 +189,31 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 .fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
             font-variant-numeric:tabular-nums;white-space:nowrap}
 
-.colhead{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:9px 12px 5px;
-         font-size:10px;line-height:14px;color:var(--ink-3);letter-spacing:.06em;
-         text-transform:uppercase}
-.colhead span:nth-child(2),.colhead span:nth-child(3){padding-left:5px}
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+         column-gap:2px;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         letter-spacing:.04em;text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
 .colhead span:last-child{text-align:right}
 
-.ramp{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:0 12px 13px;align-items:stretch}
-.ramp .st{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
-          font-size:10.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ramp-wrap{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+           column-gap:2px;row-gap:0;padding:0 10px 13px;align-items:stretch}
+.ramp-steps{display:contents}
+.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:4px;
+          font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
 /* Figma value and formula value share an edge — no gap, no radius, so the
    seam only appears where the two actually differ. */
-.tile{height:32px;display:flex;align-items:center;padding:0 6px;
-      font:500 10px/1 var(--body);font-variant-numeric:tabular-nums;
-      white-space:nowrap;overflow:hidden}
-.tile.b{justify-content:flex-end}
-.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:6px}
+.tile.empty{background:
+  repeating-linear-gradient(-45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ink-3) 18%, transparent) 5px 6px);
+  color:var(--ink-3); justify-content:center; box-shadow:inset 0 0 0 1px var(--rule)}
+.tile.empty::after{content:'—'}
+.grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
+          box-shadow:none;position:relative}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:2px}
 .dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
 .dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
-.dl em{font-style:normal;font-size:9.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.dl em{font-style:normal;font-size:9px;color:var(--ink-3);font-variant-numeric:tabular-nums}
 .fam.dim{opacity:.34}
 
 /* ---- deviation table ---- */
@@ -189,24 +243,41 @@ footer b{color:var(--ink);font-weight:500}
   .panel{grid-template-columns:1fr}
   .panel>div+div{border-left:0;border-top:1px solid var(--rule)}
   .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+  .appbar__ctx{display:none}
+}
+@media (max-width:420px){
+  .tile{padding:0 2px;font-size:8.5px}
+  .colhead{font-size:8px;letter-spacing:.02em}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <header class="appbar">
+  <div class="ver" id="ver">
+    <button type="button" class="ver__btn" id="ver-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ver-menu">
+      <span id="ver-label">v5</span>
+      <svg class="ver__chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="ver__menu" id="ver-menu" role="listbox" data-open="false">
+      <button type="button" class="ver__opt" role="option" data-ver="v1" aria-selected="false">v1 <small>step ladders</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v2" aria-selected="false">v2 <small>ladder placement</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v3" aria-selected="false">v3 <small>pure curves</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="false">v4 <small>S gain · no flats</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v5" aria-selected="true">v5 <small>0–100 · sine S</small></button>
+    </div>
+  </div>
   <span class="appbar__ctx">Redesign Color Palette — Pentagram</span>
   <span class="appbar__spacer"></span>
-  <span class="appbar__chip">Solid ramps · 137 swatches</span>
+  <span class="appbar__chip" id="chip">Solid ramps · 0–100 · sine S</span>
 </header>
 
 <div class="wrap">
 <header class="mast">
-  <p class="eyebrow">Reverse-engineered from the Figma variable set</p>
-  <h1>Every ramp from one hue and two ladders</h1>
-  <p class="lead">The Xsolla palette is far more systematic than it looks. Hue is constant down each ramp; lightness and
-  saturation follow ladders shared by every family. One parameter per family — its hue — regenerates the
-  whole set. Below, each ramp's Figma values sit edge-to-edge against the formula output, so any drift is
-  visible without reading a number.</p>
+  <p class="eyebrow" id="eyebrow">v5 · full 0–100 domain · sine saturation</p>
+  <h1 id="mast-title">Full 0–100 scale with a sine-shaped saturation curve</h1>
+  <p class="lead" id="mast-lead">v5 runs lightness and saturation across the whole 0→100 domain. Named tokens
+  (25, 800, …) are interior samples — not the ends of the gradient. Saturation follows a raised-cosine
+  S-curve: flat at both ends, continuous through the middle, scaled per family by <code>k<sub>H</sub></code>.</p>
   <div class="scoreboard" id="board"></div>
 </header>
 
@@ -226,22 +297,32 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="panel">
   <div>
-    <h2>The formula</h2>
+    <h2 id="f-heading">The formula</h2>
     <pre class="f" id="f-body"></pre>
     <p class="note" id="f-note"></p>
   </div>
   <div>
-    <h2>Step ladder</h2>
-    <table class="ladder"><thead><tr>
-      <th>Step</th><th>L</th><th>S</th><th>Neutral S<sub>light</sub></th><th>Neutral S<sub>dark</sub></th>
-    </tr></thead><tbody id="lad"></tbody></table>
+    <h2 id="lad-heading">Step ladder</h2>
+    <table class="ladder"><thead id="lad-head"></thead><tbody id="lad"></tbody></table>
   </div>
 </div>
 
+<section class="curves" id="curves" data-show="true" aria-label="Saturation and lightness curves">
+  <div class="curves__head">
+    <h2 id="curves-title">Function curves</h2>
+    <div class="curves__legend">
+      <span><i class="L"></i>Lightness</span>
+      <span><i class="S"></i>Saturation (k=1)</span>
+      <span id="leg-shi" hidden><i class="Shi"></i>Saturation (high k)</span>
+    </div>
+  </div>
+  <svg class="curves__svg" id="curves-svg" viewBox="0 0 760 280" role="img" aria-label="Lightness in red and saturation in blue against gradient progression"></svg>
+  <p class="curves__hint" id="curves-hint">X = gradient progression t · Y = value (0–100). Shared chromatic curves for every hue family.</p>
+</section>
+
 <div class="sect">
   <h2>Chromatic families</h2>
-  <p>Nine hues, steps 25–800. These carry a single set of variables — Figma's Solid&nbsp;/&nbsp;Light and
-  Solid&nbsp;/&nbsp;Dark frames hold identical values, so one formula serves both themes.</p>
+  <p id="chrom-blurb">Nine hues. Hue is constant; saturation and lightness come only from the continuous curves above. Named steps are equal samples along t.</p>
 </div>
 <div class="legend">
   <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1 · no visible difference</span>
@@ -253,7 +334,7 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="sect">
   <h2>Theme-dependent families</h2>
-  <p>Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step
+  <p id="theme-blurb">Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step
   ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them
   on dark — one expression each.</p>
 </div>
@@ -261,13 +342,59 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="sect" id="devsec">
   <h2>What moves if the formula becomes the source of truth</h2>
-  <p>Every swatch the formula places more than one ΔE from its current Figma value. Anything not listed
+  <p id="dev-blurb">Every swatch the formula places more than one ΔE from its current Figma value. Anything not listed
   here regenerates within a just-noticeable difference.</p>
 </div>
 <div class="dev" id="devlist"></div>
 
-<footer>
-  <p><b>The step-50 drift.</b> Brand, Core, Edge and Pink sit at L&nbsp;92 where every other family sits at
+<footer id="foot"></footer>
+</div>
+
+<script>
+const ALL = /*__DATA__*/;
+const ST = /*__STAT__*/;
+
+let ver = ALL.default || 'v5';
+let vals = 'none', flt = 'all';
+
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+const fx=(n,d=0)=> Number(n).toFixed(d);
+
+/* ---------- version dropdown ---------- */
+const verBtn = document.getElementById('ver-btn');
+const verMenu = document.getElementById('ver-menu');
+function setVerOpen(open){
+  verBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  verMenu.dataset.open = open ? 'true' : 'false';
+}
+verBtn.addEventListener('click', e=>{
+  e.stopPropagation();
+  setVerOpen(verMenu.dataset.open !== 'true');
+});
+verMenu.querySelectorAll('.ver__opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    ver = opt.dataset.ver;
+    verMenu.querySelectorAll('.ver__opt').forEach(o=>o.setAttribute('aria-selected', o.dataset.ver===ver?'true':'false'));
+    document.getElementById('ver-label').textContent = ver;
+    setVerOpen(false);
+    applyVersion();
+  });
+});
+document.addEventListener('click', ()=> setVerOpen(false));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') setVerOpen(false); });
+
+/* ---------- copy per version ---------- */
+const COPY = {
+  v1: {
+    title: 'Every ramp from one hue and two ladders',
+    lead: 'The Xsolla palette is far more systematic than it looks. Hue is constant down each ramp; lightness and saturation follow ladders shared by every family. One parameter per family — its hue — regenerates the whole set. Below, each ramp\'s Figma values sit edge-to-edge against the formula output, so any drift is visible without reading a number.',
+    eyebrow: 'v1 · discrete step ladders',
+    chip: 'Solid ramps · step ladders',
+    fHead: 'The formula',
+    ladHead: 'Step ladder',
+    chrom: 'Nine hues, steps 25–800. These carry a single set of variables — Figma\'s Solid / Light and Solid / Dark frames hold identical values, so one formula serves both themes.',
+    theme: 'Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them on dark — one expression each.',
+    foot: `<p><b>The step-50 drift.</b> Brand, Core, Edge and Pink sit at L&nbsp;92 where every other family sits at
   90. It reads as drift rather than intent — the ladder is otherwise exact — so the formula normalises it.
   Cost: four swatches, ΔE 1.3–3.0.</p>
   <p><b>Mindaro.</b> Its whole ramp runs five lightness points darker from step 100 down (80/70/60/…/10
@@ -276,44 +403,79 @@ footer b{color:var(--ink);font-weight:500}
   one extra parameter, and the family lands exactly.</p>
   <p><b>Muted dark tails.</b> Pulse and Pink desaturate below step 500 (S 60/39/26 instead of 70/70/70),
   and Flash does the same at 800 alone. Almost certainly hand-tuning so dark greens and reds don't go
-  muddy. The formula clamps them at 70; if you want the tuning back it is a per-family tail curve.</p>
-  <p><b>Greyscale/Light/950</b> is pure black, duplicating Neutral/Solid/Black. Under the regenerated
-  ladder it becomes L&nbsp;7.5 (#131313) and black stays available as its own token.</p>
-  <p><b>A note on the hidden frame.</b> The file contains a hidden “Construction principle” section
-  specifying a different system — lightness anchored at 50 for step 500, and a hue shift running
-  −22°&nbsp;→&nbsp;+22° across the ramp. The shipped values follow none of it: hue is constant to within
-  rounding in all nine families. Treat it as a superseded spec.</p>
-</footer>
-</div>
+  muddy. The formula clamps them at 70; if you want the tuning back it is a per-family tail curve.</p>`
+  },
+  v2: {
+    title: 'Every ramp from continuous H, S and L',
+    lead: 'v2 replaces the discrete step ladders with continuous functions of a single parameter t. Named steps sit on an even lightness ladder (96, 90, 85, 75…15) inverted through L(t), so early stops stay light and consecutive tokens feel evenly paced. Figma remains the fit target. The third column is the full continuous scale.',
+    eyebrow: 'v2 · continuous gradient functions',
+    chip: 'Solid ramps · continuous gradient',
+    fHead: 'The continuous functions',
+    ladHead: 'Even step placement',
+    chrom: 'Nine hues along one continuous (H,S,L) curve. Steps 25–800 land on the shared even-lightness ladder inverted through L(t). The Gradient column is the full t ∈ [0,1] scale.',
+    theme: 'Neutral and Greyscale reuse the same L(t). Neutral saturation is derived from L — fading tint on light, growing tint on dark — and steps share the same ladder placement.',
+    foot: `<p><b>Even steps.</b> Named tokens are not at equal <code>t</code>. They sit where <code>L(t)</code> hits the
+  even lightness ladder — 96, 90, 85, then −10 down to 15 — so 50/100 stay light.</p>
+  <p><b>Ease on L.</b> <code>L(t) = 96 − 81·t^1.25</code> keeps more of the continuous ramp in the light half.</p>
+  <p><b>Hue stays constant.</b> Figma holds hue within rounding down each family, so <code>H(t) = H₀</code>.</p>`
+  },
+  v3: {
+    title: 'Every ramp from a curve — no step tables',
+    lead: 'v3 drops hard-coded step values entirely. Hue is fixed per family; saturation and lightness are continuous functions of gradient progression t. Named tokens are just equal samples along that curve. The diagram plots both functions before the ramps.',
+    eyebrow: 'v3 · pure continuous curves',
+    chip: 'Solid ramps · pure curves',
+    fHead: 'The curve functions',
+    ladHead: 'Equal-t samples',
+    chrom: 'Nine hues. Hue is constant; saturation and lightness come only from the continuous curves above. Named steps are equal samples along t — no lightness ladder, no per-step table.',
+    theme: 'Neutral and Greyscale reuse the same L(t). Neutral S is derived from L(t). Sample positions are equal progression on t, same as the chromatic families.',
+    foot: `<p><b>No step tables.</b> v1 hard-codes L/S per step number. v2 still places tokens on a hard-coded
+  lightness ladder. v3 has neither — only <code>L(t)</code>, <code>S(t)</code>, and <code>H₀</code>.</p>
+  <p><b>Equal progression.</b> Named Figma tokens (25, 50, 100…) are labels for comparison. Their positions
+  are <code>tᵢ = i/(N−1)</code> — equal samples of the curve, not a second lookup table.</p>
+  <p><b>Curve shape.</b> Lightness eases from 96→15; saturation holds at 100 then smoothsteps down to 70.
+  Both curves are shared across every chromatic family. Hue never moves.</p>`
+  },
+  v4: {
+    title: 'Continuous curves with a saturation gain per palette',
+    lead: 'v4 keeps pure functions of t — no step tables, no flat S plateaus — and lifts the light end of L so early samples stay brighter. Each colour family multiplies the saturation drop by its own gain k_H, which pulls Mindaro, Pulse, Pink and the rest closer to Figma.',
+    eyebrow: 'v4 · continuous curves · per-family S gain',
+    chip: 'Solid ramps · S gain · no flats',
+    fHead: 'The curve functions',
+    ladHead: 'Equal-t samples · k_H',
+    chrom: 'Nine hues. Shared L(t); S(t) uses a per-family gain k_H on the continuous drop. No plateaus. Named steps are equal samples along t.',
+    theme: 'Neutral and Greyscale reuse L(t). Neutral S is derived from L. No k_H — achromatic / tinted neutrals do not use the chromatic saturation gain.',
+    foot: `<p><b>No flats.</b> Saturation is a single smooth decline with a non-zero initial slope —
+  <code>u(t) = t·(1+3t)/4</code> — so it never holds at 100 or parks on a floor.</p>
+  <p><b>Lighter early L.</b> <code>L(t) = 96 − 81·t^1.35</code> eases more at the light end, so the equal-t
+  sample for step 50 lands near L&nbsp;92 instead of dropping too fast.</p>
+  <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority families use
+  <code>k_H ≈ 1.25</code>; Pulse/Pink ≈ 2.4–2.45; Flash ≈ 1.8; Mindaro ≈ 1.2 — fitted to Figma saturation.</p>`
+  },
+  v5: {
+    title: "Full 0\u2013100 scale with a front-loaded sine saturation curve",
+    lead: "v5 runs lightness and saturation across the whole 0\u2192100 domain. Named tokens (25, 800, 900, \u2026) are interior samples \u2014 not the ends of the gradient. Saturation follows an asymmetric raised-cosine: still flat at both ends, but the drop is front-loaded so half of it is done by one-third of the ramp.",
+    eyebrow: "v5 \u00b7 full 0\u2013100 domain \u00b7 asymmetric sine S",
+    chip: "Solid ramps \u00b7 0\u2013100 \u00b7 early S drop",
+    fHead: "The curve functions",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "Nine hues on one 0\u2192100 continuous scale. Steps 25 / 800 / 900 sit inside the ramp (scale 2.5 / 80 / 90). Chromatic 900 is formula-only \u2014 Figma has no swatch. Saturation is an asymmetric raised-cosine with per-family gain k_H.",
+    theme: "Neutral and Greyscale reuse the same L(t) on 0\u2192100. Numeric tokens map as scale = step/10; White\u21920 and Black\u2192100 when present.",
+    foot: `<p><b>0→100 domain.</b> Functions and the gradient column span the full scale. Token
+  <code>25</code> samples at 2.5, <code>800</code> at 80, and <code>900</code> at 90 — none are endpoints.
+  Chromatic 900 has no Figma original, so that cell is left blank.</p>
+  <p><b>Asymmetric sine saturation.</b> <code>u(t) = (1 − cos(π·t^p))/2</code> with
+  <code>p = log(½)/log(⅓) ≈ 0.631</code> stays flat at both ends, but is no longer symmetric —
+  half the unit drop is already done by <code>t = 1/3</code>, so mid-ramp is less saturated.</p>
+  <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority ≈ 1.25;
+  Flash ≈ 1.65; Pulse/Pink ≈ 2.0 / 1.95; Mindaro ≈ 1.3.</p>`
+  }
 
-<script>
-const D = /*__DATA__*/;
-const ST = /*__STAT__*/;
+};
 
-/* ---------- scoreboard ---------- */
-document.getElementById('board').innerHTML = [
-  ['', ST.n, 'ramp swatches across 13 ramps'],
-  ['g', ST.inv, 'reproduced exactly (ΔE &lt; 1)'],
-  ['y', ST.sli, 'within a slight shift (1–3)'],
-  ['r', ST.vis, 'deliberately normalised (&gt; 3)'],
-  ['', '1', 'parameter per family — its hue']
-].map(([c,n,l])=>`<div class="score ${c}"><b>${n}</b><span>${l}</span></div>`).join('');
-
-/* ---------- ladder ---------- */
-const STEPS=[25,50,100,200,300,400,500,600,700,800,850,900,950];
-const Lof=s=> s===25?96 : s<=800 ? 95-s/10 : 15-(s-800)/20;
-const Sof=s=> Math.max(70,Math.min(100,120-s/10));
-const nS =(t,L)=> t==='light' ? L/10 : 11+(100-L)/9;
-const fx =(n,d=0)=> n.toFixed(d);
-document.getElementById('lad').innerHTML = STEPS.map(s=>{
-  const L=Lof(s), ext=s>800;
-  return `<tr><td>${s}</td><td>${fx(L,1)}</td><td>${ext?'—':fx(Sof(s))}</td>`+
-         `<td>${fx(nS('light',L),1)}</td><td>${fx(nS('dark',L),1)}</td></tr>`;
-}).join('');
-
-/* ---------- formula ---------- */
-const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
-document.getElementById('f-body').innerHTML =
+/* ---------- formula + ladder per version ---------- */
+function renderFormula(){
+  if(ver==='v1'){
+    document.getElementById('f-body').innerHTML =
 `${K('// lightness ladder')}
 L(step) = 96                       ${K('if step = 25')}
         = 95 − step/10             ${K('if step ≤ 800')}
@@ -333,10 +495,268 @@ Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
 Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
 Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
 
-document.getElementById('f-note').innerHTML =
-`Steps 100–800 collapse to <code>L = 95 − step/10</code> exactly. Step 25 is pinned at 96 — one point
- above where the line would put it, because the ladder would otherwise leave it indistinguishable from
- step 50.`;
+    document.getElementById('f-note').innerHTML =
+`Steps 100–800 collapse to <code>L = 95 − step/10</code> exactly. Step 25 is pinned at 96.`;
+
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Step</th><th>L</th><th>S</th><th>Neutral S<sub>light</sub></th><th>Neutral S<sub>dark</sub></th></tr>`;
+    const STEPS=[25,50,100,200,300,400,500,600,700,800,850,900,950];
+    const Lof=s=> s===25?96 : s<=800 ? 95-s/10 : 15-(s-800)/20;
+    const Sof=s=> Math.max(70,Math.min(100,120-s/10));
+    const nS =(t,L)=> t==='light' ? L/10 : 11+(100-L)/9;
+    document.getElementById('lad').innerHTML = STEPS.map(s=>{
+      const L=Lof(s), ext=s>800;
+      return `<tr><td>${s}</td><td>${fx(L,1)}</td><td>${ext?'—':fx(Sof(s))}</td>`+
+             `<td>${fx(nS('light',L),1)}</td><td>${fx(nS('dark',L),1)}</td></tr>`;
+    }).join('');
+  } else if(ver==='v2'){
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  light → dark')}
+L(t) = ${V('96 − 81·t^1.25')}
+S(t) = clamp(${V('100 − (75 − L(t))')}, 70, 100)
+H(t) = ${V('H₀')}
+
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// step placement still uses a hard-coded ladder')}
+ladder = ${V('96, 90, 85, 75, …, 15')}
+tᵢ     = L⁻¹(ladderᵢ)
+
+${K('// H₀ per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+    document.getElementById('f-note').innerHTML =
+`v2 still places named steps on a hard-coded lightness ladder. See <b>v3</b> for pure curves with no step tables.`;
+
+    const brand = ALL.v2.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Step</th><th>t</th><th>L(t)</th><th>S(t)</th><th>Δt</th></tr>`;
+    const rows = brand.rows;
+    document.getElementById('lad').innerHTML = rows.map((r,i)=>{
+      const dt = i===0 ? '—' : fx(r.t - rows[i-1].t, 3);
+      return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
+    }).join('');
+  } else if(ver==='v3'){
+    // v3 — pure curves, equal-t samples
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
+${K('// no step tables — only continuous functions')}
+L(t) = ${V('96 − 81·t^1.2')}
+S(t) = ${V('100 − 30·smoothstep(0.28, 0.55, t)')}
+H(t) = ${V('H₀')}                    ${K('fixed per family')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+greyscale   hsl(   ${V('0')}, 0%,                L(t) )
+
+${K('// named tokens are equal samples — not a ladder')}
+tᵢ = i / (N − 1)
+
+${K('// H₀ per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+    document.getElementById('f-note').innerHTML =
+`Nothing here is a per-step lookup. Lightness and saturation are curves of <code>t</code>; named Figma
+ steps are equal samples along that progression so you can still compare against the original palette.`;
+
+    const brand3 = ALL.v3.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>Δt</th></tr>`;
+    const rows3 = brand3.rows;
+    document.getElementById('lad').innerHTML = rows3.map((r,i)=>{
+      const dt = i===0 ? '—' : fx(r.t - rows3[i-1].t, 3);
+      return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
+    }).join('');
+  } else if(ver==='v4'){
+    // v4 — continuous, no flats, per-family S gain
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
+${K('// continuous — no plateaus, no step tables')}
+L(t) = ${V('96 − 81·t^1.35')}         ${K('lighter early end')}
+u(t) = ${V('t·(1 + 3t)/4')}           ${K('strictly rising drop shape')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// equal samples')}
+tᵢ = i / (N − 1)
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.20')}
+Flash  H ${V('32')}   k ${V('1.80')}    Pulse  H ${V('110')}  k ${V('2.45')}
+Pink   H ${V('350')}  k ${V('2.40')}`;
+
+    document.getElementById('f-note').innerHTML =
+`<code>u(t)</code> has a non-zero initial slope, so saturation never sits flat at 100 or on a floor.
+ <code>k_H</code> scales the drop per palette — Pulse/Pink fall further; majority families stay near 1.25.
+ <code>t^1.35</code> keeps step 50 near L&nbsp;92.`;
+
+    const brand4 = ALL.v4.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>k<sub>H</sub></th></tr>`;
+    document.getElementById('lad').innerHTML = brand4.rows.map(r=>
+      `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+    ).join('');
+  } else {
+    // v5 — 0→100 domain, interior samples incl. 900, asymmetric raised-cosine S
+    document.getElementById('f-body').innerHTML =
+`${K('// scale ∈ [0, 100]  ·  t = scale/100')}
+${K('// 25 / 800 / 900 are interior samples — not the ends')}
+L(t) = ${V('99 − 98·t^0.83')}
+p    = ${V('log(½) / log(⅓)')} ≈ 0.631   ${K('half the S-drop by t = 1/3')}
+u(t) = ${V('(1 − cos(π·t^p))/2')}       ${K('asymmetric raised-cosine')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 800 → 80, 900 → 90')}
+t     = scale / 100
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.30')}
+Flash  H ${V('32')}   k ${V('1.65')}    Pulse  H ${V('110')}  k ${V('2.00')}
+Pink   H ${V('350')}  k ${V('1.95')}`;
+
+    document.getElementById('f-note').innerHTML =
+`The gradient runs 0→100. <code>t^p</code> front-loads the cosine so saturation is already halfway down
+ by one-third of the ramp — still flat at both ends, just not symmetric. Chromatic <code>900</code> is
+ formula-only (no Figma swatch).`;
+
+    const brand5 = ALL.v5.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>k<sub>H</sub></th></tr>`;
+    document.getElementById('lad').innerHTML = brand5.rows.map(r=>
+      `<tr><td>${r.step}${r.missing?' <span style="color:var(--ink-3)">(new)</span>':''}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+    ).join('');
+  }
+}
+
+/* ---------- curve diagram (L red, S blue) ---------- */
+function renderCurves(){
+  const el = document.getElementById('curves');
+  const show = ver === 'v2' || ver === 'v3' || ver === 'v4' || ver === 'v5';
+  el.dataset.show = show ? 'true' : 'false';
+  const legShi = document.getElementById('leg-shi');
+  if(legShi) legShi.hidden = !(ver === 'v4' || ver === 'v5');
+  if(!show) return;
+
+  let curve = null, curveHi = null;
+  if(ver === 'v5' && ALL.v5 && ALL.v5.curves){
+    curve = ALL.v5.curves.chromatic;
+    curveHi = ALL.v5.curves.chromatic_hi;
+  } else if(ver === 'v4' && ALL.v4 && ALL.v4.curves){
+    curve = ALL.v4.curves.chromatic;
+    curveHi = ALL.v4.curves.chromatic_hi;
+  } else if(ver === 'v3' && ALL.v3 && ALL.v3.curves){
+    curve = ALL.v3.curves.chromatic;
+  } else if(ver === 'v2'){
+    const ts=[], Ls=[], Ss=[];
+    for(let i=0;i<=64;i++){
+      const tt=i/64;
+      const L=96 - 81*Math.pow(tt,1.25);
+      const S=Math.max(70, Math.min(100, 100 - (75 - L)));
+      ts.push(tt); Ls.push(L); Ss.push(S);
+    }
+    curve = {t:ts, L:Ls, S:Ss};
+  }
+  if(!curve) return;
+
+  const W=760, H=280, padL=48, padR=18, padT=18, padB=36;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=tt=> padL + tt*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+
+  const toPath=(src, vals)=> vals.map((v,i)=>{
+    const x=xOf(src.t[i]), y=yOf(v);
+    return `${i===0?'M':'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
+  }).join(' ');
+
+  const yTicks=[0,25,50,75,100];
+  const xTicks = ver === 'v5' ? [0,0.25,0.5,0.75,1] : [0,0.25,0.5,0.75,1];
+  const xLabel = tt => {
+    if(ver === 'v5') return String(Math.round(tt*100));
+    return tt===0?'0':tt===1?'1':String(tt);
+  };
+  const xAxisTitle = ver === 'v5' ? 'scale 0 → 100' : 'gradient progression t';
+
+  const grid = yTicks.map(v=>
+    `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`
+  ).join('') + xTicks.map(tt=>
+    `<line class="gridline" x1="${xOf(tt)}" y1="${padT}" x2="${xOf(tt)}" y2="${H-padB}"/>`
+  ).join('');
+
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-8}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`
+  ).join('');
+  const xLabels = xTicks.map(tt=>
+    `<text class="label" x="${xOf(tt)}" y="${H-padB+18}" text-anchor="middle">${xLabel(tt)}</text>`
+  ).join('');
+
+  const hiPath = curveHi ? `<path class="Shi" d="${toPath(curveHi, curveHi.S)}"/>` : '';
+
+  document.getElementById('curves-svg').innerHTML =
+    `${grid}
+     <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+     <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+     ${yLabels}${xLabels}
+     <text class="title" x="${padL}" y="${padT-4}">value</text>
+     <text class="title" x="${W-padR}" y="${H-8}" text-anchor="end">${xAxisTitle}</text>
+     ${hiPath}
+     <path class="S" d="${toPath(curve, curve.S)}"/>
+     <path class="L" d="${toPath(curve, curve.L)}"/>`;
+
+  document.getElementById('curves-hint').textContent =
+    ver==='v5'
+      ? 'X = scale 0–100 · Y = value (0–100). Red = L. Solid blue = S at k=1; dashed = S at k=2. Drop is front-loaded (half by ~33). Steps 25 / 800 / 900 sit inside the domain.'
+      : ver==='v4'
+      ? 'X = gradient progression t · Y = value (0–100). Red = L(t). Solid blue = S(t) at k=1; dashed blue = S at k≈2.45 (Pulse). Each family uses its own k_H.'
+      : ver==='v3'
+        ? 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). Shared chromatic curves — hue is constant per family.'
+        : 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). v2 curves (steps still use a lightness ladder).';
+}
+
+/* ---------- scoreboard/* ---------- scoreboard ---------- */
+function renderBoard(){
+  const s = ST[ver];
+  const last = ver==='v1'
+    ? ['', '1', 'parameter per family — its hue']
+    : ver==='v5'
+      ? ['', '0–100', 'full domain · sine S · interior steps']
+      : ver==='v4'
+      ? ['', 'k_H', 'per-family S gain · equal-t samples']
+      : ver==='v3'
+        ? ['', 't', 'pure curves · equal samples']
+        : ['', 't', 'continuous parameter · lightness ladder'];
+  document.getElementById('board').innerHTML = [
+    ['', s.n, 'ramp swatches across 13 ramps'],
+    ['g', s.inv, 'reproduced exactly (ΔE &lt; 1)'],
+    ['y', s.sli, 'within a slight shift (1–3)'],
+    ['r', s.vis, 'deliberately normalised (&gt; 3)'],
+    last
+  ].map(([c,n,l])=>`<div class="score ${c}"><b>${n}</b><span>${l}</span></div>`).join('');
+}
 
 /* ---------- swatch text contrast ---------- */
 function ink(hex){
@@ -345,36 +765,68 @@ function ink(hex){
   return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
 }
 function label(r,key,mode){
+  if(key==='orig' && (r.missing || r.orig==null)) return '';
   if(mode==='none') return '';
   if(mode==='hex')  return r[key];
-  const [h,s,l]=r[key+'_hsl']; return `${h} ${s} ${l}`;
+  const hsl=r[key+'_hsl'];
+  if(!hsl) return '';
+  const [h,s,l]=hsl; return `${h} ${s} ${l}`;
 }
-const band=d=> d<1?'':d<3?'s':d<6?'v':'b';
+const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- v1 synthetic gradient ---------- */
+function v1Gradient(f){
+  const n = f.rows.length;
+  const stops = f.rows.map((r,i)=> `${r.hsl} ${((i/(n-1))*100).toFixed(2)}%`);
+  return `linear-gradient(to bottom, ${stops.join(', ')})`;
+}
 
 /* ---------- render ---------- */
-let vals='none', flt='all';
-
 function famCard(f){
-  const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
-  const param = f.kind==='grey' ? 'achromatic' : `H ${f.hue}`;
-  const rows = f.rows.map(r=>{
+  const compared = f.rows.filter(r=>r.dE_hsl!=null);
+  const worst = compared.length ? Math.max(...compared.map(r=>r.dE_hsl)) : 0;
+  const param = f.kind==='grey' ? 'achromatic'
+    : (ver==='v4' || ver==='v5') && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
+    : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
+  const grad = f.gradient || v1Gradient(f);
+  const n = f.rows.length;
+
+  const body = f.rows.map((r,i)=>{
+    const missing = !!(r.missing || r.orig==null);
     const d=r.dE_hsl, b=band(d);
-    const t=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}`;
-    return `<span class="st">${r.step}</span>`+
-      `<span class="tile" style="background:${r.orig};color:${ink(r.orig)}" title="${t}">${label(r,'orig',vals)}</span>`+
-      `<span class="tile b" style="background:${r.hsl};color:${ink(r.hsl)}" title="${t}">${label(r,'hsl',vals)}</span>`+
-      `<span class="dl" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+    const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
+    const tip = missing
+      ? `${r.step} · no Figma swatch → formula ${r.hsl}${tPos}`
+      : `${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
+    const figmaTile = missing
+      ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`;
+    const deCell = missing
+      ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No Figma original">—</span>`
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+    return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+      figmaTile+
+      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}">${label(r,'hsl',vals)}</span>`+
+      deCell;
   }).join('');
+
   const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
   return `<article class="fam${flt==='dev'&&worst<1?' dim':''}">
     <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
-    <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Δ</span></div>
-    <div class="ramp">${rows}</div></article>`;
+    <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
+    <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
+      ${body}
+      <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
+    </div></article>`;
 }
 
 function render(){
+  const D = ALL[ver];
   const put=(id,list)=>{
-    const l = flt==='dev' ? list.filter(f=>Math.max(...f.rows.map(r=>r.dE_hsl))>=1) : list;
+    const l = flt==='dev' ? list.filter(f=>{
+      const ds=f.rows.map(r=>r.dE_hsl).filter(d=>d!=null);
+      return ds.length && Math.max(...ds)>=1;
+    }) : list;
     document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
   };
@@ -382,17 +834,36 @@ function render(){
   put('g-theme',     D.families.filter(f=>['neutral','grey'].includes(f.kind)));
 
   const devs=[];
-  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl>=1) devs.push([f,r]); }));
+  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl!=null && r.dE_hsl>=1) devs.push([f,r]); }));
   devs.sort((a,b)=>b[1].dE_hsl-a[1].dE_hsl);
   document.getElementById('devlist').innerHTML =
     `<div class="devrow devhead"><span>Family</span><span class="stp">Step</span>`+
     `<span>Figma</span><span>Formula</span><span class="de">ΔE</span></div>`+
-    devs.map(([f,r])=>
+    (devs.length ? devs.map(([f,r])=>
       `<div class="devrow"><span class="nm">${f.name}${f.theme==='both'?'':' · '+f.theme}</span>`+
       `<span class="stp">${r.step}</span>`+
       `<span class="sw"><u style="background:${r.orig}"></u>${r.orig}</span>`+
       `<span class="sw"><u style="background:${r.hsl}"></u>${r.hsl}</span>`+
-      `<span class="de">${r.dE_hsl.toFixed(2)}</span></div>`).join('');
+      `<span class="de">${r.dE_hsl.toFixed(2)}</span></div>`).join('')
+      : `<div class="devrow"><span class="nm" style="grid-column:1/-1;color:var(--ink-3)">Nothing moves beyond ΔE 1.</span></div>`);
+}
+
+function applyVersion(){
+  const c = COPY[ver];
+  document.getElementById('mast-title').textContent = c.title;
+  document.getElementById('mast-lead').textContent = c.lead;
+  document.getElementById('eyebrow').textContent = c.eyebrow;
+  document.getElementById('chip').textContent = c.chip;
+  document.getElementById('f-heading').textContent = c.fHead;
+  document.getElementById('lad-heading').textContent = c.ladHead;
+  document.getElementById('chrom-blurb').textContent = c.chrom;
+  document.getElementById('theme-blurb').textContent = c.theme;
+  document.getElementById('foot').innerHTML = c.foot;
+  document.getElementById('ver-label').textContent = ver;
+  renderBoard();
+  renderFormula();
+  renderCurves();
+  render();
 }
 
 document.querySelectorAll('.seg button').forEach(b=>{
@@ -404,5 +875,6 @@ document.querySelectorAll('.seg button').forEach(b=>{
     render();
   });
 });
-render();
+
+applyVersion();
 </script>
