@@ -1,0 +1,2448 @@
+{
+ "families": [
+  {
+   "name": "Brand",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 190,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#EBFCFF",
+     "hsl": "#EBFCFF",
+     "orig_hsl": [
+      189,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      189,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#D6F8FF",
+     "hsl": "#CCF6FF",
+     "orig_hsl": [
+      190,
+      100,
+      92
+     ],
+     "hsl_hsl": [
+      191,
+      100,
+      90
+     ],
+     "dE_hsl": 1.35,
+     "px_hsl": 10
+    },
+    {
+     "step": "100",
+     "orig": "#B2F2FF",
+     "hsl": "#B2F2FF",
+     "orig_hsl": [
+      190,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      190,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#80EAFF",
+     "hsl": "#80EAFF",
+     "orig_hsl": [
+      190,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      190,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#55DCF6",
+     "hsl": "#55DBF6",
+     "orig_hsl": [
+      190,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      190,
+      90,
+      65
+     ],
+     "dE_hsl": 0.28,
+     "px_hsl": 1
+    },
+    {
+     "step": "400",
+     "orig": "#31CAE8",
+     "hsl": "#30C9E8",
+     "orig_hsl": [
+      190,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      190,
+      80,
+      55
+     ],
+     "dE_hsl": 0.29,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#22A8C3",
+     "hsl": "#22A8C3",
+     "orig_hsl": [
+      190,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      190,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#1B8398",
+     "hsl": "#1B8398",
+     "orig_hsl": [
+      190,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      190,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#135D6C",
+     "hsl": "#135D6C",
+     "orig_hsl": [
+      190,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      190,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#0B3841",
+     "hsl": "#0B3841",
+     "orig_hsl": [
+      190,
+      71,
+      15
+     ],
+     "hsl_hsl": [
+      190,
+      71,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Core",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 250,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#EEEBFF",
+     "hsl": "#EEEBFF",
+     "orig_hsl": [
+      249,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      249,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#DDD6FF",
+     "hsl": "#D4CCFF",
+     "orig_hsl": [
+      250,
+      100,
+      92
+     ],
+     "hsl_hsl": [
+      249,
+      100,
+      90
+     ],
+     "dE_hsl": 2.99,
+     "px_hsl": 10
+    },
+    {
+     "step": "100",
+     "orig": "#BFB2FF",
+     "hsl": "#BFB2FF",
+     "orig_hsl": [
+      250,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      250,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#9580FF",
+     "hsl": "#9580FF",
+     "orig_hsl": [
+      250,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      250,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#7055F6",
+     "hsl": "#7055F6",
+     "orig_hsl": [
+      250,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      250,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#5031E8",
+     "hsl": "#4F30E8",
+     "orig_hsl": [
+      250,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      250,
+      80,
+      55
+     ],
+     "dE_hsl": 0.23,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#3D22C3",
+     "hsl": "#3D22C3",
+     "orig_hsl": [
+      250,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      250,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#301B98",
+     "hsl": "#301B98",
+     "orig_hsl": [
+      250,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      250,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#22136C",
+     "hsl": "#22136C",
+     "orig_hsl": [
+      250,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      250,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#140B41",
+     "hsl": "#140B41",
+     "orig_hsl": [
+      250,
+      71,
+      15
+     ],
+     "hsl_hsl": [
+      250,
+      71,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Mindaro",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 75,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#FAFFEB",
+     "hsl": "#FAFFEB",
+     "orig_hsl": [
+      75,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      75,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#F2FFCC",
+     "hsl": "#F2FFCC",
+     "orig_hsl": [
+      75,
+      100,
+      90
+     ],
+     "hsl_hsl": [
+      75,
+      100,
+      90
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "100",
+     "orig": "#E6FF99",
+     "hsl": "#ECFFB2",
+     "orig_hsl": [
+      75,
+      100,
+      80
+     ],
+     "hsl_hsl": [
+      75,
+      100,
+      85
+     ],
+     "dE_hsl": 3.09,
+     "px_hsl": 25
+    },
+    {
+     "step": "200",
+     "orig": "#D9FF66",
+     "hsl": "#DFFF80",
+     "orig_hsl": [
+      75,
+      100,
+      70
+     ],
+     "hsl_hsl": [
+      75,
+      100,
+      75
+     ],
+     "dE_hsl": 2.57,
+     "px_hsl": 26
+    },
+    {
+     "step": "300",
+     "orig": "#C7F53D",
+     "hsl": "#CEF655",
+     "orig_hsl": [
+      75,
+      90,
+      60
+     ],
+     "hsl_hsl": [
+      75,
+      90,
+      65
+     ],
+     "dE_hsl": 1.85,
+     "px_hsl": 24
+    },
+    {
+     "step": "400",
+     "orig": "#B2E51A",
+     "hsl": "#BAE830",
+     "orig_hsl": [
+      75,
+      80,
+      50
+     ],
+     "hsl_hsl": [
+      75,
+      80,
+      55
+     ],
+     "dE_hsl": 1.54,
+     "px_hsl": 22
+    },
+    {
+     "step": "500",
+     "orig": "#8AAD1F",
+     "hsl": "#9BC322",
+     "orig_hsl": [
+      75,
+      70,
+      40
+     ],
+     "hsl_hsl": [
+      75,
+      70,
+      45
+     ],
+     "dE_hsl": 6.62,
+     "px_hsl": 22
+    },
+    {
+     "step": "600",
+     "orig": "#678217",
+     "hsl": "#78981B",
+     "orig_hsl": [
+      75,
+      70,
+      30
+     ],
+     "hsl_hsl": [
+      75,
+      70,
+      35
+     ],
+     "dE_hsl": 6.95,
+     "px_hsl": 22
+    },
+    {
+     "step": "700",
+     "orig": "#45570F",
+     "hsl": "#566C13",
+     "orig_hsl": [
+      75,
+      71,
+      20
+     ],
+     "hsl_hsl": [
+      75,
+      70,
+      25
+     ],
+     "dE_hsl": 7.13,
+     "px_hsl": 21
+    },
+    {
+     "step": "800",
+     "orig": "#222B08",
+     "hsl": "#34410B",
+     "orig_hsl": [
+      75,
+      69,
+      10
+     ],
+     "hsl_hsl": [
+      74,
+      71,
+      15
+     ],
+     "dE_hsl": 8.28,
+     "px_hsl": 22
+    }
+   ]
+  },
+  {
+   "name": "Pulse",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 110,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#EEFFEB",
+     "hsl": "#EEFFEB",
+     "orig_hsl": [
+      111,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      111,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#D5FFCC",
+     "hsl": "#D5FFCC",
+     "orig_hsl": [
+      109,
+      100,
+      90
+     ],
+     "hsl_hsl": [
+      109,
+      100,
+      90
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "100",
+     "orig": "#BFFFB2",
+     "hsl": "#BFFFB2",
+     "orig_hsl": [
+      110,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      110,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#95FF80",
+     "hsl": "#95FF80",
+     "orig_hsl": [
+      110,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      110,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#70F655",
+     "hsl": "#70F655",
+     "orig_hsl": [
+      110,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      110,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#50E831",
+     "hsl": "#4FE830",
+     "orig_hsl": [
+      110,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      110,
+      80,
+      55
+     ],
+     "dE_hsl": 0.08,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#3DC322",
+     "hsl": "#3DC322",
+     "orig_hsl": [
+      110,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      110,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#368F24",
+     "hsl": "#30981B",
+     "orig_hsl": [
+      110,
+      60,
+      35
+     ],
+     "hsl_hsl": [
+      110,
+      70,
+      35
+     ],
+     "dE_hsl": 2.85,
+     "px_hsl": 9
+    },
+    {
+     "step": "700",
+     "orig": "#2F5827",
+     "hsl": "#226C13",
+     "orig_hsl": [
+      110,
+      39,
+      25
+     ],
+     "hsl_hsl": [
+      110,
+      70,
+      25
+     ],
+     "dE_hsl": 7.14,
+     "px_hsl": 20
+    },
+    {
+     "step": "800",
+     "orig": "#1F301C",
+     "hsl": "#14410B",
+     "orig_hsl": [
+      111,
+      26,
+      15
+     ],
+     "hsl_hsl": [
+      110,
+      71,
+      15
+     ],
+     "dE_hsl": 6.92,
+     "px_hsl": 17
+    }
+   ]
+  },
+  {
+   "name": "Flash",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 32,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#FFF5EB",
+     "hsl": "#FFF5EB",
+     "orig_hsl": [
+      30,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      30,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#FFE7CC",
+     "hsl": "#FFE7CC",
+     "orig_hsl": [
+      32,
+      100,
+      90
+     ],
+     "hsl_hsl": [
+      32,
+      100,
+      90
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "100",
+     "orig": "#FFDBB2",
+     "hsl": "#FFDBB2",
+     "orig_hsl": [
+      32,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      32,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#FFC380",
+     "hsl": "#FFC380",
+     "orig_hsl": [
+      32,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      32,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#F6AB55",
+     "hsl": "#F6AB55",
+     "orig_hsl": [
+      32,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      32,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#E89331",
+     "hsl": "#E89230",
+     "orig_hsl": [
+      32,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      32,
+      80,
+      55
+     ],
+     "dE_hsl": 0.23,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#C37822",
+     "hsl": "#C37822",
+     "orig_hsl": [
+      32,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      32,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#985D1B",
+     "hsl": "#985D1B",
+     "orig_hsl": [
+      32,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      32,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#6C4313",
+     "hsl": "#6C4313",
+     "orig_hsl": [
+      32,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      32,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#30271C",
+     "hsl": "#41280B",
+     "orig_hsl": [
+      33,
+      26,
+      15
+     ],
+     "hsl_hsl": [
+      32,
+      71,
+      15
+     ],
+     "dE_hsl": 3.98,
+     "px_hsl": 17
+    }
+   ]
+  },
+  {
+   "name": "Edge",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 10,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#FFEEEB",
+     "hsl": "#FFEEEB",
+     "orig_hsl": [
+      9,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      9,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#FFDDD6",
+     "hsl": "#FFD5CC",
+     "orig_hsl": [
+      10,
+      100,
+      92
+     ],
+     "hsl_hsl": [
+      11,
+      100,
+      90
+     ],
+     "dE_hsl": 2.01,
+     "px_hsl": 10
+    },
+    {
+     "step": "100",
+     "orig": "#FFBFB2",
+     "hsl": "#FFBFB2",
+     "orig_hsl": [
+      10,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      10,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#FF9580",
+     "hsl": "#FF9580",
+     "orig_hsl": [
+      10,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      10,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#F67055",
+     "hsl": "#F67055",
+     "orig_hsl": [
+      10,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      10,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#E84F30",
+     "hsl": "#E84F30",
+     "orig_hsl": [
+      10,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      10,
+      80,
+      55
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "500",
+     "orig": "#C33D22",
+     "hsl": "#C33D22",
+     "orig_hsl": [
+      10,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      10,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#98301B",
+     "hsl": "#98301B",
+     "orig_hsl": [
+      10,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      10,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#6C2213",
+     "hsl": "#6C2213",
+     "orig_hsl": [
+      10,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      10,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#41140B",
+     "hsl": "#41140B",
+     "orig_hsl": [
+      10,
+      71,
+      15
+     ],
+     "hsl_hsl": [
+      10,
+      71,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Pink",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 350,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#FFEBEE",
+     "hsl": "#FFEBEE",
+     "orig_hsl": [
+      351,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      351,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#FFD6DD",
+     "hsl": "#FFCCD5",
+     "orig_hsl": [
+      350,
+      100,
+      92
+     ],
+     "hsl_hsl": [
+      349,
+      100,
+      90
+     ],
+     "dE_hsl": 2.39,
+     "px_hsl": 10
+    },
+    {
+     "step": "100",
+     "orig": "#FFB2BF",
+     "hsl": "#FFB2BF",
+     "orig_hsl": [
+      350,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      350,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#FF8095",
+     "hsl": "#FF8095",
+     "orig_hsl": [
+      350,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      350,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#F65570",
+     "hsl": "#F65570",
+     "orig_hsl": [
+      350,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      350,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#E8304F",
+     "hsl": "#E8304F",
+     "orig_hsl": [
+      350,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      350,
+      80,
+      55
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "500",
+     "orig": "#C3223D",
+     "hsl": "#C3223D",
+     "orig_hsl": [
+      350,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      350,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#8F2436",
+     "hsl": "#981B30",
+     "orig_hsl": [
+      350,
+      60,
+      35
+     ],
+     "hsl_hsl": [
+      350,
+      70,
+      35
+     ],
+     "dE_hsl": 1.96,
+     "px_hsl": 9
+    },
+    {
+     "step": "700",
+     "orig": "#58272F",
+     "hsl": "#6C1322",
+     "orig_hsl": [
+      350,
+      39,
+      25
+     ],
+     "hsl_hsl": [
+      350,
+      70,
+      25
+     ],
+     "dE_hsl": 5.04,
+     "px_hsl": 20
+    },
+    {
+     "step": "800",
+     "orig": "#311C1F",
+     "hsl": "#410B14",
+     "orig_hsl": [
+      351,
+      27,
+      15
+     ],
+     "hsl_hsl": [
+      350,
+      71,
+      15
+     ],
+     "dE_hsl": 4.89,
+     "px_hsl": 17
+    }
+   ]
+  },
+  {
+   "name": "Yellow",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 50,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#FFFCEB",
+     "hsl": "#FFFCEB",
+     "orig_hsl": [
+      51,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      51,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#FFF7CC",
+     "hsl": "#FFF6CC",
+     "orig_hsl": [
+      51,
+      100,
+      90
+     ],
+     "hsl_hsl": [
+      49,
+      100,
+      90
+     ],
+     "dE_hsl": 0.26,
+     "px_hsl": 1
+    },
+    {
+     "step": "100",
+     "orig": "#FFF2B2",
+     "hsl": "#FFF2B2",
+     "orig_hsl": [
+      50,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      50,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#FFEA80",
+     "hsl": "#FFEA80",
+     "orig_hsl": [
+      50,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      50,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#F6DB55",
+     "hsl": "#F6DB55",
+     "orig_hsl": [
+      50,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      50,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#E8CA31",
+     "hsl": "#E8C930",
+     "orig_hsl": [
+      50,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      50,
+      80,
+      55
+     ],
+     "dE_hsl": 0.24,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#C3A822",
+     "hsl": "#C3A822",
+     "orig_hsl": [
+      50,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      50,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#98831B",
+     "hsl": "#98831B",
+     "orig_hsl": [
+      50,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      50,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#6C5E13",
+     "hsl": "#6C5E13",
+     "orig_hsl": [
+      51,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      51,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#41380B",
+     "hsl": "#41380B",
+     "orig_hsl": [
+      50,
+      71,
+      15
+     ],
+     "hsl_hsl": [
+      50,
+      71,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Mint",
+   "kind": "chromatic",
+   "theme": "both",
+   "hue": 145,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#EBFFF3",
+     "hsl": "#EBFFF3",
+     "orig_hsl": [
+      144,
+      100,
+      96
+     ],
+     "hsl_hsl": [
+      144,
+      100,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#CCFFE1",
+     "hsl": "#CCFFE1",
+     "orig_hsl": [
+      145,
+      100,
+      90
+     ],
+     "hsl_hsl": [
+      145,
+      100,
+      90
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "100",
+     "orig": "#B2FFD2",
+     "hsl": "#B2FFD2",
+     "orig_hsl": [
+      145,
+      100,
+      85
+     ],
+     "hsl_hsl": [
+      145,
+      100,
+      85
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "200",
+     "orig": "#80FFB5",
+     "hsl": "#80FFB5",
+     "orig_hsl": [
+      145,
+      100,
+      75
+     ],
+     "hsl_hsl": [
+      145,
+      100,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#55F698",
+     "hsl": "#55F698",
+     "orig_hsl": [
+      145,
+      90,
+      65
+     ],
+     "hsl_hsl": [
+      145,
+      90,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#31E87E",
+     "hsl": "#30E87D",
+     "orig_hsl": [
+      145,
+      80,
+      55
+     ],
+     "hsl_hsl": [
+      145,
+      80,
+      55
+     ],
+     "dE_hsl": 0.13,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#22C365",
+     "hsl": "#22C365",
+     "orig_hsl": [
+      145,
+      70,
+      45
+     ],
+     "hsl_hsl": [
+      145,
+      70,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#1B984F",
+     "hsl": "#1B984F",
+     "orig_hsl": [
+      145,
+      70,
+      35
+     ],
+     "hsl_hsl": [
+      145,
+      70,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#136C38",
+     "hsl": "#136C38",
+     "orig_hsl": [
+      145,
+      70,
+      25
+     ],
+     "hsl_hsl": [
+      145,
+      70,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#0B4122",
+     "hsl": "#0B4122",
+     "orig_hsl": [
+      146,
+      71,
+      15
+     ],
+     "hsl_hsl": [
+      146,
+      71,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Neutral",
+   "kind": "neutral",
+   "theme": "light",
+   "hue": 75,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#F5F6F4",
+     "hsl": "#F5F6F4",
+     "orig_hsl": [
+      90,
+      10,
+      96
+     ],
+     "hsl_hsl": [
+      90,
+      10,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#ECEDE9",
+     "hsl": "#E7E8E3",
+     "orig_hsl": [
+      75,
+      10,
+      92
+     ],
+     "hsl_hsl": [
+      72,
+      10,
+      90
+     ],
+     "dE_hsl": 1.55,
+     "px_hsl": 6
+    },
+    {
+     "step": "100",
+     "orig": "#DDDFD8",
+     "hsl": "#DADCD5",
+     "orig_hsl": [
+      77,
+      10,
+      86
+     ],
+     "hsl_hsl": [
+      77,
+      9,
+      85
+     ],
+     "dE_hsl": 0.92,
+     "px_hsl": 3
+    },
+    {
+     "step": "200",
+     "orig": "#C2C4BA",
+     "hsl": "#C2C4BA",
+     "orig_hsl": [
+      72,
+      8,
+      75
+     ],
+     "hsl_hsl": [
+      72,
+      8,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#A9ACA0",
+     "hsl": "#A9ACA0",
+     "orig_hsl": [
+      75,
+      7,
+      65
+     ],
+     "hsl_hsl": [
+      75,
+      7,
+      65
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "400",
+     "orig": "#909385",
+     "hsl": "#8F9386",
+     "orig_hsl": [
+      73,
+      6,
+      55
+     ],
+     "hsl_hsl": [
+      78,
+      6,
+      55
+     ],
+     "dE_hsl": 0.19,
+     "px_hsl": 1
+    },
+    {
+     "step": "500",
+     "orig": "#76786D",
+     "hsl": "#75786E",
+     "orig_hsl": [
+      71,
+      5,
+      45
+     ],
+     "hsl_hsl": [
+      78,
+      4,
+      45
+     ],
+     "dE_hsl": 0.2,
+     "px_hsl": 1
+    },
+    {
+     "step": "600",
+     "orig": "#5B5D56",
+     "hsl": "#5B5C56",
+     "orig_hsl": [
+      77,
+      4,
+      35
+     ],
+     "hsl_hsl": [
+      70,
+      3,
+      35
+     ],
+     "dE_hsl": 0.31,
+     "px_hsl": 1
+    },
+    {
+     "step": "700",
+     "orig": "#41423E",
+     "hsl": "#41413E",
+     "orig_hsl": [
+      75,
+      3,
+      25
+     ],
+     "hsl_hsl": [
+      60,
+      2,
+      25
+     ],
+     "dE_hsl": 0.33,
+     "px_hsl": 1
+    },
+    {
+     "step": "800",
+     "orig": "#272725",
+     "hsl": "#272726",
+     "orig_hsl": [
+      60,
+      3,
+      15
+     ],
+     "hsl_hsl": [
+      60,
+      1,
+      15
+     ],
+     "dE_hsl": 0.18,
+     "px_hsl": 1
+    },
+    {
+     "step": "900",
+     "orig": "#1A1A19",
+     "hsl": "#1A1A19",
+     "orig_hsl": [
+      60,
+      2,
+      10
+     ],
+     "hsl_hsl": [
+      60,
+      2,
+      10
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Neutral",
+   "kind": "neutral",
+   "theme": "dark",
+   "hue": 190,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#F4F5F6",
+     "hsl": "#F4F6F6",
+     "orig_hsl": [
+      210,
+      10,
+      96
+     ],
+     "hsl_hsl": [
+      180,
+      10,
+      96
+     ],
+     "dE_hsl": 0.26,
+     "px_hsl": 1
+    },
+    {
+     "step": "50",
+     "orig": "#E8ECED",
+     "hsl": "#E2E8E9",
+     "orig_hsl": [
+      192,
+      12,
+      92
+     ],
+     "hsl_hsl": [
+      189,
+      14,
+      90
+     ],
+     "dE_hsl": 1.38,
+     "px_hsl": 6
+    },
+    {
+     "step": "100",
+     "orig": "#D7DEE0",
+     "hsl": "#D4DCDE",
+     "orig_hsl": [
+      193,
+      13,
+      86
+     ],
+     "hsl_hsl": [
+      192,
+      13,
+      85
+     ],
+     "dE_hsl": 0.7,
+     "px_hsl": 3
+    },
+    {
+     "step": "200",
+     "orig": "#B7C5C8",
+     "hsl": "#B6C5C8",
+     "orig_hsl": [
+      191,
+      13,
+      75
+     ],
+     "hsl_hsl": [
+      190,
+      14,
+      75
+     ],
+     "dE_hsl": 0.13,
+     "px_hsl": 1
+    },
+    {
+     "step": "300",
+     "orig": "#99AEB2",
+     "hsl": "#98AFB3",
+     "orig_hsl": [
+      190,
+      14,
+      65
+     ],
+     "hsl_hsl": [
+      189,
+      15,
+      65
+     ],
+     "dE_hsl": 0.28,
+     "px_hsl": 1
+    },
+    {
+     "step": "400",
+     "orig": "#7B989D",
+     "hsl": "#7A989F",
+     "orig_hsl": [
+      189,
+      15,
+      55
+     ],
+     "hsl_hsl": [
+      191,
+      16,
+      55
+     ],
+     "dE_hsl": 0.31,
+     "px_hsl": 2
+    },
+    {
+     "step": "500",
+     "orig": "#607F85",
+     "hsl": "#5F8086",
+     "orig_hsl": [
+      190,
+      16,
+      45
+     ],
+     "hsl_hsl": [
+      189,
+      17,
+      45
+     ],
+     "dE_hsl": 0.29,
+     "px_hsl": 1
+    },
+    {
+     "step": "600",
+     "orig": "#4A6368",
+     "hsl": "#49646A",
+     "orig_hsl": [
+      190,
+      17,
+      35
+     ],
+     "hsl_hsl": [
+      191,
+      18,
+      35
+     ],
+     "dE_hsl": 0.37,
+     "px_hsl": 2
+    },
+    {
+     "step": "700",
+     "orig": "#34474B",
+     "hsl": "#33484C",
+     "orig_hsl": [
+      190,
+      18,
+      25
+     ],
+     "hsl_hsl": [
+      190,
+      20,
+      25
+     ],
+     "dE_hsl": 0.32,
+     "px_hsl": 1
+    },
+    {
+     "step": "800",
+     "orig": "#233134",
+     "hsl": "#1E2B2E",
+     "orig_hsl": [
+      191,
+      20,
+      17
+     ],
+     "hsl_hsl": [
+      191,
+      21,
+      15
+     ],
+     "dE_hsl": 2.34,
+     "px_hsl": 6
+    },
+    {
+     "step": "850",
+     "orig": "#1B2628",
+     "hsl": "#192426",
+     "orig_hsl": [
+      189,
+      19,
+      13
+     ],
+     "hsl_hsl": [
+      189,
+      21,
+      12
+     ],
+     "dE_hsl": 0.83,
+     "px_hsl": 2
+    },
+    {
+     "step": "900",
+     "orig": "#141D1F",
+     "hsl": "#141D1F",
+     "orig_hsl": [
+      191,
+      22,
+      10
+     ],
+     "hsl_hsl": [
+      191,
+      22,
+      10
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    }
+   ]
+  },
+  {
+   "name": "Greyscale",
+   "kind": "grey",
+   "theme": "light",
+   "hue": 0,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#F5F5F5",
+     "hsl": "#F5F5F5",
+     "orig_hsl": [
+      0,
+      0,
+      96
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#EBEBEB",
+     "hsl": "#E6E6E6",
+     "orig_hsl": [
+      0,
+      0,
+      92
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      90
+     ],
+     "dE_hsl": 1.51,
+     "px_hsl": 5
+    },
+    {
+     "step": "100",
+     "orig": "#DBDBDB",
+     "hsl": "#D9D9D9",
+     "orig_hsl": [
+      0,
+      0,
+      86
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      85
+     ],
+     "dE_hsl": 0.61,
+     "px_hsl": 2
+    },
+    {
+     "step": "200",
+     "orig": "#BFBFBF",
+     "hsl": "#BFBFBF",
+     "orig_hsl": [
+      0,
+      0,
+      75
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#A5A5A5",
+     "hsl": "#A6A6A6",
+     "orig_hsl": [
+      0,
+      0,
+      65
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      65
+     ],
+     "dE_hsl": 0.32,
+     "px_hsl": 1
+    },
+    {
+     "step": "400",
+     "orig": "#8C8C8C",
+     "hsl": "#8C8C8C",
+     "orig_hsl": [
+      0,
+      0,
+      55
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      55
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "500",
+     "orig": "#737373",
+     "hsl": "#737373",
+     "orig_hsl": [
+      0,
+      0,
+      45
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#5A5A5A",
+     "hsl": "#595959",
+     "orig_hsl": [
+      0,
+      0,
+      35
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      35
+     ],
+     "dE_hsl": 0.36,
+     "px_hsl": 1
+    },
+    {
+     "step": "700",
+     "orig": "#404040",
+     "hsl": "#404040",
+     "orig_hsl": [
+      0,
+      0,
+      25
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#262626",
+     "hsl": "#262626",
+     "orig_hsl": [
+      0,
+      0,
+      15
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      15
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "900",
+     "orig": "#1A1A1A",
+     "hsl": "#1A1A1A",
+     "orig_hsl": [
+      0,
+      0,
+      10
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      10
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "950",
+     "orig": "#000000",
+     "hsl": "#131313",
+     "orig_hsl": [
+      0,
+      0,
+      0
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      7
+     ],
+     "dE_hsl": 18.67,
+     "px_hsl": 19
+    }
+   ]
+  },
+  {
+   "name": "Greyscale",
+   "kind": "grey",
+   "theme": "dark",
+   "hue": 0,
+   "rows": [
+    {
+     "step": "25",
+     "orig": "#F5F5F5",
+     "hsl": "#F5F5F5",
+     "orig_hsl": [
+      0,
+      0,
+      96
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      96
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "50",
+     "orig": "#EBEBEB",
+     "hsl": "#E6E6E6",
+     "orig_hsl": [
+      0,
+      0,
+      92
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      90
+     ],
+     "dE_hsl": 1.51,
+     "px_hsl": 5
+    },
+    {
+     "step": "100",
+     "orig": "#DBDBDB",
+     "hsl": "#D9D9D9",
+     "orig_hsl": [
+      0,
+      0,
+      86
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      85
+     ],
+     "dE_hsl": 0.61,
+     "px_hsl": 2
+    },
+    {
+     "step": "200",
+     "orig": "#BFBFBF",
+     "hsl": "#BFBFBF",
+     "orig_hsl": [
+      0,
+      0,
+      75
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      75
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "300",
+     "orig": "#A5A5A5",
+     "hsl": "#A6A6A6",
+     "orig_hsl": [
+      0,
+      0,
+      65
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      65
+     ],
+     "dE_hsl": 0.32,
+     "px_hsl": 1
+    },
+    {
+     "step": "400",
+     "orig": "#8C8C8C",
+     "hsl": "#8C8C8C",
+     "orig_hsl": [
+      0,
+      0,
+      55
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      55
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "500",
+     "orig": "#737373",
+     "hsl": "#737373",
+     "orig_hsl": [
+      0,
+      0,
+      45
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      45
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "600",
+     "orig": "#595959",
+     "hsl": "#595959",
+     "orig_hsl": [
+      0,
+      0,
+      35
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      35
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "700",
+     "orig": "#404040",
+     "hsl": "#404040",
+     "orig_hsl": [
+      0,
+      0,
+      25
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      25
+     ],
+     "dE_hsl": 0.0,
+     "px_hsl": 0
+    },
+    {
+     "step": "800",
+     "orig": "#2C2C2C",
+     "hsl": "#262626",
+     "orig_hsl": [
+      0,
+      0,
+      17
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      15
+     ],
+     "dE_hsl": 2.45,
+     "px_hsl": 6
+    },
+    {
+     "step": "900",
+     "orig": "#222222",
+     "hsl": "#1A1A1A",
+     "orig_hsl": [
+      0,
+      0,
+      13
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      10
+     ],
+     "dE_hsl": 3.42,
+     "px_hsl": 8
+    },
+    {
+     "step": "950",
+     "orig": "#1A1A1A",
+     "hsl": "#131313",
+     "orig_hsl": [
+      0,
+      0,
+      10
+     ],
+     "hsl_hsl": [
+      0,
+      0,
+      7
+     ],
+     "dE_hsl": 3.1,
+     "px_hsl": 7
+    }
+   ]
+  }
+ ],
+ "hues": {
+  "Edge": 10,
+  "Flash": 32,
+  "Yellow": 50,
+  "Mindaro": 75,
+  "Pulse": 110,
+  "Mint": 145,
+  "Brand": 190,
+  "Core": 250,
+  "Pink": 350
+ }
+}

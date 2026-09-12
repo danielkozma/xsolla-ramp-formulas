@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Reverse-engineered HSL formulas for the Xsolla colour palette, with every Figma ramp shown edge-to-edge against the formula output.">
+<title>Xsolla Ramp Formulas</title>
+<link rel="stylesheet" href="https://use.typekit.net/mwa4gcw.css">
+<style>
+/* Pilat — the display face, served locally */
+@font-face{font-family:'Pilat';src:url('fonts/pilat/pilat_regular.woff2') format('woff2'),
+  url('fonts/pilat/pilat_regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+
+/* ------------------------------------------------------------------
+   Tokens — Xsolla Digital Language dashboard
+   (Figma DjKP20nZbMAfwXwddlCOSt, frame 2789:7057)
+   A committed light theme: the reference is a light admin surface with
+   a black application bar, so the page paints one world explicitly
+   rather than carrying a second palette it would never use.
+   ------------------------------------------------------------------ */
+:root{
+  --ground:#F3F3F2;              /* background/secondary */
+  --panel:#FFFFFF;               /* background/primary   */
+  --sunk:rgba(0,0,0,.05);        /* overlay/mono         */
+  --input:rgba(0,0,0,.08);       /* control/input/bg     */
+
+  --ink:#000000;                 /* content/primary      */
+  --ink-2:rgba(0,0,0,.80);
+  --ink-3:rgba(0,0,0,.60);       /* content/tertiary     */
+
+  --rule:rgba(0,0,0,.10);        /* border/secondary     */
+  --rule-2:#C1C2BC;              /* control/mono/secondary/border */
+  --faint:#DADBD7;               /* control/mono/secondary/bg     */
+
+  --brand:#80EAFF;               /* control/brand/primary/bg      */
+  --brand-edge:#31CAE8;          /* control/brand/primary/border  */
+  --brand-soft:#B2F2FF;          /* background/brand-secondary    */
+  --brand-ink:#135D6C;
+
+  --ok:#95FF80;                  /* background/success-primary    */
+  --slight:#F6DB55;
+  --warn:#F6AB55;
+  --bad:#F67055;                 /* background/alert-primary      */
+
+  --body:aktiv-grotesk,"Helvetica Neue",Arial,sans-serif;
+  --display:"Pilat",var(--body);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --r-xs:2px;                    /* tag/sm  */
+  --r-sm:4px;                    /* radius/50 */
+  --r-md:6px;                    /* radius/75 */
+  --r-lg:8px;                    /* radius/100 */
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:400 14px/18px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
+
+/* ---- application bar ---- */
+.appbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;
+        height:48px;padding:0 16px;background:var(--panel);color:var(--ink);
+        border-bottom:1px solid var(--rule)}
+.appbar__ctx{font-size:14px;line-height:18px;font-weight:500;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.appbar__chip{display:inline-flex;align-items:center;height:28px;padding:0 10px;
+              background:var(--input);border-radius:var(--r-sm);color:var(--ink-2);
+              font-size:12px;line-height:16px;font-variant-numeric:tabular-nums;
+              white-space:nowrap;flex:0 0 auto}
+.appbar__spacer{margin-left:auto}
+
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
+
+/* ---- page head ---- */
+.mast{padding:36px 0 26px}
+.eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:19ch}
+.mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
+
+.scoreboard{display:flex;flex-wrap:wrap;margin-top:26px;background:var(--panel);
+            border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
+.score{flex:1 1 150px;padding:14px 18px;border-right:1px solid var(--rule);min-width:0}
+.score:last-child{border-right:0}
+.score b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;
+         font-variant-numeric:tabular-nums}
+.score span{display:block;margin-top:4px;font-size:12px;line-height:16px;color:var(--ink-3)}
+.score.g b{color:#2F8F1C} .score.y b{color:#8A6D0B} .score.r b{color:#B3401F}
+
+/* ---- toolbar ---- */
+.bar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;
+     padding:12px 0;margin-bottom:28px;border-bottom:1px solid var(--rule)}
+.grp{display:flex;align-items:center;gap:8px}
+.grp>label{font-size:12px;line-height:16px;color:var(--ink-3);white-space:nowrap}
+.seg{display:flex;background:var(--input);border:1px solid var(--rule);
+     border-radius:var(--r-sm);padding:3px;gap:2px}
+.seg button{appearance:none;border:1px solid transparent;background:transparent;color:var(--ink-2);
+            cursor:pointer;font:400 13px/16px var(--body);padding:6px 10px;
+            border-radius:var(--r-xs);white-space:nowrap;
+            transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+.seg button:hover:not([aria-pressed="true"]){color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--panel);border-color:var(--rule);
+                                 color:var(--ink);font-weight:500}
+
+/* ---- formula panel ---- */
+.panel{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(300px,1fr);
+       background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);margin-bottom:40px}
+.panel>div{padding:22px 24px;min-width:0}
+.panel>div+div{border-left:1px solid var(--rule)}
+.panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
+          color:var(--ink-3);margin-bottom:14px}
+pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
+      font-variant-numeric:tabular-nums}
+pre.f .k{color:var(--ink-3)}
+pre.f .v{color:var(--brand-ink);font-weight:600}
+.note{margin:18px 0 0;max-width:58ch;font-size:13px;line-height:19px;color:var(--ink-2)}
+.note code{padding:1px 5px;background:var(--sunk);border-radius:var(--r-xs);
+           font:500 12px var(--mono)}
+
+table.ladder{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.ladder th,table.ladder td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--rule)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left;color:var(--ink-3)}
+table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
+table.ladder tbody tr:last-child td{border-bottom:0}
+
+/* ---- section heads ---- */
+.sect{margin:0 0 12px}
+.sect h2{font-size:22px;line-height:1.1}
+.sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
+        font-size:12px;line-height:16px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
+          border:1px solid var(--rule)}
+
+/* ---- family cards ---- */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));margin:0 0 44px}
+.fam{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
+.fam header{display:flex;align-items:baseline;gap:8px;padding:13px 14px 11px;
+            border-bottom:1px solid var(--rule)}
+.fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
+.fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
+            font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
+            letter-spacing:.06em}
+.fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.colhead{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:9px 12px 5px;
+         font-size:10px;line-height:14px;color:var(--ink-3);letter-spacing:.06em;
+         text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3){padding-left:5px}
+.colhead span:last-child{text-align:right}
+
+.ramp{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:0 12px 13px;align-items:stretch}
+.ramp .st{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+          font-size:10.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* Figma value and formula value share an edge — no gap, no radius, so the
+   seam only appears where the two actually differ. */
+.tile{height:32px;display:flex;align-items:center;padding:0 6px;
+      font:500 10px/1 var(--body);font-variant-numeric:tabular-nums;
+      white-space:nowrap;overflow:hidden}
+.tile.b{justify-content:flex-end}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:6px}
+.dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
+.dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
+.dl em{font-style:normal;font-size:9.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.fam.dim{opacity:.34}
+
+/* ---- deviation table ---- */
+.dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+     overflow:hidden;margin-top:18px}
+.devrow{display:grid;grid-template-columns:120px 56px 1fr 1fr 62px;align-items:center;
+        border-bottom:1px solid var(--rule);font-size:12.5px;font-variant-numeric:tabular-nums}
+.devrow:last-child{border-bottom:0}
+.devrow>*{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devrow .nm{font-weight:500}
+.devrow .stp{text-align:right;color:var(--ink-3)}
+.devrow .sw{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px}
+.devrow .sw u{flex:0 0 auto;width:24px;height:24px;border-radius:var(--r-sm);
+              box-shadow:inset 0 0 0 1px var(--rule)}
+.devrow .de{text-align:right;color:var(--ink-3)}
+.devhead{background:var(--sunk);color:var(--ink-3);font-size:11px!important;
+         letter-spacing:.06em;text-transform:uppercase}
+
+footer{margin-top:44px;padding:22px 24px;max-width:none;background:var(--panel);
+       border:1px solid var(--rule);border-radius:var(--r-lg);
+       font-size:13px;line-height:20px;color:var(--ink-2)}
+footer p{margin:0 0 12px;max-width:80ch}
+footer p:last-child{margin-bottom:0}
+footer b{color:var(--ink);font-weight:500}
+
+@media (max-width:880px){
+  .panel{grid-template-columns:1fr}
+  .panel>div+div{border-left:0;border-top:1px solid var(--rule)}
+  .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <span class="appbar__ctx">Redesign Color Palette — Pentagram</span>
+  <span class="appbar__spacer"></span>
+  <span class="appbar__chip">Solid ramps · 137 swatches</span>
+</header>
+
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow">Reverse-engineered from the Figma variable set</p>
+  <h1>Every ramp from one hue and two ladders</h1>
+  <p class="lead">The Xsolla palette is far more systematic than it looks. Hue is constant down each ramp; lightness and
+  saturation follow ladders shared by every family. One parameter per family — its hue — regenerates the
+  whole set. Below, each ramp's Figma values sit edge-to-edge against the formula output, so any drift is
+  visible without reading a number.</p>
+  <div class="scoreboard" id="board"></div>
+</header>
+
+<div class="bar">
+  <div class="grp"><label>Values</label>
+    <div class="seg" role="group">
+      <button data-val="none" aria-pressed="true">Swatch only</button>
+      <button data-val="hex" aria-pressed="false">Hex</button>
+      <button data-val="hsl" aria-pressed="false">HSL</button>
+    </div></div>
+  <div class="grp"><label>Show</label>
+    <div class="seg" role="group">
+      <button data-flt="all" aria-pressed="true">All families</button>
+      <button data-flt="dev" aria-pressed="false">Only those that shift</button>
+    </div></div>
+</div>
+
+<div class="panel">
+  <div>
+    <h2>The formula</h2>
+    <pre class="f" id="f-body"></pre>
+    <p class="note" id="f-note"></p>
+  </div>
+  <div>
+    <h2>Step ladder</h2>
+    <table class="ladder"><thead><tr>
+      <th>Step</th><th>L</th><th>S</th><th>Neutral S<sub>light</sub></th><th>Neutral S<sub>dark</sub></th>
+    </tr></thead><tbody id="lad"></tbody></table>
+  </div>
+</div>
+
+<div class="sect">
+  <h2>Chromatic families</h2>
+  <p>Nine hues, steps 25–800. These carry a single set of variables — Figma's Solid&nbsp;/&nbsp;Light and
+  Solid&nbsp;/&nbsp;Dark frames hold identical values, so one formula serves both themes.</p>
+</div>
+<div class="legend">
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1 · no visible difference</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3 · detectable side by side</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6 · clearly different</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6 · deliberate normalisation</span>
+</div>
+<div class="grid" id="g-chromatic"></div>
+
+<div class="sect">
+  <h2>Theme-dependent families</h2>
+  <p>Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step
+  ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them
+  on dark — one expression each.</p>
+</div>
+<div class="grid" id="g-theme"></div>
+
+<div class="sect" id="devsec">
+  <h2>What moves if the formula becomes the source of truth</h2>
+  <p>Every swatch the formula places more than one ΔE from its current Figma value. Anything not listed
+  here regenerates within a just-noticeable difference.</p>
+</div>
+<div class="dev" id="devlist"></div>
+
+<footer>
+  <p><b>The step-50 drift.</b> Brand, Core, Edge and Pink sit at L&nbsp;92 where every other family sits at
+  90. It reads as drift rather than intent — the ladder is otherwise exact — so the formula normalises it.
+  Cost: four swatches, ΔE 1.3–3.0.</p>
+  <p><b>Mindaro.</b> Its whole ramp runs five lightness points darker from step 100 down (80/70/60/…/10
+  against 85/75/65/…/15). That is the largest single decision in the set: normalising it lightens the
+  acid-green noticeably at 500–800. If the punch is intentional, keep Mindaro on a −5 lightness offset —
+  one extra parameter, and the family lands exactly.</p>
+  <p><b>Muted dark tails.</b> Pulse and Pink desaturate below step 500 (S 60/39/26 instead of 70/70/70),
+  and Flash does the same at 800 alone. Almost certainly hand-tuning so dark greens and reds don't go
+  muddy. The formula clamps them at 70; if you want the tuning back it is a per-family tail curve.</p>
+  <p><b>Greyscale/Light/950</b> is pure black, duplicating Neutral/Solid/Black. Under the regenerated
+  ladder it becomes L&nbsp;7.5 (#131313) and black stays available as its own token.</p>
+  <p><b>A note on the hidden frame.</b> The file contains a hidden “Construction principle” section
+  specifying a different system — lightness anchored at 50 for step 500, and a hue shift running
+  −22°&nbsp;→&nbsp;+22° across the ramp. The shipped values follow none of it: hue is constant to within
+  rounding in all nine families. Treat it as a superseded spec.</p>
+</footer>
+</div>
+
+<script>
+const D = {"families":[{"name":"Brand","kind":"chromatic","theme":"both","hue":190,"rows":[{"step":"25","orig":"#EBFCFF","hsl":"#EBFCFF","orig_hsl":[189,100,96],"hsl_hsl":[189,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#D6F8FF","hsl":"#CCF6FF","orig_hsl":[190,100,92],"hsl_hsl":[191,100,90],"dE_hsl":1.35,"px_hsl":10},{"step":"100","orig":"#B2F2FF","hsl":"#B2F2FF","orig_hsl":[190,100,85],"hsl_hsl":[190,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#80EAFF","hsl":"#80EAFF","orig_hsl":[190,100,75],"hsl_hsl":[190,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#55DCF6","hsl":"#55DBF6","orig_hsl":[190,90,65],"hsl_hsl":[190,90,65],"dE_hsl":0.28,"px_hsl":1},{"step":"400","orig":"#31CAE8","hsl":"#30C9E8","orig_hsl":[190,80,55],"hsl_hsl":[190,80,55],"dE_hsl":0.29,"px_hsl":1},{"step":"500","orig":"#22A8C3","hsl":"#22A8C3","orig_hsl":[190,70,45],"hsl_hsl":[190,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#1B8398","hsl":"#1B8398","orig_hsl":[190,70,35],"hsl_hsl":[190,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#135D6C","hsl":"#135D6C","orig_hsl":[190,70,25],"hsl_hsl":[190,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#0B3841","hsl":"#0B3841","orig_hsl":[190,71,15],"hsl_hsl":[190,71,15],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Core","kind":"chromatic","theme":"both","hue":250,"rows":[{"step":"25","orig":"#EEEBFF","hsl":"#EEEBFF","orig_hsl":[249,100,96],"hsl_hsl":[249,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#DDD6FF","hsl":"#D4CCFF","orig_hsl":[250,100,92],"hsl_hsl":[249,100,90],"dE_hsl":2.99,"px_hsl":10},{"step":"100","orig":"#BFB2FF","hsl":"#BFB2FF","orig_hsl":[250,100,85],"hsl_hsl":[250,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#9580FF","hsl":"#9580FF","orig_hsl":[250,100,75],"hsl_hsl":[250,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#7055F6","hsl":"#7055F6","orig_hsl":[250,90,65],"hsl_hsl":[250,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#5031E8","hsl":"#4F30E8","orig_hsl":[250,80,55],"hsl_hsl":[250,80,55],"dE_hsl":0.23,"px_hsl":1},{"step":"500","orig":"#3D22C3","hsl":"#3D22C3","orig_hsl":[250,70,45],"hsl_hsl":[250,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#301B98","hsl":"#301B98","orig_hsl":[250,70,35],"hsl_hsl":[250,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#22136C","hsl":"#22136C","orig_hsl":[250,70,25],"hsl_hsl":[250,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#140B41","hsl":"#140B41","orig_hsl":[250,71,15],"hsl_hsl":[250,71,15],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Mindaro","kind":"chromatic","theme":"both","hue":75,"rows":[{"step":"25","orig":"#FAFFEB","hsl":"#FAFFEB","orig_hsl":[75,100,96],"hsl_hsl":[75,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#F2FFCC","hsl":"#F2FFCC","orig_hsl":[75,100,90],"hsl_hsl":[75,100,90],"dE_hsl":0.0,"px_hsl":0},{"step":"100","orig":"#E6FF99","hsl":"#ECFFB2","orig_hsl":[75,100,80],"hsl_hsl":[75,100,85],"dE_hsl":3.09,"px_hsl":25},{"step":"200","orig":"#D9FF66","hsl":"#DFFF80","orig_hsl":[75,100,70],"hsl_hsl":[75,100,75],"dE_hsl":2.57,"px_hsl":26},{"step":"300","orig":"#C7F53D","hsl":"#CEF655","orig_hsl":[75,90,60],"hsl_hsl":[75,90,65],"dE_hsl":1.85,"px_hsl":24},{"step":"400","orig":"#B2E51A","hsl":"#BAE830","orig_hsl":[75,80,50],"hsl_hsl":[75,80,55],"dE_hsl":1.54,"px_hsl":22},{"step":"500","orig":"#8AAD1F","hsl":"#9BC322","orig_hsl":[75,70,40],"hsl_hsl":[75,70,45],"dE_hsl":6.62,"px_hsl":22},{"step":"600","orig":"#678217","hsl":"#78981B","orig_hsl":[75,70,30],"hsl_hsl":[75,70,35],"dE_hsl":6.95,"px_hsl":22},{"step":"700","orig":"#45570F","hsl":"#566C13","orig_hsl":[75,71,20],"hsl_hsl":[75,70,25],"dE_hsl":7.13,"px_hsl":21},{"step":"800","orig":"#222B08","hsl":"#34410B","orig_hsl":[75,69,10],"hsl_hsl":[74,71,15],"dE_hsl":8.28,"px_hsl":22}]},{"name":"Pulse","kind":"chromatic","theme":"both","hue":110,"rows":[{"step":"25","orig":"#EEFFEB","hsl":"#EEFFEB","orig_hsl":[111,100,96],"hsl_hsl":[111,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#D5FFCC","hsl":"#D5FFCC","orig_hsl":[109,100,90],"hsl_hsl":[109,100,90],"dE_hsl":0.0,"px_hsl":0},{"step":"100","orig":"#BFFFB2","hsl":"#BFFFB2","orig_hsl":[110,100,85],"hsl_hsl":[110,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#95FF80","hsl":"#95FF80","orig_hsl":[110,100,75],"hsl_hsl":[110,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#70F655","hsl":"#70F655","orig_hsl":[110,90,65],"hsl_hsl":[110,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#50E831","hsl":"#4FE830","orig_hsl":[110,80,55],"hsl_hsl":[110,80,55],"dE_hsl":0.08,"px_hsl":1},{"step":"500","orig":"#3DC322","hsl":"#3DC322","orig_hsl":[110,70,45],"hsl_hsl":[110,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#368F24","hsl":"#30981B","orig_hsl":[110,60,35],"hsl_hsl":[110,70,35],"dE_hsl":2.85,"px_hsl":9},{"step":"700","orig":"#2F5827","hsl":"#226C13","orig_hsl":[110,39,25],"hsl_hsl":[110,70,25],"dE_hsl":7.14,"px_hsl":20},{"step":"800","orig":"#1F301C","hsl":"#14410B","orig_hsl":[111,26,15],"hsl_hsl":[110,71,15],"dE_hsl":6.92,"px_hsl":17}]},{"name":"Flash","kind":"chromatic","theme":"both","hue":32,"rows":[{"step":"25","orig":"#FFF5EB","hsl":"#FFF5EB","orig_hsl":[30,100,96],"hsl_hsl":[30,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#FFE7CC","hsl":"#FFE7CC","orig_hsl":[32,100,90],"hsl_hsl":[32,100,90],"dE_hsl":0.0,"px_hsl":0},{"step":"100","orig":"#FFDBB2","hsl":"#FFDBB2","orig_hsl":[32,100,85],"hsl_hsl":[32,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#FFC380","hsl":"#FFC380","orig_hsl":[32,100,75],"hsl_hsl":[32,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#F6AB55","hsl":"#F6AB55","orig_hsl":[32,90,65],"hsl_hsl":[32,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#E89331","hsl":"#E89230","orig_hsl":[32,80,55],"hsl_hsl":[32,80,55],"dE_hsl":0.23,"px_hsl":1},{"step":"500","orig":"#C37822","hsl":"#C37822","orig_hsl":[32,70,45],"hsl_hsl":[32,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#985D1B","hsl":"#985D1B","orig_hsl":[32,70,35],"hsl_hsl":[32,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#6C4313","hsl":"#6C4313","orig_hsl":[32,70,25],"hsl_hsl":[32,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#30271C","hsl":"#41280B","orig_hsl":[33,26,15],"hsl_hsl":[32,71,15],"dE_hsl":3.98,"px_hsl":17}]},{"name":"Edge","kind":"chromatic","theme":"both","hue":10,"rows":[{"step":"25","orig":"#FFEEEB","hsl":"#FFEEEB","orig_hsl":[9,100,96],"hsl_hsl":[9,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#FFDDD6","hsl":"#FFD5CC","orig_hsl":[10,100,92],"hsl_hsl":[11,100,90],"dE_hsl":2.01,"px_hsl":10},{"step":"100","orig":"#FFBFB2","hsl":"#FFBFB2","orig_hsl":[10,100,85],"hsl_hsl":[10,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#FF9580","hsl":"#FF9580","orig_hsl":[10,100,75],"hsl_hsl":[10,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#F67055","hsl":"#F67055","orig_hsl":[10,90,65],"hsl_hsl":[10,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#E84F30","hsl":"#E84F30","orig_hsl":[10,80,55],"hsl_hsl":[10,80,55],"dE_hsl":0.0,"px_hsl":0},{"step":"500","orig":"#C33D22","hsl":"#C33D22","orig_hsl":[10,70,45],"hsl_hsl":[10,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#98301B","hsl":"#98301B","orig_hsl":[10,70,35],"hsl_hsl":[10,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#6C2213","hsl":"#6C2213","orig_hsl":[10,70,25],"hsl_hsl":[10,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#41140B","hsl":"#41140B","orig_hsl":[10,71,15],"hsl_hsl":[10,71,15],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Pink","kind":"chromatic","theme":"both","hue":350,"rows":[{"step":"25","orig":"#FFEBEE","hsl":"#FFEBEE","orig_hsl":[351,100,96],"hsl_hsl":[351,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#FFD6DD","hsl":"#FFCCD5","orig_hsl":[350,100,92],"hsl_hsl":[349,100,90],"dE_hsl":2.39,"px_hsl":10},{"step":"100","orig":"#FFB2BF","hsl":"#FFB2BF","orig_hsl":[350,100,85],"hsl_hsl":[350,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#FF8095","hsl":"#FF8095","orig_hsl":[350,100,75],"hsl_hsl":[350,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#F65570","hsl":"#F65570","orig_hsl":[350,90,65],"hsl_hsl":[350,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#E8304F","hsl":"#E8304F","orig_hsl":[350,80,55],"hsl_hsl":[350,80,55],"dE_hsl":0.0,"px_hsl":0},{"step":"500","orig":"#C3223D","hsl":"#C3223D","orig_hsl":[350,70,45],"hsl_hsl":[350,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#8F2436","hsl":"#981B30","orig_hsl":[350,60,35],"hsl_hsl":[350,70,35],"dE_hsl":1.96,"px_hsl":9},{"step":"700","orig":"#58272F","hsl":"#6C1322","orig_hsl":[350,39,25],"hsl_hsl":[350,70,25],"dE_hsl":5.04,"px_hsl":20},{"step":"800","orig":"#311C1F","hsl":"#410B14","orig_hsl":[351,27,15],"hsl_hsl":[350,71,15],"dE_hsl":4.89,"px_hsl":17}]},{"name":"Yellow","kind":"chromatic","theme":"both","hue":50,"rows":[{"step":"25","orig":"#FFFCEB","hsl":"#FFFCEB","orig_hsl":[51,100,96],"hsl_hsl":[51,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#FFF7CC","hsl":"#FFF6CC","orig_hsl":[51,100,90],"hsl_hsl":[49,100,90],"dE_hsl":0.26,"px_hsl":1},{"step":"100","orig":"#FFF2B2","hsl":"#FFF2B2","orig_hsl":[50,100,85],"hsl_hsl":[50,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#FFEA80","hsl":"#FFEA80","orig_hsl":[50,100,75],"hsl_hsl":[50,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#F6DB55","hsl":"#F6DB55","orig_hsl":[50,90,65],"hsl_hsl":[50,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#E8CA31","hsl":"#E8C930","orig_hsl":[50,80,55],"hsl_hsl":[50,80,55],"dE_hsl":0.24,"px_hsl":1},{"step":"500","orig":"#C3A822","hsl":"#C3A822","orig_hsl":[50,70,45],"hsl_hsl":[50,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#98831B","hsl":"#98831B","orig_hsl":[50,70,35],"hsl_hsl":[50,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#6C5E13","hsl":"#6C5E13","orig_hsl":[51,70,25],"hsl_hsl":[51,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#41380B","hsl":"#41380B","orig_hsl":[50,71,15],"hsl_hsl":[50,71,15],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Mint","kind":"chromatic","theme":"both","hue":145,"rows":[{"step":"25","orig":"#EBFFF3","hsl":"#EBFFF3","orig_hsl":[144,100,96],"hsl_hsl":[144,100,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#CCFFE1","hsl":"#CCFFE1","orig_hsl":[145,100,90],"hsl_hsl":[145,100,90],"dE_hsl":0.0,"px_hsl":0},{"step":"100","orig":"#B2FFD2","hsl":"#B2FFD2","orig_hsl":[145,100,85],"hsl_hsl":[145,100,85],"dE_hsl":0.0,"px_hsl":0},{"step":"200","orig":"#80FFB5","hsl":"#80FFB5","orig_hsl":[145,100,75],"hsl_hsl":[145,100,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#55F698","hsl":"#55F698","orig_hsl":[145,90,65],"hsl_hsl":[145,90,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#31E87E","hsl":"#30E87D","orig_hsl":[145,80,55],"hsl_hsl":[145,80,55],"dE_hsl":0.13,"px_hsl":1},{"step":"500","orig":"#22C365","hsl":"#22C365","orig_hsl":[145,70,45],"hsl_hsl":[145,70,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#1B984F","hsl":"#1B984F","orig_hsl":[145,70,35],"hsl_hsl":[145,70,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#136C38","hsl":"#136C38","orig_hsl":[145,70,25],"hsl_hsl":[145,70,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#0B4122","hsl":"#0B4122","orig_hsl":[146,71,15],"hsl_hsl":[146,71,15],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Neutral","kind":"neutral","theme":"light","hue":75,"rows":[{"step":"25","orig":"#F5F6F4","hsl":"#F5F6F4","orig_hsl":[90,10,96],"hsl_hsl":[90,10,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#ECEDE9","hsl":"#E7E8E3","orig_hsl":[75,10,92],"hsl_hsl":[72,10,90],"dE_hsl":1.55,"px_hsl":6},{"step":"100","orig":"#DDDFD8","hsl":"#DADCD5","orig_hsl":[77,10,86],"hsl_hsl":[77,9,85],"dE_hsl":0.92,"px_hsl":3},{"step":"200","orig":"#C2C4BA","hsl":"#C2C4BA","orig_hsl":[72,8,75],"hsl_hsl":[72,8,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#A9ACA0","hsl":"#A9ACA0","orig_hsl":[75,7,65],"hsl_hsl":[75,7,65],"dE_hsl":0.0,"px_hsl":0},{"step":"400","orig":"#909385","hsl":"#8F9386","orig_hsl":[73,6,55],"hsl_hsl":[78,6,55],"dE_hsl":0.19,"px_hsl":1},{"step":"500","orig":"#76786D","hsl":"#75786E","orig_hsl":[71,5,45],"hsl_hsl":[78,4,45],"dE_hsl":0.2,"px_hsl":1},{"step":"600","orig":"#5B5D56","hsl":"#5B5C56","orig_hsl":[77,4,35],"hsl_hsl":[70,3,35],"dE_hsl":0.31,"px_hsl":1},{"step":"700","orig":"#41423E","hsl":"#41413E","orig_hsl":[75,3,25],"hsl_hsl":[60,2,25],"dE_hsl":0.33,"px_hsl":1},{"step":"800","orig":"#272725","hsl":"#272726","orig_hsl":[60,3,15],"hsl_hsl":[60,1,15],"dE_hsl":0.18,"px_hsl":1},{"step":"900","orig":"#1A1A19","hsl":"#1A1A19","orig_hsl":[60,2,10],"hsl_hsl":[60,2,10],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Neutral","kind":"neutral","theme":"dark","hue":190,"rows":[{"step":"25","orig":"#F4F5F6","hsl":"#F4F6F6","orig_hsl":[210,10,96],"hsl_hsl":[180,10,96],"dE_hsl":0.26,"px_hsl":1},{"step":"50","orig":"#E8ECED","hsl":"#E2E8E9","orig_hsl":[192,12,92],"hsl_hsl":[189,14,90],"dE_hsl":1.38,"px_hsl":6},{"step":"100","orig":"#D7DEE0","hsl":"#D4DCDE","orig_hsl":[193,13,86],"hsl_hsl":[192,13,85],"dE_hsl":0.7,"px_hsl":3},{"step":"200","orig":"#B7C5C8","hsl":"#B6C5C8","orig_hsl":[191,13,75],"hsl_hsl":[190,14,75],"dE_hsl":0.13,"px_hsl":1},{"step":"300","orig":"#99AEB2","hsl":"#98AFB3","orig_hsl":[190,14,65],"hsl_hsl":[189,15,65],"dE_hsl":0.28,"px_hsl":1},{"step":"400","orig":"#7B989D","hsl":"#7A989F","orig_hsl":[189,15,55],"hsl_hsl":[191,16,55],"dE_hsl":0.31,"px_hsl":2},{"step":"500","orig":"#607F85","hsl":"#5F8086","orig_hsl":[190,16,45],"hsl_hsl":[189,17,45],"dE_hsl":0.29,"px_hsl":1},{"step":"600","orig":"#4A6368","hsl":"#49646A","orig_hsl":[190,17,35],"hsl_hsl":[191,18,35],"dE_hsl":0.37,"px_hsl":2},{"step":"700","orig":"#34474B","hsl":"#33484C","orig_hsl":[190,18,25],"hsl_hsl":[190,20,25],"dE_hsl":0.32,"px_hsl":1},{"step":"800","orig":"#233134","hsl":"#1E2B2E","orig_hsl":[191,20,17],"hsl_hsl":[191,21,15],"dE_hsl":2.34,"px_hsl":6},{"step":"850","orig":"#1B2628","hsl":"#192426","orig_hsl":[189,19,13],"hsl_hsl":[189,21,12],"dE_hsl":0.83,"px_hsl":2},{"step":"900","orig":"#141D1F","hsl":"#141D1F","orig_hsl":[191,22,10],"hsl_hsl":[191,22,10],"dE_hsl":0.0,"px_hsl":0}]},{"name":"Greyscale","kind":"grey","theme":"light","hue":0,"rows":[{"step":"25","orig":"#F5F5F5","hsl":"#F5F5F5","orig_hsl":[0,0,96],"hsl_hsl":[0,0,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#EBEBEB","hsl":"#E6E6E6","orig_hsl":[0,0,92],"hsl_hsl":[0,0,90],"dE_hsl":1.51,"px_hsl":5},{"step":"100","orig":"#DBDBDB","hsl":"#D9D9D9","orig_hsl":[0,0,86],"hsl_hsl":[0,0,85],"dE_hsl":0.61,"px_hsl":2},{"step":"200","orig":"#BFBFBF","hsl":"#BFBFBF","orig_hsl":[0,0,75],"hsl_hsl":[0,0,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#A5A5A5","hsl":"#A6A6A6","orig_hsl":[0,0,65],"hsl_hsl":[0,0,65],"dE_hsl":0.32,"px_hsl":1},{"step":"400","orig":"#8C8C8C","hsl":"#8C8C8C","orig_hsl":[0,0,55],"hsl_hsl":[0,0,55],"dE_hsl":0.0,"px_hsl":0},{"step":"500","orig":"#737373","hsl":"#737373","orig_hsl":[0,0,45],"hsl_hsl":[0,0,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#5A5A5A","hsl":"#595959","orig_hsl":[0,0,35],"hsl_hsl":[0,0,35],"dE_hsl":0.36,"px_hsl":1},{"step":"700","orig":"#404040","hsl":"#404040","orig_hsl":[0,0,25],"hsl_hsl":[0,0,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#262626","hsl":"#262626","orig_hsl":[0,0,15],"hsl_hsl":[0,0,15],"dE_hsl":0.0,"px_hsl":0},{"step":"900","orig":"#1A1A1A","hsl":"#1A1A1A","orig_hsl":[0,0,10],"hsl_hsl":[0,0,10],"dE_hsl":0.0,"px_hsl":0},{"step":"950","orig":"#000000","hsl":"#131313","orig_hsl":[0,0,0],"hsl_hsl":[0,0,7],"dE_hsl":18.67,"px_hsl":19}]},{"name":"Greyscale","kind":"grey","theme":"dark","hue":0,"rows":[{"step":"25","orig":"#F5F5F5","hsl":"#F5F5F5","orig_hsl":[0,0,96],"hsl_hsl":[0,0,96],"dE_hsl":0.0,"px_hsl":0},{"step":"50","orig":"#EBEBEB","hsl":"#E6E6E6","orig_hsl":[0,0,92],"hsl_hsl":[0,0,90],"dE_hsl":1.51,"px_hsl":5},{"step":"100","orig":"#DBDBDB","hsl":"#D9D9D9","orig_hsl":[0,0,86],"hsl_hsl":[0,0,85],"dE_hsl":0.61,"px_hsl":2},{"step":"200","orig":"#BFBFBF","hsl":"#BFBFBF","orig_hsl":[0,0,75],"hsl_hsl":[0,0,75],"dE_hsl":0.0,"px_hsl":0},{"step":"300","orig":"#A5A5A5","hsl":"#A6A6A6","orig_hsl":[0,0,65],"hsl_hsl":[0,0,65],"dE_hsl":0.32,"px_hsl":1},{"step":"400","orig":"#8C8C8C","hsl":"#8C8C8C","orig_hsl":[0,0,55],"hsl_hsl":[0,0,55],"dE_hsl":0.0,"px_hsl":0},{"step":"500","orig":"#737373","hsl":"#737373","orig_hsl":[0,0,45],"hsl_hsl":[0,0,45],"dE_hsl":0.0,"px_hsl":0},{"step":"600","orig":"#595959","hsl":"#595959","orig_hsl":[0,0,35],"hsl_hsl":[0,0,35],"dE_hsl":0.0,"px_hsl":0},{"step":"700","orig":"#404040","hsl":"#404040","orig_hsl":[0,0,25],"hsl_hsl":[0,0,25],"dE_hsl":0.0,"px_hsl":0},{"step":"800","orig":"#2C2C2C","hsl":"#262626","orig_hsl":[0,0,17],"hsl_hsl":[0,0,15],"dE_hsl":2.45,"px_hsl":6},{"step":"900","orig":"#222222","hsl":"#1A1A1A","orig_hsl":[0,0,13],"hsl_hsl":[0,0,10],"dE_hsl":3.42,"px_hsl":8},{"step":"950","orig":"#1A1A1A","hsl":"#131313","orig_hsl":[0,0,10],"hsl_hsl":[0,0,7],"dE_hsl":3.1,"px_hsl":7}]}],"hues":{"Edge":10,"Flash":32,"Yellow":50,"Mindaro":75,"Pulse":110,"Mint":145,"Brand":190,"Core":250,"Pink":350}};
+const ST = {"n":137,"inv":109,"sli":15,"vis":13};
+
+/* ---------- scoreboard ---------- */
+document.getElementById('board').innerHTML = [
+  ['', ST.n, 'ramp swatches across 13 ramps'],
+  ['g', ST.inv, 'reproduced exactly (ΔE &lt; 1)'],
+  ['y', ST.sli, 'within a slight shift (1–3)'],
+  ['r', ST.vis, 'deliberately normalised (&gt; 3)'],
+  ['', '1', 'parameter per family — its hue']
+].map(([c,n,l])=>`<div class="score ${c}"><b>${n}</b><span>${l}</span></div>`).join('');
+
+/* ---------- ladder ---------- */
+const STEPS=[25,50,100,200,300,400,500,600,700,800,850,900,950];
+const Lof=s=> s===25?96 : s<=800 ? 95-s/10 : 15-(s-800)/20;
+const Sof=s=> Math.max(70,Math.min(100,120-s/10));
+const nS =(t,L)=> t==='light' ? L/10 : 11+(100-L)/9;
+const fx =(n,d=0)=> n.toFixed(d);
+document.getElementById('lad').innerHTML = STEPS.map(s=>{
+  const L=Lof(s), ext=s>800;
+  return `<tr><td>${s}</td><td>${fx(L,1)}</td><td>${ext?'—':fx(Sof(s))}</td>`+
+         `<td>${fx(nS('light',L),1)}</td><td>${fx(nS('dark',L),1)}</td></tr>`;
+}).join('');
+
+/* ---------- formula ---------- */
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+document.getElementById('f-body').innerHTML =
+`${K('// lightness ladder')}
+L(step) = 96                       ${K('if step = 25')}
+        = 95 − step/10             ${K('if step ≤ 800')}
+        = 15 − (step − 800)/20     ${K('below 800')}
+
+${K('// saturation ladder')}
+S(step) = clamp(120 − step/10, 70, 100)
+
+${K('// per family — the only parameter')}
+chromatic   hsl( ${V('H')}, S(step), L(step) )
+neutral·lt  hsl(  ${V('75')}, L/10,            L )
+neutral·dk  hsl( ${V('190')}, 11 + (100−L)/9,  L )
+greyscale   hsl(   ${V('0')}, 0%,              L )
+
+${K('// H per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+document.getElementById('f-note').innerHTML =
+`Steps 100–800 collapse to <code>L = 95 − step/10</code> exactly. Step 25 is pinned at 96 — one point
+ above where the line would put it, because the ladder would otherwise leave it indistinguishable from
+ step 50.`;
+
+/* ---------- swatch text contrast ---------- */
+function ink(hex){
+  const n=parseInt(hex.slice(1),16), r=n>>16&255, g=n>>8&255, b=n&255;
+  const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
+}
+function label(r,key,mode){
+  if(mode==='none') return '';
+  if(mode==='hex')  return r[key];
+  const [h,s,l]=r[key+'_hsl']; return `${h} ${s} ${l}`;
+}
+const band=d=> d<1?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- render ---------- */
+let vals='none', flt='all';
+
+function famCard(f){
+  const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
+  const param = f.kind==='grey' ? 'achromatic' : `H ${f.hue}`;
+  const rows = f.rows.map(r=>{
+    const d=r.dE_hsl, b=band(d);
+    const t=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}`;
+    return `<span class="st">${r.step}</span>`+
+      `<span class="tile" style="background:${r.orig};color:${ink(r.orig)}" title="${t}">${label(r,'orig',vals)}</span>`+
+      `<span class="tile b" style="background:${r.hsl};color:${ink(r.hsl)}" title="${t}">${label(r,'hsl',vals)}</span>`+
+      `<span class="dl" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+  }).join('');
+  const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
+  return `<article class="fam${flt==='dev'&&worst<1?' dim':''}">
+    <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
+    <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Δ</span></div>
+    <div class="ramp">${rows}</div></article>`;
+}
+
+function render(){
+  const put=(id,list)=>{
+    const l = flt==='dev' ? list.filter(f=>Math.max(...f.rows.map(r=>r.dE_hsl))>=1) : list;
+    document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
+      : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
+  };
+  put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
+  put('g-theme',     D.families.filter(f=>['neutral','grey'].includes(f.kind)));
+
+  const devs=[];
+  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl>=1) devs.push([f,r]); }));
+  devs.sort((a,b)=>b[1].dE_hsl-a[1].dE_hsl);
+  document.getElementById('devlist').innerHTML =
+    `<div class="devrow devhead"><span>Family</span><span class="stp">Step</span>`+
+    `<span>Figma</span><span>Formula</span><span class="de">ΔE</span></div>`+
+    devs.map(([f,r])=>
+      `<div class="devrow"><span class="nm">${f.name}${f.theme==='both'?'':' · '+f.theme}</span>`+
+      `<span class="stp">${r.step}</span>`+
+      `<span class="sw"><u style="background:${r.orig}"></u>${r.orig}</span>`+
+      `<span class="sw"><u style="background:${r.hsl}"></u>${r.hsl}</span>`+
+      `<span class="de">${r.dE_hsl.toFixed(2)}</span></div>`).join('');
+}
+
+document.querySelectorAll('.seg button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    b.parentElement.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    if(b.dataset.val) vals=b.dataset.val;
+    if(b.dataset.flt) flt=b.dataset.flt;
+    render();
+  });
+});
+render();
+</script>
+
+</body>
+</html>

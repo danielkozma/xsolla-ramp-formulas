@@ -1,0 +1,408 @@
+<title>Xsolla Ramp Formulas</title>
+<link rel="stylesheet" href="https://use.typekit.net/mwa4gcw.css">
+<style>
+/* Pilat — the display face, served locally */
+@font-face{font-family:'Pilat';src:url('fonts/pilat/pilat_regular.woff2') format('woff2'),
+  url('fonts/pilat/pilat_regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+
+/* ------------------------------------------------------------------
+   Tokens — Xsolla Digital Language dashboard
+   (Figma DjKP20nZbMAfwXwddlCOSt, frame 2789:7057)
+   A committed light theme: the reference is a light admin surface with
+   a black application bar, so the page paints one world explicitly
+   rather than carrying a second palette it would never use.
+   ------------------------------------------------------------------ */
+:root{
+  --ground:#F3F3F2;              /* background/secondary */
+  --panel:#FFFFFF;               /* background/primary   */
+  --sunk:rgba(0,0,0,.05);        /* overlay/mono         */
+  --input:rgba(0,0,0,.08);       /* control/input/bg     */
+
+  --ink:#000000;                 /* content/primary      */
+  --ink-2:rgba(0,0,0,.80);
+  --ink-3:rgba(0,0,0,.60);       /* content/tertiary     */
+
+  --rule:rgba(0,0,0,.10);        /* border/secondary     */
+  --rule-2:#C1C2BC;              /* control/mono/secondary/border */
+  --faint:#DADBD7;               /* control/mono/secondary/bg     */
+
+  --brand:#80EAFF;               /* control/brand/primary/bg      */
+  --brand-edge:#31CAE8;          /* control/brand/primary/border  */
+  --brand-soft:#B2F2FF;          /* background/brand-secondary    */
+  --brand-ink:#135D6C;
+
+  --ok:#95FF80;                  /* background/success-primary    */
+  --slight:#F6DB55;
+  --warn:#F6AB55;
+  --bad:#F67055;                 /* background/alert-primary      */
+
+  --body:aktiv-grotesk,"Helvetica Neue",Arial,sans-serif;
+  --display:"Pilat",var(--body);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --r-xs:2px;                    /* tag/sm  */
+  --r-sm:4px;                    /* radius/50 */
+  --r-md:6px;                    /* radius/75 */
+  --r-lg:8px;                    /* radius/100 */
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:400 14px/18px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
+
+/* ---- application bar ---- */
+.appbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;
+        height:48px;padding:0 16px;background:var(--panel);color:var(--ink);
+        border-bottom:1px solid var(--rule)}
+.appbar__ctx{font-size:14px;line-height:18px;font-weight:500;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.appbar__chip{display:inline-flex;align-items:center;height:28px;padding:0 10px;
+              background:var(--input);border-radius:var(--r-sm);color:var(--ink-2);
+              font-size:12px;line-height:16px;font-variant-numeric:tabular-nums;
+              white-space:nowrap;flex:0 0 auto}
+.appbar__spacer{margin-left:auto}
+
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
+
+/* ---- page head ---- */
+.mast{padding:36px 0 26px}
+.eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:19ch}
+.mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
+
+.scoreboard{display:flex;flex-wrap:wrap;margin-top:26px;background:var(--panel);
+            border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
+.score{flex:1 1 150px;padding:14px 18px;border-right:1px solid var(--rule);min-width:0}
+.score:last-child{border-right:0}
+.score b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;
+         font-variant-numeric:tabular-nums}
+.score span{display:block;margin-top:4px;font-size:12px;line-height:16px;color:var(--ink-3)}
+.score.g b{color:#2F8F1C} .score.y b{color:#8A6D0B} .score.r b{color:#B3401F}
+
+/* ---- toolbar ---- */
+.bar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;
+     padding:12px 0;margin-bottom:28px;border-bottom:1px solid var(--rule)}
+.grp{display:flex;align-items:center;gap:8px}
+.grp>label{font-size:12px;line-height:16px;color:var(--ink-3);white-space:nowrap}
+.seg{display:flex;background:var(--input);border:1px solid var(--rule);
+     border-radius:var(--r-sm);padding:3px;gap:2px}
+.seg button{appearance:none;border:1px solid transparent;background:transparent;color:var(--ink-2);
+            cursor:pointer;font:400 13px/16px var(--body);padding:6px 10px;
+            border-radius:var(--r-xs);white-space:nowrap;
+            transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+.seg button:hover:not([aria-pressed="true"]){color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--panel);border-color:var(--rule);
+                                 color:var(--ink);font-weight:500}
+
+/* ---- formula panel ---- */
+.panel{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(300px,1fr);
+       background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);margin-bottom:40px}
+.panel>div{padding:22px 24px;min-width:0}
+.panel>div+div{border-left:1px solid var(--rule)}
+.panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
+          color:var(--ink-3);margin-bottom:14px}
+pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
+      font-variant-numeric:tabular-nums}
+pre.f .k{color:var(--ink-3)}
+pre.f .v{color:var(--brand-ink);font-weight:600}
+.note{margin:18px 0 0;max-width:58ch;font-size:13px;line-height:19px;color:var(--ink-2)}
+.note code{padding:1px 5px;background:var(--sunk);border-radius:var(--r-xs);
+           font:500 12px var(--mono)}
+
+table.ladder{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.ladder th,table.ladder td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--rule)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left;color:var(--ink-3)}
+table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
+table.ladder tbody tr:last-child td{border-bottom:0}
+
+/* ---- section heads ---- */
+.sect{margin:0 0 12px}
+.sect h2{font-size:22px;line-height:1.1}
+.sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
+        font-size:12px;line-height:16px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
+          border:1px solid var(--rule)}
+
+/* ---- family cards ---- */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));margin:0 0 44px}
+.fam{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
+.fam header{display:flex;align-items:baseline;gap:8px;padding:13px 14px 11px;
+            border-bottom:1px solid var(--rule)}
+.fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
+.fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
+            font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
+            letter-spacing:.06em}
+.fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.colhead{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:9px 12px 5px;
+         font-size:10px;line-height:14px;color:var(--ink-3);letter-spacing:.06em;
+         text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3){padding-left:5px}
+.colhead span:last-child{text-align:right}
+
+.ramp{display:grid;grid-template-columns:38px 1fr 1fr 30px;padding:0 12px 13px;align-items:stretch}
+.ramp .st{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+          font-size:10.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* Figma value and formula value share an edge — no gap, no radius, so the
+   seam only appears where the two actually differ. */
+.tile{height:32px;display:flex;align-items:center;padding:0 6px;
+      font:500 10px/1 var(--body);font-variant-numeric:tabular-nums;
+      white-space:nowrap;overflow:hidden}
+.tile.b{justify-content:flex-end}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:6px}
+.dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
+.dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
+.dl em{font-style:normal;font-size:9.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.fam.dim{opacity:.34}
+
+/* ---- deviation table ---- */
+.dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+     overflow:hidden;margin-top:18px}
+.devrow{display:grid;grid-template-columns:120px 56px 1fr 1fr 62px;align-items:center;
+        border-bottom:1px solid var(--rule);font-size:12.5px;font-variant-numeric:tabular-nums}
+.devrow:last-child{border-bottom:0}
+.devrow>*{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devrow .nm{font-weight:500}
+.devrow .stp{text-align:right;color:var(--ink-3)}
+.devrow .sw{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px}
+.devrow .sw u{flex:0 0 auto;width:24px;height:24px;border-radius:var(--r-sm);
+              box-shadow:inset 0 0 0 1px var(--rule)}
+.devrow .de{text-align:right;color:var(--ink-3)}
+.devhead{background:var(--sunk);color:var(--ink-3);font-size:11px!important;
+         letter-spacing:.06em;text-transform:uppercase}
+
+footer{margin-top:44px;padding:22px 24px;max-width:none;background:var(--panel);
+       border:1px solid var(--rule);border-radius:var(--r-lg);
+       font-size:13px;line-height:20px;color:var(--ink-2)}
+footer p{margin:0 0 12px;max-width:80ch}
+footer p:last-child{margin-bottom:0}
+footer b{color:var(--ink);font-weight:500}
+
+@media (max-width:880px){
+  .panel{grid-template-columns:1fr}
+  .panel>div+div{border-left:0;border-top:1px solid var(--rule)}
+  .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="appbar">
+  <span class="appbar__ctx">Redesign Color Palette — Pentagram</span>
+  <span class="appbar__spacer"></span>
+  <span class="appbar__chip">Solid ramps · 137 swatches</span>
+</header>
+
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow">Reverse-engineered from the Figma variable set</p>
+  <h1>Every ramp from one hue and two ladders</h1>
+  <p class="lead">The Xsolla palette is far more systematic than it looks. Hue is constant down each ramp; lightness and
+  saturation follow ladders shared by every family. One parameter per family — its hue — regenerates the
+  whole set. Below, each ramp's Figma values sit edge-to-edge against the formula output, so any drift is
+  visible without reading a number.</p>
+  <div class="scoreboard" id="board"></div>
+</header>
+
+<div class="bar">
+  <div class="grp"><label>Values</label>
+    <div class="seg" role="group">
+      <button data-val="none" aria-pressed="true">Swatch only</button>
+      <button data-val="hex" aria-pressed="false">Hex</button>
+      <button data-val="hsl" aria-pressed="false">HSL</button>
+    </div></div>
+  <div class="grp"><label>Show</label>
+    <div class="seg" role="group">
+      <button data-flt="all" aria-pressed="true">All families</button>
+      <button data-flt="dev" aria-pressed="false">Only those that shift</button>
+    </div></div>
+</div>
+
+<div class="panel">
+  <div>
+    <h2>The formula</h2>
+    <pre class="f" id="f-body"></pre>
+    <p class="note" id="f-note"></p>
+  </div>
+  <div>
+    <h2>Step ladder</h2>
+    <table class="ladder"><thead><tr>
+      <th>Step</th><th>L</th><th>S</th><th>Neutral S<sub>light</sub></th><th>Neutral S<sub>dark</sub></th>
+    </tr></thead><tbody id="lad"></tbody></table>
+  </div>
+</div>
+
+<div class="sect">
+  <h2>Chromatic families</h2>
+  <p>Nine hues, steps 25–800. These carry a single set of variables — Figma's Solid&nbsp;/&nbsp;Light and
+  Solid&nbsp;/&nbsp;Dark frames hold identical values, so one formula serves both themes.</p>
+</div>
+<div class="legend">
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1 · no visible difference</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3 · detectable side by side</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6 · clearly different</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6 · deliberate normalisation</span>
+</div>
+<div class="grid" id="g-chromatic"></div>
+
+<div class="sect">
+  <h2>Theme-dependent families</h2>
+  <p>Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step
+  ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them
+  on dark — one expression each.</p>
+</div>
+<div class="grid" id="g-theme"></div>
+
+<div class="sect" id="devsec">
+  <h2>What moves if the formula becomes the source of truth</h2>
+  <p>Every swatch the formula places more than one ΔE from its current Figma value. Anything not listed
+  here regenerates within a just-noticeable difference.</p>
+</div>
+<div class="dev" id="devlist"></div>
+
+<footer>
+  <p><b>The step-50 drift.</b> Brand, Core, Edge and Pink sit at L&nbsp;92 where every other family sits at
+  90. It reads as drift rather than intent — the ladder is otherwise exact — so the formula normalises it.
+  Cost: four swatches, ΔE 1.3–3.0.</p>
+  <p><b>Mindaro.</b> Its whole ramp runs five lightness points darker from step 100 down (80/70/60/…/10
+  against 85/75/65/…/15). That is the largest single decision in the set: normalising it lightens the
+  acid-green noticeably at 500–800. If the punch is intentional, keep Mindaro on a −5 lightness offset —
+  one extra parameter, and the family lands exactly.</p>
+  <p><b>Muted dark tails.</b> Pulse and Pink desaturate below step 500 (S 60/39/26 instead of 70/70/70),
+  and Flash does the same at 800 alone. Almost certainly hand-tuning so dark greens and reds don't go
+  muddy. The formula clamps them at 70; if you want the tuning back it is a per-family tail curve.</p>
+  <p><b>Greyscale/Light/950</b> is pure black, duplicating Neutral/Solid/Black. Under the regenerated
+  ladder it becomes L&nbsp;7.5 (#131313) and black stays available as its own token.</p>
+  <p><b>A note on the hidden frame.</b> The file contains a hidden “Construction principle” section
+  specifying a different system — lightness anchored at 50 for step 500, and a hue shift running
+  −22°&nbsp;→&nbsp;+22° across the ramp. The shipped values follow none of it: hue is constant to within
+  rounding in all nine families. Treat it as a superseded spec.</p>
+</footer>
+</div>
+
+<script>
+const D = /*__DATA__*/;
+const ST = /*__STAT__*/;
+
+/* ---------- scoreboard ---------- */
+document.getElementById('board').innerHTML = [
+  ['', ST.n, 'ramp swatches across 13 ramps'],
+  ['g', ST.inv, 'reproduced exactly (ΔE &lt; 1)'],
+  ['y', ST.sli, 'within a slight shift (1–3)'],
+  ['r', ST.vis, 'deliberately normalised (&gt; 3)'],
+  ['', '1', 'parameter per family — its hue']
+].map(([c,n,l])=>`<div class="score ${c}"><b>${n}</b><span>${l}</span></div>`).join('');
+
+/* ---------- ladder ---------- */
+const STEPS=[25,50,100,200,300,400,500,600,700,800,850,900,950];
+const Lof=s=> s===25?96 : s<=800 ? 95-s/10 : 15-(s-800)/20;
+const Sof=s=> Math.max(70,Math.min(100,120-s/10));
+const nS =(t,L)=> t==='light' ? L/10 : 11+(100-L)/9;
+const fx =(n,d=0)=> n.toFixed(d);
+document.getElementById('lad').innerHTML = STEPS.map(s=>{
+  const L=Lof(s), ext=s>800;
+  return `<tr><td>${s}</td><td>${fx(L,1)}</td><td>${ext?'—':fx(Sof(s))}</td>`+
+         `<td>${fx(nS('light',L),1)}</td><td>${fx(nS('dark',L),1)}</td></tr>`;
+}).join('');
+
+/* ---------- formula ---------- */
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+document.getElementById('f-body').innerHTML =
+`${K('// lightness ladder')}
+L(step) = 96                       ${K('if step = 25')}
+        = 95 − step/10             ${K('if step ≤ 800')}
+        = 15 − (step − 800)/20     ${K('below 800')}
+
+${K('// saturation ladder')}
+S(step) = clamp(120 − step/10, 70, 100)
+
+${K('// per family — the only parameter')}
+chromatic   hsl( ${V('H')}, S(step), L(step) )
+neutral·lt  hsl(  ${V('75')}, L/10,            L )
+neutral·dk  hsl( ${V('190')}, 11 + (100−L)/9,  L )
+greyscale   hsl(   ${V('0')}, 0%,              L )
+
+${K('// H per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+document.getElementById('f-note').innerHTML =
+`Steps 100–800 collapse to <code>L = 95 − step/10</code> exactly. Step 25 is pinned at 96 — one point
+ above where the line would put it, because the ladder would otherwise leave it indistinguishable from
+ step 50.`;
+
+/* ---------- swatch text contrast ---------- */
+function ink(hex){
+  const n=parseInt(hex.slice(1),16), r=n>>16&255, g=n>>8&255, b=n&255;
+  const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
+}
+function label(r,key,mode){
+  if(mode==='none') return '';
+  if(mode==='hex')  return r[key];
+  const [h,s,l]=r[key+'_hsl']; return `${h} ${s} ${l}`;
+}
+const band=d=> d<1?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- render ---------- */
+let vals='none', flt='all';
+
+function famCard(f){
+  const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
+  const param = f.kind==='grey' ? 'achromatic' : `H ${f.hue}`;
+  const rows = f.rows.map(r=>{
+    const d=r.dE_hsl, b=band(d);
+    const t=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}`;
+    return `<span class="st">${r.step}</span>`+
+      `<span class="tile" style="background:${r.orig};color:${ink(r.orig)}" title="${t}">${label(r,'orig',vals)}</span>`+
+      `<span class="tile b" style="background:${r.hsl};color:${ink(r.hsl)}" title="${t}">${label(r,'hsl',vals)}</span>`+
+      `<span class="dl" title="ΔE ${d.toFixed(2)}">${vals==='none'?`<i class="${b}"></i>`:`<em>${d.toFixed(1)}</em>`}</span>`;
+  }).join('');
+  const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
+  return `<article class="fam${flt==='dev'&&worst<1?' dim':''}">
+    <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
+    <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Δ</span></div>
+    <div class="ramp">${rows}</div></article>`;
+}
+
+function render(){
+  const put=(id,list)=>{
+    const l = flt==='dev' ? list.filter(f=>Math.max(...f.rows.map(r=>r.dE_hsl))>=1) : list;
+    document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
+      : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
+  };
+  put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
+  put('g-theme',     D.families.filter(f=>['neutral','grey'].includes(f.kind)));
+
+  const devs=[];
+  D.families.forEach(f=>f.rows.forEach(r=>{ if(r.dE_hsl>=1) devs.push([f,r]); }));
+  devs.sort((a,b)=>b[1].dE_hsl-a[1].dE_hsl);
+  document.getElementById('devlist').innerHTML =
+    `<div class="devrow devhead"><span>Family</span><span class="stp">Step</span>`+
+    `<span>Figma</span><span>Formula</span><span class="de">ΔE</span></div>`+
+    devs.map(([f,r])=>
+      `<div class="devrow"><span class="nm">${f.name}${f.theme==='both'?'':' · '+f.theme}</span>`+
+      `<span class="stp">${r.step}</span>`+
+      `<span class="sw"><u style="background:${r.orig}"></u>${r.orig}</span>`+
+      `<span class="sw"><u style="background:${r.hsl}"></u>${r.hsl}</span>`+
+      `<span class="de">${r.dE_hsl.toFixed(2)}</span></div>`).join('');
+}
+
+document.querySelectorAll('.seg button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    b.parentElement.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    if(b.dataset.val) vals=b.dataset.val;
+    if(b.dataset.flt) flt=b.dataset.flt;
+    render();
+  });
+});
+render();
+</script>
