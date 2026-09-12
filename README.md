@@ -3,7 +3,7 @@
 Reverse-engineered HSL formulas for the Xsolla colour palette
 (Figma: *Redesign Color Palette — Pentagram*).
 
-Six versions ship side by side — switch them from the header dropdown.
+Seven versions ship side by side — switch them from the header dropdown.
 
 ## v1 — discrete step ladders
 
@@ -97,13 +97,47 @@ the light-end fan-out — Mindaro's 25→50 gap comes back as 4.5 L against v5's
 Replacing the power law itself with straight lines is the one simplification that
 breaks: mean ΔE 2.1, worst swatch 7.1.
 
+## v7 — the middle ground
+
+v5's intent without v5's calculus. The exponent still dips where the light
+steps are, but along a rational bell instead of a Gaussian derivative, and it
+is slid straight into the power law rather than integrated:
+
+```
+b(t) = 4c·t/(t + c)²          # c = 0.09 — a bell in log t, no ln
+e(t) = 0.84 − 0.20·w(H)·b(t)  # w(H) is v5's cos² lobe, unchanged
+L(t,H) = 100 − 100·t^e(t)     # t^e is 0 at t=0 and 1 at t=1 for any e
+S(t) = clamp(100 − 30·k·t^(2/3), 0, 100)
+k = 2 Pulse/Pink · 1.75 Flash · 1.25 the rest
+```
+
+No integration is needed because the ends pin themselves whatever the
+exponent does — what v5 proves, v7 gets for free. Mean ΔE **0.59** from v5's
+output with no swatch past 1.43, and it fits the current palette marginally
+better (1.99 against 2.11). The fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L
+against v5's 6.5 / 8.9 / 11.0, where v6's flat cut gives 4.5 / 7.5.
+
+Measured cost of each simplification on its own, against v5's output:
+
+| dropped | mean ΔE |
+|---|---|
+| nine gains → three | 0.06 |
+| neutral S rounded | 0.00 |
+| hue lobe cos² → triangle | 0.30 |
+| S raised cosine → `t^(2/3)` | 0.44 |
+| endpoints 99.5/98.5 → 100/100 | 0.50 |
+| **bend → flat cut** | **1.07** |
+
+Only the last one is expensive, and it is the one that costs the fan-out — so
+v7 keeps a localised correction and drops everything else.
+
 ## Files
 
 | | |
 |---|---|
 | `index.html` | built page |
 | `template.html` | source (`/*__DATA__*/`, `/*__STAT__*/`) |
-| `build.py` | applies v1–v6 → `data/generated.json` |
+| `build.py` | applies v1–v7 → `data/generated.json` |
 | `page.py` | injects data into the template |
 | `data/palette.json` | Figma values |
 

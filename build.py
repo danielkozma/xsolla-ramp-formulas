@@ -900,16 +900,171 @@ def build_v6(v5):
     out["vs_current"] = {"mean": round(sum(dc)/len(dc), 2), "max": round(max(dc), 2)}
     return out
 
+# =====================================================================
+# v7 — the middle ground. Same intent as v5, none of the calculus.
+#
+# v5 derives its bend properly: the exponent is perturbed by a Gaussian
+# derivative, which has zero area, and the perturbation is integrated to a
+# closed form so the endpoints provably hold. v7 skips all of that and slides
+# a varying exponent straight into the power law:
+#
+#     e(t) = 0.84 − 0.20·w(H)·b(t),   b(t) = 4c·t/(t+c)²   (c = 0.09)
+#     L(t,H) = 100 − 100·t^e(t)
+#
+# b is the same bell in log-t that v5 draws with a Gaussian, written without
+# ln or exp: zero at t=0, 1 at t=c, slow decay after. No integration is
+# needed because t^e is 0 at t=0 and 1 at t=1 whatever e does — the ends pin
+# themselves. Saturation, the gains and the endpoints are v6's dumb versions;
+# the hue lobe is v5's, which is one cos and buys real accuracy.
+#
+# Mean ΔE 0.59 from v5's output, worst swatch 1.43, and the light-end fan-out
+# is intact (Mindaro 6.5 / 8.9 / 11.2 against v5's 6.5 / 8.9 / 11.0).
+# =====================================================================
+P_BASE_V7 = 0.84       # exponent away from the dip
+DIP_V7 = 0.20          # how far the dip pulls it down at w = 1
+DIP_C_V7 = 0.09        # where the dip bottoms out, on the 0–1 scale
+S_DROP_V7 = 30.0
+S_POWER_V7 = 2.0/3.0
+S_GAIN_V7 = {"Flash": 1.75, "Pulse": 2.0, "Pink": 2.0}   # everything else 1.25
+
+def k_v7(name):
+    return S_GAIN_V7.get(name, 1.25)
+
+def dip_shape_v7(t):
+    """A bell in log t with no ln in sight: 0 at t=0, 1 at t=c, fat tail after."""
+    return 4.0 * DIP_C_V7 * t / ((t + DIP_C_V7) ** 2)
+
+def L_exponent_v7(t, H=None):
+    """The exponent at this point on the scale — v5's bent q, done by hand."""
+    if H is None:
+        return P_BASE_V7
+    return P_BASE_V7 - DIP_V7 * hue_light_weight_v5(H) * dip_shape_v7(t)
+
+def L_v7(t, H=None):
+    return 100.0 if t <= 0.0 else 100.0 - 100.0 * (t ** L_exponent_v7(t, H))
+
+def S_v7(t, k=1.0):
+    return clamp(100.0 - S_DROP_V7 * k * (t ** S_POWER_V7), 0.0, 100.0)
+
+def neutral_S_v7(theme, L):
+    return L / 10.0 if theme == "light" else 22.0 - L / 9.0
+
+def sample_hex_v7(kind, hue, theme, t, k=1.0):
+    L = L_v7(t, hue if kind == "chromatic" else None)
+    if kind == "chromatic":
+        return hsl2hex(hue, S_v7(t, k), L)
+    return hsl2hex(hue, neutral_S_v7(theme, L), L)
+
+def gradient_css_v7(kind, hue, theme, k=1.0, n=40):
+    stops = [f"{sample_hex_v7(kind, hue, theme, i/(n-1), k)} {round(100*i/(n-1), 2)}%"
+             for i in range(n)]
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def curve_samples_v7(kind="chromatic", theme="both", k=1.0, H=None, n=64):
+    ts, scales, Ls, Ss = [], [], [], []
+    use_H = H if kind == "chromatic" else None
+    for i in range(n):
+        t = i / (n - 1)
+        L = L_v7(t, use_H)
+        ts.append(round(t, 4)); scales.append(round(100.0*t, 2)); Ls.append(round(L, 3))
+        Ss.append(round(S_v7(t, k) if kind == "chromatic" else neutral_S_v7(theme, L), 3))
+    return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
+
+def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, k=1.0):
+    rows, positions = [], []
+    H_for_L = hue if kind == "chromatic" else None
+    dip = round(DIP_V7 * (hue_light_weight_v5(hue) if kind == "chromatic" else 0.0), 4)
+    v5_by_step = {r["step"]: r["hsl"] for r in v5_rows}
+    d5 = []
+    for key in step_keys:
+        t = step_to_t_v5(key)
+        positions.append(t)
+        gen = sample_hex_v7(kind, hue, theme, t, k)
+        L = L_v7(t, H_for_L)
+        S = S_v7(t, k) if kind == "chromatic" else neutral_S_v7(theme, L)
+        ref = v5_by_step.get(key)
+        e5 = round(dE(ref, gen), 2) if ref else None
+        if e5 is not None:
+            d5.append(e5)
+        rows.append({
+            "step": key,
+            **entry(orig_map.get(key), gen, {
+                "t": round(t, 4),
+                "scale": round(100.0 * t, 2),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(hue, 1),
+                "k": k,
+                "e": round(L_exponent_v7(t, H_for_L), 3),
+                "dE_v5": e5,
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue,
+        "k": k, "dip": dip, "rows": rows,
+        "d5": round(sum(d5)/len(d5), 2) if d5 else None,
+        "gradient": gradient_css_v7(kind, hue, theme, k),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v7(v5):
+    v5_fam = {(f["name"], f["theme"]): f["rows"] for f in v5["families"]}
+    out = {
+        "id": "v7", "label": "v7", "families": [], "hues": HUES,
+        "formula": {
+            "L0": 100.0, "L_range": 100.0,
+            "p_base": P_BASE_V7, "dip": DIP_V7, "dip_c": DIP_C_V7,
+            "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
+            "S_drop": S_DROP_V7, "S_power": round(S_POWER_V7, 6),
+            "s_gain": S_GAIN_V7,
+            "steps": CHROMATIC_STEPS_V5,
+        },
+        "meta": {
+            "b": "b(t) = 4c\u00b7t/(t+c)\u00b2 with c = 0.09  \u2014 a log-t bell, no ln",
+            "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
+            "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
+            "S": "S(t) = clamp(100 \u2212 30\u00b7k\u00b7t^(2/3), 0, 100),  k = 1.25 / 1.75 / 2",
+            "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
+        },
+        "curves": {
+            "chromatic": curve_samples_v7("chromatic", k=1.25, H=190),
+            "chromatic_L_peak": curve_samples_v7("chromatic", k=1.25, H=L_PEAK_HUE_V5),
+            "neutral_light": curve_samples_v7("neutral", "light"),
+            "neutral_dark": curve_samples_v7("neutral", "dark"),
+        },
+    }
+
+    for fam in CHROM:
+        keys = [str(s) for s in CHROMATIC_STEPS_V5]
+        out["families"].append(build_family_v7(
+            fam, "chromatic", "both", HUES[fam], keys, P["light"][fam],
+            v5_fam[(fam, "both")], k_v7(fam)))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Neutral"]
+        keys = merge_steps_v5([k for k in steps if k not in ("White", "Black")])
+        out["families"].append(build_family_v7(
+            "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
+            v5_fam[("Neutral", theme)], 1.0))
+
+    rows = [r for f in out["families"] for r in f["rows"]]
+    d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]
+    dc = [r["dE_hsl"] for r in rows if r["dE_hsl"] is not None]
+    out["vs_v5"] = {"mean": round(sum(d5)/len(d5), 2), "max": round(max(d5), 2)}
+    out["vs_current"] = {"mean": round(sum(dc)/len(dc), 2), "max": round(max(dc), 2)}
+    return out
+
 # ---------- assemble ----------
 def main():
     v5 = build_v5()
     out = {
         "v1": build_v1(), "v2": build_v2(), "v3": build_v3(),
-        "v4": build_v4(), "v5": v5, "v6": build_v6(v5), "default": "v5",
+        "v4": build_v4(), "v5": v5, "v6": build_v6(v5), "v7": build_v7(v5),
+        "default": "v5",
     }
     json.dump(out, open('data/generated.json', 'w'), indent=1)
 
-    for ver_id in ("v1", "v2", "v3", "v4", "v5", "v6"):
+    for ver_id in ("v1", "v2", "v3", "v4", "v5", "v6", "v7"):
         ver = out[ver_id]
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
@@ -918,7 +1073,7 @@ def main():
             compared = [r for r in f["rows"] if r["dE_hsl"] is not None]
             w = max(compared, key=lambda r: r["dE_hsl"]) if compared else f["rows"][0]
             extra = ""
-            if ver_id in ("v4", "v5", "v6") and f["kind"] == "chromatic":
+            if ver_id in ("v4", "v5", "v6", "v7") and f["kind"] == "chromatic":
                 extra = f"  k={f['k']}"
             mean = (sum(dh) / len(dh)) if dh else 0.0
             mx = max(dh) if dh else 0.0
@@ -931,6 +1086,14 @@ def main():
         if ver_id == "v4":
             print("S gains:", out["v4"]["s_gain"])
             print(f"L(1/9)={L_v4(1/9):.2f}  (step 50 target ~92)")
+        if ver_id == "v7":
+            print("vs v5:", out["v7"]["vs_v5"], " vs current:", out["v7"]["vs_current"])
+            print("dip per family:", {f["name"]: f["dip"] for f in out["v7"]["families"]
+                                      if f["kind"] == "chromatic"})
+            print("drift per family:", {f["name"]+"\u00b7"+f["theme"]: f["d5"]
+                                        for f in out["v7"]["families"]})
+            print("e(t) at hue 75:", {s: round(L_exponent_v7(s/1000, 75), 3)
+                                      for s in (25, 50, 100, 200, 300, 500, 900)})
         if ver_id == "v6":
             print("vs v5:", out["v6"]["vs_v5"], " vs current:", out["v6"]["vs_current"],
                   " (v5 vs current mean:",

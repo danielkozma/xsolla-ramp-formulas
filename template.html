@@ -269,6 +269,7 @@ footer b{color:var(--ink);font-weight:500}
       <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="false">v4 <small>S gain · no flats</small></button>
       <button type="button" class="ver__opt" role="option" data-ver="v5" aria-selected="true">v5 <small>0–100 · bent exponent</small></button>
       <button type="button" class="ver__opt" role="option" data-ver="v6" aria-selected="false">v6 <small>the dumb version</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v7" aria-selected="false">v7 <small>middle ground</small></button>
     </div>
   </div>
   <span class="appbar__ctx">Xsolla Colour Formulas</span>
@@ -459,6 +460,15 @@ const COPY = {
     chrom: "An experiment, not a proposal: every function in v5 replaced by the stupidest thing that could work \u2014 a triangle for the hue lobe, a flat 0.10 off the exponent instead of the Gaussian bend, one power for saturation, two gain values instead of nine. Each card reports its drift from v5.",
     theme: "Same two expressions, with the neutral saturation rounded off. v5's neutral S was already linear in L, so there was nothing left to simplify.",
     foot: ''
+  },
+
+  v7: {
+    title: "", lead: "", eyebrow: "",
+    fHead: "The middle ground",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "v5's intent without v5's calculus. The exponent still dips where the light steps are \u2014 along a rational bell instead of a Gaussian derivative, slid straight into the power law rather than integrated \u2014 so the fan-out survives where v6 lost it. Saturation, the gains and the endpoints are v6's dumb versions; the hue lobe is v5's.",
+    theme: "Neutral saturation rounded off, same as v6. The lightness exponent is the flat 0.84 here \u2014 achromatic sets never enter the dip.",
+    foot: ''
   }
 
 };
@@ -602,6 +612,50 @@ Pink   H ${V('350')}  k ${V('2.40')}`;
     document.getElementById('lad').innerHTML = brand4.rows.map(r=>
       `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
     ).join('');
+  } else if(ver==='v7'){
+    const VD=ALL.v7, F=ALL.v7.formula;
+    document.getElementById('f-body').innerHTML =
+`${K('// the middle ground — v5\'s shape, none of its calculus')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0   ${K('v5\'s lobe, kept as is')}
+d(H) = ${V('|H − 75| / (145 up, 90 down)')}
+
+${K('// a bell in log t, written without ln or exp')}
+b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('0 at t=0 · 1 at t=c · fat tail')}
+e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('the exponent dips where the light steps are')}
+L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('t^e is 0 at 0 and 1 at 1 — ends pin themselves')}
+
+S(t) = clamp(${V('100 − 30·k·t^(2/3)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// three gains')}
+k = ${V('2.00')} Pulse / Pink · ${V('1.75')} Flash · ${V('1.25')} the rest
+
+${K('// neutrals')}
+neutral·lt  hsl(  ${V('75')}, L/10,        L )
+neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
+
+${K('// what this drops from v5')}
+bend        Δ·[G(ln t) − G(0)] integrated   →  e(t) plugged straight in
+saturation  raised cosine on t^0.631        →  t^(2/3)
+gains       nine fitted k_H                 →  three
+endpoints   99.5 and 98.5                   →  100 and 100`;
+
+    document.getElementById('f-note').innerHTML =
+`Mean ΔE from v5 is <b>${VD.vs_v5.mean}</b> and no swatch is further than ${VD.vs_v5.max} — inside a
+ just-noticeable difference almost everywhere. Against the current palette it scores <b>${VD.vs_current.mean}</b>
+ where v5 scores ${meanDE('v5').toFixed(2)}. The point of the rational bell is locality: the dip bottoms out at
+ <code>t = c</code>, so Mindaro keeps the light-end fan-out at 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
+ where v6's flat cut gives 4.5 / 7.5. No integration is needed because <code>t^e</code> is 0 at
+ <code>t = 0</code> and 1 at <code>t = 1</code> for any exponent — what v5 proves, v7 gets for free.`;
+
+    const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE v5</th></tr>`;
+    document.getElementById('lad').innerHTML = brand7.rows.map(r=>
+      `<tr><td>${r.step}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+      `<td>${fx(r.e,3)}</td><td>${r.dE_v5==null?'—':fx(r.dE_v5,2)}</td></tr>`
+    ).join('');
   } else if(ver==='v6'){
     const VD=ALL.v6;
     document.getElementById('f-body').innerHTML =
@@ -710,6 +764,7 @@ function v1Gradient(f){
 function famCard(f){
   const param = f.kind==='grey' ? 'achromatic'
     : ver==='v6' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · p ${Number(f.p).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`
+    : ver==='v7' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`
     : ver==='v5' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · Δ ${Number(f.bend).toFixed(2)}`
     : ver==='v4' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
     : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
@@ -760,9 +815,12 @@ function render(){
 /* ---------- hue playground (v5 and v6) ---------- */
 /* Both versions are probed by the same cards. Every v5 code path below is
    untouched; v6 takes an early return wherever the model differs. */
-const playVer = ()=> (ver==='v6' ? 'v6' : 'v5');
+const playVer = ()=> ((ver==='v6' || ver==='v7') ? ver : 'v5');
+const isDumbS = ()=> (ver==='v6' || ver==='v7');   /* both use the one-power S */
 const playF   = ()=> ALL[playVer()].formula;
 const basePow = F => (F.L_power_base!=null ? F.L_power_base : F.p_base);
+/* v7's dip: the same bell in log t that v5 draws with a Gaussian, minus the ln */
+const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
 let playHue  = 75;
 const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
 let playBuilt = false;
@@ -798,6 +856,7 @@ function hueWeight(H, F){
     const d=Math.abs(((H-F.peak_hue+180)%360+360)%360-180)/F.lobe;
     return d>=1 ? 0 : 1-d;
   }
+  /* v7 keeps v5's lobe, so it falls through to the code below */
   const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
   const d=Math.abs(delta)/(delta>=0 ? LOBE_UP : LOBE_DN);
   if(d>=1) return 0;
@@ -831,8 +890,8 @@ function bendG(x, F){
 }
 function Lplay(t, H, F, corr){
   if(t<=0) return F.L0;
-  /* v6: no bend at all — the correction is a flat cut to the exponent */
-  if(ver==='v6') return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
+  /* v6 and v7 put the exponent straight into the power law */
+  if(ver==='v6' || ver==='v7') return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
   const d=bendDelta(H,F,corr), x=Math.log(t);
   const drop=F.L_range*Math.exp(F.L_power_base*x + d*(bendG(x,F)-bendG(0,F)));
   return F.L0 - drop;
@@ -840,12 +899,13 @@ function Lplay(t, H, F, corr){
 /* local exponent of the ramp at t — the curve the bend actually reshapes */
 function Qplay(t, H, F, corr){
   if(ver==='v6') return F.p_base - F.p_amp*hueWeight(H,F)*(corr==null ? 1 : corr);
+  if(ver==='v7') return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
   if(t<=0) return F.L_power_base;
   const d=bendDelta(H,F,corr), x=Math.log(t);
   return F.L_power_base - d*((x-Math.log(BEND_TC))/(BEND_S*BEND_S))*bendG(x,F);
 }
 function Sv5(t,k,F){
-  if(ver==='v6') return Math.max(0, Math.min(100, 100 - F.S_drop*k*Math.pow(t, F.S_power)));
+  if(isDumbS()) return Math.max(0, Math.min(100, 100 - F.S_drop*k*Math.pow(t, F.S_power)));
   const g=Math.pow(t, F.S_power);
   const u=(1-Math.cos(Math.PI*g))/2;
   return Math.max(0, Math.min(100, 100 - F.S_drop*k*u));
@@ -931,19 +991,25 @@ function updatePlayground(){
     `<div class="grad-col" style="background:linear-gradient(to bottom, ${gradStops.join(', ')})" `+
     `title="Playground continuous scale"></div>`;
   document.getElementById('play-hue-val').textContent  = playHue+'°';
-  document.getElementById('play-stats').textContent = ver==='v6'
-    ? `k ${PLAY_K} · w ${w.toFixed(2)} · p ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+  document.getElementById('play-stats').textContent =
+      ver==='v6' ? `k ${PLAY_K} · w ${w.toFixed(2)} · p ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+    : ver==='v7' ? `k ${PLAY_K} · w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`
     : `k ${PLAY_K} · w ${w.toFixed(2)} · Δ ${delta.toFixed(2)}`;
 
   document.getElementById('play-svg').innerHTML = playCurvesSvg(F, corr);
-  document.getElementById('play-curve-meta').textContent = ver==='v6'
-    ? `H ${playHue}° · p ${basePow(F)} → ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+  document.getElementById('play-curve-meta').textContent =
+      ver==='v6' ? `H ${playHue}° · p ${basePow(F)} → ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+    : ver==='v7' ? `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`
     : `H ${playHue}° · p ${basePow(F)} · q at 25 ${Qplay(0.025,playHue,F,corr).toFixed(2)}`;
 
   /* the numbers being eyeballed: contrast between the first few steps */
   const d=(a,b)=> (rows[a].L-rows[b].L).toFixed(1);
   document.getElementById('play-hint').innerHTML =
-    (ver==='v6'
+    (ver==='v7'
+      ? `Left axis L · right axis the exponent e (green). It dips along <code>4c·t/(t+c)²</code> and bottoms `+
+        `out at t = ${F.dip_c}, which is why the light steps still fan out — the same locality v5 gets from `+
+        `its Gaussian, without the ln.<br>`
+    : ver==='v6'
       ? `Left axis L · right axis the exponent q (green). The dumb correction is a flat cut, so q is a `+
         `<i>straight line</i> — ${basePow(F)} shifted down by ${F.p_amp}·w — and the whole ramp darkens a `+
         `little instead of gaining curvature at the top. Compare the gaps with v5.<br>`
@@ -957,7 +1023,7 @@ function renderPlayground(){
   const host=document.getElementById('playground');
   const sect=document.getElementById('play-sect');
   if(!host) return;
-  const show = (ver==='v5' || ver==='v6') && !!playF();
+  const show = (ver==='v5' || ver==='v6' || ver==='v7') && !!playF();
   if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
@@ -1009,7 +1075,7 @@ function renderPlayground(){
 
 /* ---------- neutrals: functions, perceptual lift, playgrounds ---------- */
 function neutralS(theme, L){
-  if(ver==='v6') return theme==='light' ? L/10 : 22 - L/9;
+  if(isDumbS()) return theme==='light' ? L/10 : 22 - L/9;
   return theme==='light' ? L/10 : 11 + (100-L)/9;
 }
 
@@ -1167,7 +1233,7 @@ function renderNeutralPlayground(){
   const host=document.getElementById('playground-neutral');
   const sect=document.getElementById('nplay-sect');
   if(!host) return;
-  const show = (ver==='v5' || ver==='v6') && !!playF();
+  const show = (ver==='v5' || ver==='v6' || ver==='v7') && !!playF();
   if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
@@ -1213,7 +1279,10 @@ function applyVersion(){
     v6: `The same probe on the dumb model. <code>w(H)</code> is now a triangle and the correction is a flat
          <code>0.10·w</code> off the exponent, so the green line is straight rather than bent — the whole ramp
          darkens slightly instead of gaining curvature where the light steps are. Dashed red is the uncorrected
-         curve; the ΔL row under the diagram is what to compare against v5.`
+         curve; the ΔL row under the diagram is what to compare against v5.`,
+    v7: `The middle ground. The exponent still dips where the light steps are — a rational bell rather than a
+         Gaussian derivative, and slid straight into the power law instead of integrated — so the green line
+         has a trough and the ΔL row lands back on v5's numbers. Compare all three.`
   };
   put('play-blurb', PLAY_COPY[ver], true);
   renderFormula();
