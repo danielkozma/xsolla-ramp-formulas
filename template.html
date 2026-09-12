@@ -166,7 +166,7 @@ table.ladder tbody tr:last-child td{border-bottom:0}
             font-variant-numeric:tabular-nums;white-space:nowrap}
 
 .colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
-         gap:2px;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         column-gap:2px;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
          letter-spacing:.04em;text-transform:uppercase}
 .colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
 .colhead span:last-child{text-align:right}
@@ -182,10 +182,8 @@ table.ladder tbody tr:last-child td{border-bottom:0}
       font:500 9.5px/1 var(--body);font-variant-numeric:tabular-nums;
       white-space:nowrap;overflow:hidden}
 .tile.b{justify-content:flex-end}
-.grad-col{grid-row:1 / -1;grid-column:4;border-radius:var(--r-xs);min-width:0;
-          box-shadow:inset 0 0 0 1px var(--rule);position:relative}
-.grad-mark{position:absolute;left:0;right:0;height:0;border-top:1px solid rgba(0,0,0,.18);
-           pointer-events:none}
+.grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
+          box-shadow:none;position:relative}
 .dl{display:flex;align-items:center;justify-content:flex-end;padding-left:2px}
 .dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
 .dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
@@ -249,8 +247,8 @@ footer b{color:var(--ink);font-weight:500}
   <p class="eyebrow" id="eyebrow">Reverse-engineered from the Figma variable set</p>
   <h1 id="mast-title">Every ramp from continuous H, S and L</h1>
   <p class="lead" id="mast-lead">v2 replaces the discrete step ladders with continuous functions of a single parameter
-  <i>t</i>. Named steps sit where OKLab lightness is equally spaced along that gradient, so they feel as even as
-  a lightness ramp allows. Figma values remain the fit target — expect a larger drift than v1.</p>
+  <i>t</i>. Named steps sit on an even lightness ladder (96, 90, 85, 75…15) inverted through L(t), so early
+  stops stay light and consecutive tokens feel evenly paced. Figma remains the fit target.</p>
   <div class="scoreboard" id="board"></div>
 </header>
 
@@ -374,21 +372,20 @@ const COPY = {
   },
   v2: {
     title: 'Every ramp from continuous H, S and L',
-    lead: 'v2 replaces the discrete step ladders with continuous functions of a single parameter t. Named steps sit where OKLab lightness is equally spaced along that gradient, so they feel as even as a lightness ramp allows. Figma values remain the fit target — expect a larger drift than v1. The third column shows the full continuous scale.',
+    lead: 'v2 replaces the discrete step ladders with continuous functions of a single parameter t. Named steps sit on an even lightness ladder (96, 90, 85, 75…15) inverted through L(t), so early stops stay light and consecutive tokens feel evenly paced. Figma remains the fit target. The third column is the full continuous scale.',
     eyebrow: 'v2 · continuous gradient functions',
     chip: 'Solid ramps · continuous gradient',
     fHead: 'The continuous functions',
     ladHead: 'Even step placement',
-    chrom: 'Nine hues along one continuous (H,S,L) curve. Steps 25–800 are samples at shared equal-OKLab-L positions — not the old numeric ladder. The Gradient column is the full t ∈ [0,1] scale.',
-    theme: 'Neutral and Greyscale reuse the same L(t). Neutral saturation is derived from L — fading tint on light, growing tint on dark — and steps share the same equal-lightness placement.',
+    chrom: 'Nine hues along one continuous (H,S,L) curve. Steps 25–800 land on the shared even-lightness ladder inverted through L(t). The Gradient column is the full t ∈ [0,1] scale — no chrome, just the ramp.',
+    theme: 'Neutral and Greyscale reuse the same L(t). Neutral saturation is derived from L — fading tint on light, growing tint on dark — and steps share the same ladder placement.',
     foot: `<p><b>Why continuous.</b> v1's ladders are exact at the named steps but silent between them. v2 defines
   the whole ramp as functions of <code>t</code>, so any intermediate swatch (or CSS gradient) is well-defined.</p>
-  <p><b>Even steps.</b> Named tokens are not at equal <code>t</code>. Their positions are solved so OKLab
-  lightness is equally spaced on the greyscale <code>L(t)</code> curve — one shared table for every family,
-  so Brand/25 and Core/25 sit at the same <code>t</code>.</p>
-  <p><b>Larger drift is expected.</b> Fitting smooth curves and re-placing steps moves further from hand-tuned
-  Figma outliers (Mindaro's −5 L offset, Pulse/Pink muted tails, the step-50 L&nbsp;92 cluster). That is
-  intentional: the continuous system is the source of truth, Figma is the seed.</p>
+  <p><b>Even steps.</b> Named tokens are not at equal <code>t</code>. They sit where <code>L(t)</code> hits the
+  even lightness ladder — 96, 90, 85, then −10 down to 15 — so 50/100 stay light and the scale feels evenly
+  paced. One shared table aligns every family on the same <code>tᵢ</code>.</p>
+  <p><b>Ease on L.</b> <code>L(t) = 96 − 81·t^1.25</code> keeps more of the continuous ramp in the light half,
+  so the gradient column doesn't dive into midtones too early.</p>
   <p><b>Hue stays constant.</b> Same finding as v1 — Figma holds hue within rounding down each family, so
   <code>H(t) = H₀</code>. The continuous model does not invent a hue shift.</p>`
   }
@@ -437,8 +434,8 @@ Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
     document.getElementById('f-body').innerHTML =
 `${K('// parameter t ∈ [0, 1]  ·  light → dark')}
 ${K('// continuous channels — separate functions')}
-L(t) = ${V('96 − 81·t')}
-S(t) = clamp(${V('100 − 120·max(0, t − ⅓)')}, 70, 100)
+L(t) = ${V('96 − 81·t^1.25')}       ${K('ease keeps the ramp lighter longer')}
+S(t) = clamp(${V('100 − (75 − L(t))')}, 70, 100)
 H(t) = ${V('H₀')}                    ${K('constant per family')}
 
 ${K('// assembly')}
@@ -448,8 +445,8 @@ neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
 greyscale   hsl(   ${V('0')}, 0%,                L(t) )
 
 ${K('// even step placement — shared across every family')}
-Λ(t) = OKLab L of greyscale L(t)
-tᵢ   = Λ⁻¹(  lerp(Λ(0), Λ(1), i/(N−1))  )
+ladder = ${V('96, 90, 85, 75, 65, 55, 45, 35, 25, 15')}
+tᵢ     = L⁻¹(ladderᵢ)              ${K('so 50/100 stay light')}
 
 ${K('// H₀ per family')}
 Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
@@ -457,9 +454,9 @@ Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
 Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
 
     document.getElementById('f-note').innerHTML =
-`L and S are fitted to the majority Figma chromatic pattern (Mindaro's −5 L offset and the muted
- Pulse/Pink tails are intentionally smoothed away). Steps are <em>not</em> at equal <code>t</code> —
- they sit where OKLab lightness is evenly paced on the shared greyscale curve.`;
+`L eases with <code>t^1.25</code> so the continuous gradient stays light longer. Steps are placed by
+ inverting that curve against the even lightness ladder — not equal <code>t</code> — which is what was
+ making 50/100/200 too dark.`;
 
     // Show Brand's even positions as the representative chromatic ladder
     const brand = ALL.v2.families.find(f=>f.name==='Brand');
@@ -478,7 +475,7 @@ function renderBoard(){
   const s = ST[ver];
   const last = ver==='v1'
     ? ['', '1', 'parameter per family — its hue']
-    : ['', 't', 'continuous parameter · even OKLab-L steps'];
+    : ['', 't', 'continuous parameter · even lightness ladder'];
   document.getElementById('board').innerHTML = [
     ['', s.n, 'ramp swatches across 13 ramps'],
     ['g', s.inv, 'reproduced exactly (ΔE &lt; 1)'],
@@ -515,16 +512,11 @@ function famCard(f){
     : (ver==='v2' ? `H₀ ${f.hue}` : `H ${f.hue}`);
   const grad = f.gradient || v1Gradient(f);
   const n = f.rows.length;
-  // Build a CSS subgrid so the continuous gradient spans all rows in column 4
-  const marks = (f.positions || f.rows.map((_,i)=> i/(n-1))).map((t,i)=>
-    i===0||i===n-1 ? '' : `<i class="grad-mark" style="top:${(t*100).toFixed(2)}%"></i>`
-  ).join('');
 
   const body = f.rows.map((r,i)=>{
     const d=r.dE_hsl, b=band(d);
     const tPos = r.t!=null ? ` · t ${r.t.toFixed(3)}` : '';
     const tip=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
-    // grid placement: each row occupies one implicit row; gradient is placed once
     return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
       `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`+
       `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}">${label(r,'hsl',vals)}</span>`+
@@ -537,7 +529,7 @@ function famCard(f){
     <div class="colhead"><span></span><span>Figma</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
     <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
       ${body}
-      <div class="grad-col" style="background:${grad}" title="Full continuous scale">${marks}</div>
+      <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
     </div></article>`;
 }
 

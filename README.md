@@ -31,8 +31,8 @@ A single parameter `t ∈ [0, 1]` defines the full ramp. Hue, saturation and
 lightness each have their own function, fitted to the majority Figma pattern:
 
 ```
-L(t) = 96 − 81·t
-S(t) = clamp(100 − 120·max(0, t − ⅓), 70, 100)
+L(t) = 96 − 81·t^1.25
+S(t) = clamp(100 − (75 − L(t)), 70, 100)
 H(t) = H₀
 
 chromatic   hsl( H₀, S(t), L(t) )
@@ -41,10 +41,9 @@ neutral·dk  hsl( 190, 11+(100−L(t))/9,    L(t) )
 greyscale   hsl( 0,   0%,                 L(t) )
 ```
 
-Named steps (25, 50, 100, …) are **not** at equal `t`. Their positions are
-solved so OKLab lightness is equally spaced on the greyscale `L(t)` curve —
-one shared table for every family. Drift from Figma is larger by design: the
-continuous system is the source of truth.
+Named steps (25, 50, 100, …) are **not** at equal `t`. They sit where `L(t)`
+hits the even lightness ladder `96, 90, 85, 75, …, 15` — so early stops stay
+light and consecutive tokens feel evenly paced. One shared table for every family.
 
 Each family card shows three columns: Figma · Formula · full continuous Gradient.
 

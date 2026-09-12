@@ -122,23 +122,28 @@ def build_v1():
     return out
 
 # =====================================================================
-# v2 — continuous H/S/L gradient functions + even arc-length steps
+# v2 — continuous H/S/L gradient functions + even lightness steps
 #
 # Parameter t ∈ [0, 1] runs light → dark along a continuous ramp.
-# Named steps (25, 50, …) are placed by equal OKLab arc length so they
-# feel as evenly spaced as the continuous curve allows.
+# Named steps (25, 50, …) sit where L(t) hits the even lightness ladder
+# (96, 90, 85, 75, …, 15) — equal ΔL on the design-token scale, which
+# keeps early stops light instead of equal-Δt / equal-OKLab packing that
+# over-darkens 50/100/200.
 # =====================================================================
 
 def L_cont(t):
-    """Lightness: near-linear fade from Figma's light end (~96) to dark (~15)."""
-    return 96.0 - 81.0 * t
+    """Lightness: linear fade from Figma's light end (~96) to dark (~15).
+    A slight ease (exponent > 1) keeps more of the continuous ramp in the
+    light half so the gradient column doesn't dive into midtones too fast."""
+    return 96.0 - 81.0 * (t ** 1.25)
 
 def S_cont(t):
     """Saturation: full chroma in the lights, eases down to a floor of 70.
-    The drop starts around t = 1/3 (≈ step 200–300 in the old ladder) and
-    reaches the floor by t ≈ 7/12 — matching the Figma majority pattern
-    100 → 90 → 80 → 70."""
-    return clamp(100.0 - 120.0 * max(0.0, t - 1.0/3.0), 70.0, 100.0)
+    Anchored in L-space rather than raw t, so it still tracks the Figma
+    majority pattern 100 → 90 → 80 → 70 as lightness falls through 75→45."""
+    L = L_cont(t)
+    # L 75→45 maps onto the S 100→70 drop (the old steps 200→500)
+    return clamp(100.0 - (75.0 - L), 70.0, 100.0)
 
 def H_cont(H0, t):
     """Hue is constant down each family (Figma holds it to within rounding)."""
@@ -156,39 +161,24 @@ def sample_hex(kind, hue, theme, t):
         return hsl2hex(hue, neutral_S_cont(theme, t), L)
     return hsl2hex(0, 0, L)
 
-def oklab_of_hex(h):
-    return rgb2oklab(*hex2rgb(h))
+def t_for_L(L):
+    """Invert L(t) = 96 − 81·t^1.25."""
+    u = clamp((96.0 - L) / 81.0, 0.0, 1.0)
+    return u ** (1.0 / 1.25)
 
-def equal_oklab_L_positions(n, samples=512):
-    """Shared step placement for every family.
+def lightness_ladder_positions(step_keys):
+    """Place each named step where L(t) equals the even lightness ladder.
 
-    Sample the greyscale continuous ramp (pure L(t)) and place n stops so
-    OKLab lightness is equally spaced from light → dark. Because the ramp is
-    primarily a lightness scale, equal ΔL_OKLab is what makes consecutive
-    named steps feel even — and a single shared table keeps every family
-    aligned on the same tᵢ.
+    Targets come from the same ladder v1 uses (and Figma mostly follows):
+      25→96, 50→90, 100→85, then −10 per step down to 800→15.
+    Solving t = L⁻¹(target) keeps 50/100/200 as light as the scale intends,
+    while the continuous gradient between them stays well-defined.
     """
-    ts = [i/(samples-1) for i in range(samples)]
-    # Greyscale: H=0, S=0, L=L_cont(t)
-    Ls = [oklab_of_hex(sample_hex("grey", 0, "light", t))[0] for t in ts]
-    L0, L1 = Ls[0], Ls[-1]
-    targets = [L0 + (L1 - L0) * i/(n-1) for i in range(n)]
     out = []
-    j = 0
-    for target in targets:
-        # Ls decreases with t
-        while j < samples-1 and Ls[j] > target:
-            j += 1
-        if j == 0:
-            out.append(0.0)
-        else:
-            l0, l1 = Ls[j-1], Ls[j]
-            if abs(l1 - l0) < 1e-12:
-                out.append(ts[j])
-            else:
-                u = (target - l0) / (l1 - l0)
-                out.append(ts[j-1] + u * (ts[j] - ts[j-1]))
-    out[0], out[-1] = 0.0, 1.0
+    for k in step_keys:
+        out.append(t_for_L(L_ladder(int(k))))
+    if out:
+        out[0] = 0.0
     return out
 
 def gradient_css_stops(kind, hue, theme, n=24):
@@ -225,42 +215,43 @@ def build_v2():
     out = {
         "id": "v2", "label": "v2", "families": [], "hues": HUES,
         "meta": {
-            "L": "L(t) = 96 − 81·t",
-            "S": "S(t) = clamp(100 − 120·max(0, t − ⅓), 70, 100)",
+            "L": "L(t) = 96 − 81·t^1.25",
+            "S": "S(t) = clamp(100 − (75 − L(t)), 70, 100)",
             "H": "H(t) = H₀  (constant per family)",
-            "steps": "tᵢ from equal OKLab lightness on the greyscale L(t) curve (shared)",
+            "steps": "tᵢ = L⁻¹(ladder) where ladder = 96,90,85,75,…,15 (shared)",
         },
     }
-    # One shared placement table per step-count so every family lines up
+    # Shared placement per key-list so every family lines up on the same tᵢ
     pos_cache = {}
-    def positions_for(n):
-        if n not in pos_cache:
-            pos_cache[n] = equal_oklab_L_positions(n)
-        return pos_cache[n]
+    def positions_for(keys):
+        key = tuple(keys)
+        if key not in pos_cache:
+            pos_cache[key] = lightness_ladder_positions(keys)
+        return pos_cache[key]
 
     for fam in CHROM:
         steps = P["light"][fam]
         keys = [str(s) for s in CHROMATIC_STEPS]
         out["families"].append(
             build_family_v2(fam, "chromatic", "both", HUES[fam], keys, steps,
-                            positions_for(len(keys))))
+                            positions_for(keys)))
 
     for theme in ("light","dark"):
         steps = P[theme]["Neutral"]
         keys = [k for k in steps if k not in ("White","Black")]
         out["families"].append(
             build_family_v2("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
-                            positions_for(len(keys))))
+                            positions_for(keys)))
 
     for theme in ("light","dark"):
         steps = P[theme]["Greyscale"]
         keys = list(steps.keys())
         out["families"].append(
             build_family_v2("Greyscale", "grey", theme, 0, keys, steps,
-                            positions_for(len(keys))))
+                            positions_for(keys)))
 
     out["shared_positions"] = {
-        str(n): [round(t, 4) for t in pos] for n, pos in pos_cache.items()
+        str(len(k)): [round(t, 4) for t in pos] for k, pos in pos_cache.items()
     }
     return out
 
