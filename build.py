@@ -96,9 +96,6 @@ def neutral_formula_v1(theme, step):
     L = L_ladder(step)
     return hsl2hex(NEUTRAL_H[theme], neutral_S(theme,L), L)
 
-def greyscale_formula_v1(theme, step):
-    return hsl2hex(0, 0, L_ladder(step))
-
 def build_v1():
     out = {"id":"v1", "label":"v1", "families":[], "hues":HUES}
     for fam in CHROM:
@@ -120,15 +117,6 @@ def build_v1():
         out["families"].append({"name":"Neutral", "kind":"neutral", "theme":theme,
             "hue":NEUTRAL_H[theme], "rows":rows})
 
-    for theme in ("light","dark"):
-        steps = P[theme]["Greyscale"]
-        rows=[]
-        for k,v in steps.items():
-            s=int(k)
-            g = greyscale_formula_v1(theme,s)
-            rows.append({"step":k, **entry(v, g)})
-        out["families"].append({"name":"Greyscale", "kind":"grey", "theme":theme,
-            "hue":0, "rows":rows})
     return out
 
 # =====================================================================
@@ -253,12 +241,6 @@ def build_v2():
             build_family_v2("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
                             positions_for(keys)))
 
-    for theme in ("light","dark"):
-        steps = P[theme]["Greyscale"]
-        keys = list(steps.keys())
-        out["families"].append(
-            build_family_v2("Greyscale", "grey", theme, 0, keys, steps,
-                            positions_for(keys)))
 
     out["shared_positions"] = {
         str(len(k)): [round(t, 4) for t in pos] for k, pos in pos_cache.items()
@@ -374,7 +356,6 @@ def build_v3():
             "chromatic": curve_samples("chromatic"),
             "neutral_light": curve_samples("neutral", "light"),
             "neutral_dark": curve_samples("neutral", "dark"),
-            "grey": curve_samples("grey"),
         },
     }
 
@@ -390,11 +371,6 @@ def build_v3():
         out["families"].append(
             build_family_v3("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps))
 
-    for theme in ("light", "dark"):
-        steps = P[theme]["Greyscale"]
-        keys = list(steps.keys())
-        out["families"].append(
-            build_family_v3("Greyscale", "grey", theme, 0, keys, steps))
 
     return out
 
@@ -508,7 +484,6 @@ def build_v4():
             "chromatic_hi": curve_samples_v4("chromatic", k=2.45),
             "neutral_light": curve_samples_v4("neutral", "light"),
             "neutral_dark": curve_samples_v4("neutral", "dark"),
-            "grey": curve_samples_v4("grey"),
         },
     }
 
@@ -525,11 +500,6 @@ def build_v4():
         out["families"].append(
             build_family_v4("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps, 1.0))
 
-    for theme in ("light", "dark"):
-        steps = P[theme]["Greyscale"]
-        keys = list(steps.keys())
-        out["families"].append(
-            build_family_v4("Greyscale", "grey", theme, 0, keys, steps, 1.0))
 
     return out
 
@@ -557,11 +527,20 @@ S_GAIN_V5 = {
 # Power bias so g(1/3) = 1/2 → half the S-drop by one-third of the ramp.
 S_POWER_V5 = math.log(0.5) / math.log(1.0 / 3.0)  # ≈ 0.6309
 
-# Lightness power: base (cool hues) minus amplitude peaking at yellow-green.
-# Lower power → darker sooner on the light end, then eases into the dark end.
+# Lightness: a power law whose exponent is bent by hue instead of being scaled.
+# The bend is the derivative of a Gaussian in log t — zero total area, so it
+# steepens the exponent before the centre and relaxes it after by the same
+# amount. Both ends of the ramp are fixed; the curvature lands on the light steps.
 L_POWER_BASE_V5 = 0.83
-L_POWER_AMP_V5 = 0.38
-L_PEAK_HUE_V5 = 75.0  # Mindaro / chartreuse — perceptually lightest region
+L_PEAK_HUE_V5 = 75.0   # Mindaro / chartreuse — perceptually lightest region
+# Half-widths of the hue lobe, in degrees. Asymmetric: greens stay perceptually
+# light much further round the wheel than the warm side, so the correction
+# fades out at hue 220 going up and at 345 going down.
+LOBE_UP_V5 = 145.0     # 75° → 220° (green, cyan, into teal)
+LOBE_DN_V5 = 90.0      # 75° → 345° (yellow, orange, red)
+BEND_REF_V5 = 0.50     # bend strength at the peak hue
+BEND_TC_V5 = 0.055     # bend centre on the 0→1 scale (≈ step 55)
+BEND_SIGMA_V5 = 1.15   # bend width, in log-scale units
 
 def step_to_t_v5(step_key):
     """Map a Figma token onto the 0→100 scale. White=0, Black=100,
@@ -573,26 +552,59 @@ def step_to_t_v5(step_key):
     return int(step_key) / 1000.0
 
 def hue_light_weight_v5(H):
-    """1 at the yellow-green peak (perceptually lightest), 0 by ±90° away.
-    Squared half-cosine lobe — continuous in hue, no hard-coded family tables.
-    Only the light-appearing sector (≈ yellow / Mindaro / early green) is biased."""
-    d = abs((H - L_PEAK_HUE_V5 + 180.0) % 360.0 - 180.0) / 180.0  # 0..1
-    c = math.cos(math.pi * d)
-    return c * c if c > 0.0 else 0.0
+    """1 at the yellow-green peak (perceptually lightest), easing to 0 at the
+    edge of the lobe — 220° on the green side, 345° on the warm side. Squared
+    half-cosine, so it leaves the peak and meets zero with zero slope: smooth
+    in hue, no hard-coded family tables."""
+    delta = (H - L_PEAK_HUE_V5 + 180.0) % 360.0 - 180.0      # signed, −180..180
+    span = LOBE_UP_V5 if delta >= 0.0 else LOBE_DN_V5
+    d = abs(delta) / span
+    if d >= 1.0:
+        return 0.0
+    c = math.cos(math.pi / 2.0 * d)
+    return c * c
 
-def L_power_v5(H=None):
-    """Hue-dependent lightness exponent. Mindaro (~75°) → steep early drop;
-    hues opposite on the wheel keep the base power."""
+def bend_delta_v5(H=None):
+    """How hard this hue bends the lightness exponent. 0 for achromatic sets
+    and for hues opposite the perceptual peak — those keep the plain power law."""
     if H is None:
-        return L_POWER_BASE_V5
-    return L_POWER_BASE_V5 - L_POWER_AMP_V5 * hue_light_weight_v5(H)
+        return 0.0
+    return BEND_REF_V5 * hue_light_weight_v5(H)
+
+def _bend_G_v5(x):
+    """Gaussian in log t, centred on the bend centre."""
+    z = (x - math.log(BEND_TC_V5)) / BEND_SIGMA_V5
+    return math.exp(-0.5 * z * z)
 
 def L_v5(t, H=None):
-    """Lightness across the full 0→100 domain. Endpoints stay ~99.5→1;
-    the power (and thus early-ramp steepness) is auto-set from hue."""
+    """Lightness across the full 0→100 domain.
+
+    Base ramp: drop = 98.5·t^p, a straight line in log-log with p = 0.83.
+    The hue correction bends that line by making the exponent a function of
+    scale position, q(t) = p + Δ·G'(ln t). G' is a Gaussian derivative, so its
+    area is zero and integrating q closes into one Gaussian factor:
+
+        drop(t) = 98.5 · t^p · exp( Δ·[G(ln t) − G(0)] )
+
+    Δ=0 is exactly the base curve, drop(1)=98.5 for every Δ, and monotonicity
+    holds while Δ·e^(−½)/σ < p (the fitted Δ ≤ 0.5 leaves q ≥ 0.57).
+    """
     # Light end sits at 99.5 (was 99) so step 25 stays a touch brighter
-    # without changing the power shape or the ~1 dark end.
-    return 99.5 - 98.5 * (t ** L_power_v5(H))
+    # without changing the curve shape or the ~1 dark end.
+    if t <= 0.0:
+        return 99.5
+    x = math.log(t)
+    d = bend_delta_v5(H)
+    drop = 98.5 * math.exp(L_POWER_BASE_V5 * x + d * (_bend_G_v5(x) - _bend_G_v5(0.0)))
+    return 99.5 - drop
+
+def L_q_v5(t, H=None):
+    """Local exponent of the ramp at t — the quantity the bend reshapes."""
+    if t <= 0.0:
+        return L_POWER_BASE_V5
+    x = math.log(t)
+    d = bend_delta_v5(H)
+    return L_POWER_BASE_V5 - d * ((x - math.log(BEND_TC_V5)) / BEND_SIGMA_V5 ** 2) * _bend_G_v5(x)
 
 def S_unit_v5(t):
     """Asymmetric raised-cosine unit curve: u(0)=0, u(1)=1, u'(0)=u'(1)=0.
@@ -653,7 +665,7 @@ def merge_steps_v5(existing_keys, extra=(850, 900)):
 def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
     rows = []
     positions = []
-    lp = round(L_power_v5(hue if kind == "chromatic" else None), 4)
+    bend = round(bend_delta_v5(hue if kind == "chromatic" else None), 4)
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
@@ -672,12 +684,13 @@ def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
                 "S": round(S, 2),
                 "H": round(H_v5(hue, t) if kind != "grey" else 0, 1),
                 "k": k,
-                "lp": lp,
+                "bend": bend,
+                "q": round(L_q_v5(t, H_for_L), 3),
             }),
         })
     return {
         "name": name, "kind": kind, "theme": theme, "hue": hue,
-        "k": k, "lp": lp, "rows": rows,
+        "k": k, "bend": bend, "rows": rows,
         "gradient": gradient_css_v5(kind, hue, theme, k),
         "positions": [round(t, 4) for t in positions],
     }
@@ -691,15 +704,21 @@ def build_v5():
             "L0": 99.5,
             "L_range": 98.5,
             "L_power_base": L_POWER_BASE_V5,
-            "L_power_amp": L_POWER_AMP_V5,
             "L_peak_hue": L_PEAK_HUE_V5,
+            "lobe_up": LOBE_UP_V5,
+            "lobe_dn": LOBE_DN_V5,
+            "bend_ref": BEND_REF_V5,
+            "bend_tc": BEND_TC_V5,
+            "bend_sigma": BEND_SIGMA_V5,
             "S_drop": 30.0,
             "S_power": round(S_POWER_V5, 6),
             "steps": CHROMATIC_STEPS_V5,
         },
         "meta": {
-            "L": "L(t,H) = 99.5 − 98.5·t^p(H)  with p(H) = 0.83 − 0.38·w(H)",
-            "w": "w(H) = cos²(π·δ) when cos>0 else 0; δ = circular |H−75°|/180",
+            "L": "L(t,H) = 99.5 − 98.5·t^0.83·exp(Δ(H)·[G(ln t) − G(0)])",
+            "G": "G(x) = exp(−½((x − ln 0.055)/1.15)²); bend q(t) = 0.83 + Δ·G′(ln t)",
+            "d": "Δ(H) = 0.5·w(H) — 0 for cool hues and achromatic sets",
+            "w": "w(H) = cos²(½π·d) for d<1 else 0; d = |H−75°| / (145° up, 90° down)",
             "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t^q))/2, 0, 100)",
             "q": "q = log(1/2)/log(1/3) ≈ 0.631  →  half the S-drop by t = 1/3",
             "H": "H(t) = H₀  (constant per family)",
@@ -714,7 +733,6 @@ def build_v5():
             "chromatic_L_peak": curve_samples_v5("chromatic", k=1.0, H=L_PEAK_HUE_V5),
             "neutral_light": curve_samples_v5("neutral", "light"),
             "neutral_dark": curve_samples_v5("neutral", "dark"),
-            "grey": curve_samples_v5("grey"),
         },
     }
 
@@ -731,23 +749,167 @@ def build_v5():
         out["families"].append(
             build_family_v5("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps, 1.0))
 
-    for theme in ("light", "dark"):
-        steps = P[theme]["Greyscale"]
-        keys = merge_steps_v5(list(steps.keys()))
-        out["families"].append(
-            build_family_v5("Greyscale", "grey", theme, 0, keys, steps, 1.0))
 
+    return out
+
+# =====================================================================
+# v6 — the dumb version. An experiment: how much of v5 survives if every
+# function is replaced by the stupidest thing that could work?
+#
+#   v5                                          v6
+#   ------------------------------------------  --------------------------------
+#   two-sided cos² hue lobe (145°/90°)          one triangle, 120° each way
+#   Gaussian-derivative bend of the exponent    subtract 0.10·w from the exponent
+#   raised cosine on t^0.631 for S              one power, t^(2/3)
+#   nine fitted saturation gains                two: 1.25, or 2 for the vivid three
+#   L0 99.5 / L_range 98.5                      100 and 100
+#
+# Five constants and one Math.pow per channel. It lands a mean ΔE of 1.0 from
+# v5's output and fits the current palette just as closely (2.07 vs v5's 2.11).
+# =====================================================================
+P_BASE_V6 = 0.82       # lightness exponent for hues that need no correction
+P_AMP_V6 = 0.10        # …and how much the light-reading hues take off it
+LOBE_V6 = 120.0        # triangle half-width in degrees, same both ways
+S_DROP_V6 = 30.0       # saturation lost from t=0 to t=1 at k=1
+S_POWER_V6 = 2.0/3.0   # the whole S curve
+K_VIVID_V6 = ("Flash", "Pulse", "Pink")
+
+def k_v6(name):
+    return 2.0 if name in K_VIVID_V6 else 1.25
+
+def hue_weight_v6(H):
+    """Triangle instead of v5's squared cosine — worth 0.1 ΔE, and it is one line."""
+    d = abs((H - L_PEAK_HUE_V5 + 180.0) % 360.0 - 180.0)
+    return max(0.0, 1.0 - d / LOBE_V6)
+
+def p_v6(H=None):
+    return P_BASE_V6 if H is None else P_BASE_V6 - P_AMP_V6 * hue_weight_v6(H)
+
+def L_v6(t, H=None):
+    return 100.0 - 100.0 * (t ** p_v6(H)) if t > 0.0 else 100.0
+
+def S_v6(t, k=1.0):
+    return clamp(100.0 - S_DROP_V6 * k * (t ** S_POWER_V6), 0.0, 100.0)
+
+def neutral_S_v6(theme, L):
+    """v5's neutral saturation was already linear in L; these are the round versions."""
+    return L / 10.0 if theme == "light" else 22.0 - L / 9.0
+
+def sample_hex_v6(kind, hue, theme, t, k=1.0):
+    L = L_v6(t, hue if kind == "chromatic" else None)
+    if kind == "chromatic":
+        return hsl2hex(hue, S_v6(t, k), L)
+    return hsl2hex(hue, neutral_S_v6(theme, L), L)
+
+def gradient_css_v6(kind, hue, theme, k=1.0, n=40):
+    stops = [f"{sample_hex_v6(kind, hue, theme, i/(n-1), k)} {round(100*i/(n-1), 2)}%"
+             for i in range(n)]
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def curve_samples_v6(kind="chromatic", theme="both", k=1.0, H=None, n=64):
+    ts, scales, Ls, Ss = [], [], [], []
+    use_H = H if kind == "chromatic" else None
+    for i in range(n):
+        t = i / (n - 1)
+        L = L_v6(t, use_H)
+        ts.append(round(t, 4)); scales.append(round(100.0*t, 2)); Ls.append(round(L, 3))
+        Ss.append(round(S_v6(t, k) if kind == "chromatic" else neutral_S_v6(theme, L), 3))
+    return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
+
+def build_family_v6(name, kind, theme, hue, step_keys, orig_map, v5_rows, k=1.0):
+    rows, positions = [], []
+    p = round(p_v6(hue if kind == "chromatic" else None), 4)
+    v5_by_step = {r["step"]: r["hsl"] for r in v5_rows}
+    d5 = []
+    for key in step_keys:
+        t = step_to_t_v5(key)
+        positions.append(t)
+        gen = sample_hex_v6(kind, hue, theme, t, k)
+        L = L_v6(t, hue if kind == "chromatic" else None)
+        S = S_v6(t, k) if kind == "chromatic" else neutral_S_v6(theme, L)
+        ref = v5_by_step.get(key)
+        e5 = round(dE(ref, gen), 2) if ref else None
+        if e5 is not None:
+            d5.append(e5)
+        rows.append({
+            "step": key,
+            **entry(orig_map.get(key), gen, {
+                "t": round(t, 4),
+                "scale": round(100.0 * t, 2),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(hue, 1),
+                "k": k,
+                "p": p,
+                "dE_v5": e5,
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue,
+        "k": k, "p": p, "rows": rows,
+        "d5": round(sum(d5)/len(d5), 2) if d5 else None,
+        "gradient": gradient_css_v6(kind, hue, theme, k),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v6(v5):
+    """v5 is passed in so every family can report how far the dumb version drifts."""
+    v5_fam = {(f["name"], f["theme"]): f["rows"] for f in v5["families"]}
+    out = {
+        "id": "v6", "label": "v6", "families": [], "hues": HUES,
+        "formula": {
+            "L0": 100.0, "L_range": 100.0,
+            "p_base": P_BASE_V6, "p_amp": P_AMP_V6,
+            "lobe": LOBE_V6, "peak_hue": L_PEAK_HUE_V5,
+            "S_drop": S_DROP_V6, "S_power": round(S_POWER_V6, 6),
+            "k_vivid": list(K_VIVID_V6),
+            "steps": CHROMATIC_STEPS_V5,
+        },
+        "meta": {
+            "w": "w(H) = max(0, 1 \u2212 |H\u221275\u00b0|/120)   \u2014 a triangle",
+            "p": "p(H) = 0.82 \u2212 0.10\u00b7w(H)",
+            "L": "L(t,H) = 100 \u2212 100\u00b7t^p(H)",
+            "S": "S(t) = clamp(100 \u2212 30\u00b7k\u00b7t^(2/3), 0, 100),  k = 1.25 or 2",
+            "N": "neutral S = L/10 (light), 22 \u2212 L/9 (dark)",
+        },
+        "curves": {
+            "chromatic": curve_samples_v6("chromatic", k=1.25, H=190),
+            "chromatic_L_peak": curve_samples_v6("chromatic", k=1.25, H=L_PEAK_HUE_V5),
+            "neutral_light": curve_samples_v6("neutral", "light"),
+            "neutral_dark": curve_samples_v6("neutral", "dark"),
+        },
+    }
+
+    for fam in CHROM:
+        keys = [str(s) for s in CHROMATIC_STEPS_V5]
+        out["families"].append(build_family_v6(
+            fam, "chromatic", "both", HUES[fam], keys, P["light"][fam],
+            v5_fam[(fam, "both")], k_v6(fam)))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Neutral"]
+        keys = merge_steps_v5([k for k in steps if k not in ("White", "Black")])
+        out["families"].append(build_family_v6(
+            "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
+            v5_fam[("Neutral", theme)], 1.0))
+
+    rows = [r for f in out["families"] for r in f["rows"]]
+    d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]
+    dc = [r["dE_hsl"] for r in rows if r["dE_hsl"] is not None]
+    out["vs_v5"] = {"mean": round(sum(d5)/len(d5), 2), "max": round(max(d5), 2)}
+    out["vs_current"] = {"mean": round(sum(dc)/len(dc), 2), "max": round(max(dc), 2)}
     return out
 
 # ---------- assemble ----------
 def main():
+    v5 = build_v5()
     out = {
         "v1": build_v1(), "v2": build_v2(), "v3": build_v3(),
-        "v4": build_v4(), "v5": build_v5(), "default": "v5",
+        "v4": build_v4(), "v5": v5, "v6": build_v6(v5), "default": "v5",
     }
     json.dump(out, open('data/generated.json', 'w'), indent=1)
 
-    for ver_id in ("v1", "v2", "v3", "v4", "v5"):
+    for ver_id in ("v1", "v2", "v3", "v4", "v5", "v6"):
         ver = out[ver_id]
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
@@ -756,7 +918,7 @@ def main():
             compared = [r for r in f["rows"] if r["dE_hsl"] is not None]
             w = max(compared, key=lambda r: r["dE_hsl"]) if compared else f["rows"][0]
             extra = ""
-            if ver_id in ("v4", "v5") and f["kind"] == "chromatic":
+            if ver_id in ("v4", "v5", "v6") and f["kind"] == "chromatic":
                 extra = f"  k={f['k']}"
             mean = (sum(dh) / len(dh)) if dh else 0.0
             mx = max(dh) if dh else 0.0
@@ -769,13 +931,29 @@ def main():
         if ver_id == "v4":
             print("S gains:", out["v4"]["s_gain"])
             print(f"L(1/9)={L_v4(1/9):.2f}  (step 50 target ~92)")
+        if ver_id == "v6":
+            print("vs v5:", out["v6"]["vs_v5"], " vs current:", out["v6"]["vs_current"],
+                  " (v5 vs current mean:",
+                  round(sum(r["dE_hsl"] for f in v5["families"] for r in f["rows"]
+                            if r["dE_hsl"] is not None) /
+                        len([r for f in v5["families"] for r in f["rows"]
+                             if r["dE_hsl"] is not None]), 2), ")")
+            print("p per family:", {f["name"]: f["p"] for f in out["v6"]["families"]
+                                    if f["kind"] == "chromatic"})
+            print("drift per family:", {f["name"]+"·"+f["theme"]: f["d5"]
+                                        for f in out["v6"]["families"]})
         if ver_id == "v5":
             print("S gains:", out["v5"]["s_gain"])
             print("S power p:", out["v5"]["s_power"])
             brand = next(f for f in out["v5"]["families"] if f["name"] == "Brand")
             print("Brand samples:", [(r["step"], r["scale"], r["L"], r["S"], r.get("missing")) for r in brand["rows"]])
-            print(f"L powers: Mindaro={L_power_v5(75):.3f} Yellow={L_power_v5(50):.3f} "
-                  f"Brand={L_power_v5(190):.3f} Core={L_power_v5(250):.3f} base={L_power_v5():.3f}")
+            print(f"bend Δ: Mindaro={bend_delta_v5(75):.3f} Yellow={bend_delta_v5(50):.3f} "
+                  f"Pulse={bend_delta_v5(110):.3f} Flash={bend_delta_v5(32):.3f} "
+                  f"Edge={bend_delta_v5(10):.3f} Mint={bend_delta_v5(145):.3f} "
+                  f"Pink={bend_delta_v5(350):.3f} Brand={bend_delta_v5(190):.3f} "
+                  f"Core={bend_delta_v5(250):.3f}")
+            print(f"q(Mindaro) at 25/55/200/900 = {L_q_v5(.025,75):.2f}/{L_q_v5(.055,75):.2f}/"
+                  f"{L_q_v5(.2,75):.2f}/{L_q_v5(.9,75):.2f}  · L(1)={L_v5(1.0,75):.2f}")
             print(f"L_Mindaro(0.1)={L_v5(0.1,75):.1f}  L_Brand(0.1)={L_v5(0.1,190):.1f}  "
                   f"L_Mindaro(0.5)={L_v5(0.5,75):.1f}  L_Brand(0.5)={L_v5(0.5,190):.1f}")
             print(f"S_unit(0)={S_unit_v5(0):.3f}  S_unit(1/3)={S_unit_v5(1/3):.3f}  "
