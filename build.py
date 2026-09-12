@@ -388,24 +388,164 @@ def build_v3():
 
     return out
 
+# =====================================================================
+# v4 — continuous curves with no plateaus + per-family saturation gain
+#
+# L(t) eases a bit more at the light end so early samples (e.g. 50) stay
+# lighter. S(t) is a single smooth drop with a non-zero initial slope
+# (no flat hold at 100 or floor at 70). Each chromatic family multiplies
+# the saturation drop by a gain k_H fitted to Figma.
+# =====================================================================
+
+# Saturation drop gain per chromatic family (fitted to Figma S, dark-weighted).
+S_GAIN = {
+    "Brand": 1.25, "Core": 1.25, "Edge": 1.25, "Yellow": 1.25, "Mint": 1.25,
+    "Mindaro": 1.20, "Flash": 1.80, "Pulse": 2.45, "Pink": 2.40,
+}
+
+def L_v4(t):
+    """Lightness: same endpoints as v3, higher ease so the light end
+    falls more slowly — step-50 at equal-t lands near Figma (~92)."""
+    return 96.0 - 81.0 * (t ** 1.35)
+
+def S_drop_v4(t):
+    """Unit drop shape u(t) ∈ [0,1], strictly increasing, u'(0) > 0.
+    u(t) = t·(1 + 3t)/4  — no plateau at either end."""
+    return t * (1.0 + 3.0 * t) / 4.0
+
+def S_v4(t, k=1.0):
+    """Saturation: continuous decline from 100, scaled by family gain k.
+    S(t) = clamp(100 − 30·k·u(t), 0, 100)"""
+    return clamp(100.0 - 30.0 * k * S_drop_v4(t), 0.0, 100.0)
+
+def H_v4(H0, t):
+    return H0
+
+def neutral_S_v4(theme, t):
+    L = L_v4(t)
+    return L / 10.0 if theme == "light" else 11.0 + (100.0 - L) / 9.0
+
+def sample_hex_v4(kind, hue, theme, t, k=1.0):
+    L = L_v4(t)
+    if kind == "chromatic":
+        return hsl2hex(H_v4(hue, t), S_v4(t, k), L)
+    if kind == "neutral":
+        return hsl2hex(hue, neutral_S_v4(theme, t), L)
+    return hsl2hex(0, 0, L)
+
+def gradient_css_v4(kind, hue, theme, k=1.0, n=32):
+    stops = []
+    for i in range(n):
+        t = i / (n - 1)
+        stops.append(f"{sample_hex_v4(kind, hue, theme, t, k)} {round(100 * t, 2)}%")
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def curve_samples_v4(kind="chromatic", theme="both", k=1.0, n=64):
+    ts, Ls, Ss = [], [], []
+    for i in range(n):
+        t = i / (n - 1)
+        ts.append(round(t, 4))
+        Ls.append(round(L_v4(t), 3))
+        if kind == "chromatic":
+            Ss.append(round(S_v4(t, k), 3))
+        elif kind == "neutral":
+            Ss.append(round(neutral_S_v4(theme, t), 3))
+        else:
+            Ss.append(0.0)
+    return {"t": ts, "L": Ls, "S": Ss}
+
+def build_family_v4(name, kind, theme, hue, step_keys, orig_map, k=1.0):
+    n = len(step_keys)
+    positions = equal_t_positions(n)
+    rows = []
+    for key, t in zip(step_keys, positions):
+        o = orig_map[key]
+        gen = sample_hex_v4(kind, hue, theme, t, k)
+        L = L_v4(t)
+        S = (S_v4(t, k) if kind == "chromatic"
+             else (neutral_S_v4(theme, t) if kind == "neutral" else 0.0))
+        rows.append({
+            "step": key,
+            **entry(o, gen, {
+                "t": round(t, 4),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(H_v4(hue, t) if kind != "grey" else 0, 1),
+                "k": k,
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue,
+        "k": k, "rows": rows,
+        "gradient": gradient_css_v4(kind, hue, theme, k),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v4():
+    out = {
+        "id": "v4", "label": "v4", "families": [], "hues": HUES,
+        "s_gain": S_GAIN,
+        "meta": {
+            "L": "L(t) = 96 − 81·t^1.35",
+            "S": "S(t) = clamp(100 − 30·k_H·t·(1 + 3t)/4, 0, 100)",
+            "H": "H(t) = H₀  (constant per family)",
+            "k": "k_H = per-family saturation gain (fitted to Figma)",
+            "steps": "tᵢ = i/(N−1)  — equal progression, no step ladder",
+        },
+        "curves": {
+            # Base curve at k=1, plus a high-gain example for the diagram
+            "chromatic": curve_samples_v4("chromatic", k=1.0),
+            "chromatic_hi": curve_samples_v4("chromatic", k=2.45),
+            "neutral_light": curve_samples_v4("neutral", "light"),
+            "neutral_dark": curve_samples_v4("neutral", "dark"),
+            "grey": curve_samples_v4("grey"),
+        },
+    }
+
+    for fam in CHROM:
+        steps = P["light"][fam]
+        keys = [str(s) for s in CHROMATIC_STEPS]
+        k = S_GAIN[fam]
+        out["families"].append(
+            build_family_v4(fam, "chromatic", "both", HUES[fam], keys, steps, k))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Neutral"]
+        keys = [k for k in steps if k not in ("White", "Black")]
+        out["families"].append(
+            build_family_v4("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps, 1.0))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Greyscale"]
+        keys = list(steps.keys())
+        out["families"].append(
+            build_family_v4("Greyscale", "grey", theme, 0, keys, steps, 1.0))
+
+    return out
+
 # ---------- assemble ----------
 def main():
-    out = {"v1": build_v1(), "v2": build_v2(), "v3": build_v3(), "default": "v3"}
+    out = {"v1": build_v1(), "v2": build_v2(), "v3": build_v3(), "v4": build_v4(), "default": "v4"}
     json.dump(out, open('data/generated.json', 'w'), indent=1)
 
-    for ver_id in ("v1", "v2", "v3"):
+    for ver_id in ("v1", "v2", "v3", "v4"):
         ver = out[ver_id]
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
         for f in ver["families"]:
             dh = [r["dE_hsl"] for r in f["rows"]]
             w = max(f["rows"], key=lambda r: r["dE_hsl"])
+            extra = f"  k={f['k']}" if ver_id == "v4" and f["kind"] == "chromatic" else ""
             print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   '
-                  f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255)')
+                  f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255){extra}')
         if ver_id == "v2":
             print("shared t (10):", out["v2"]["shared_positions"].get("10"))
-        if ver_id == "v3":
+        if ver_id in ("v3", "v4"):
             print("equal t (10):", [round(i/9, 4) for i in range(10)])
+        if ver_id == "v4":
+            print("S gains:", out["v4"]["s_gain"])
+            # light-end check
+            print(f"L(1/9)={L_v4(1/9):.2f}  (step 50 target ~92)")
 
 if __name__ == "__main__":
     main()

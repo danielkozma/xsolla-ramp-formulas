@@ -105,6 +105,9 @@ a{color:inherit}
 .curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
 .curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
 .curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.Shi{fill:none;stroke:#2F6FED;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+                      stroke-dasharray:5 4;opacity:.45}
+.curves__legend i.Shi{background:#2F6FED;opacity:.4}
 .curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
 .curves__hint{margin:10px 0 0;font-size:12px;line-height:16px;color:var(--ink-3)}
 
@@ -250,13 +253,14 @@ footer b{color:var(--ink);font-weight:500}
 <header class="appbar">
   <div class="ver" id="ver">
     <button type="button" class="ver__btn" id="ver-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ver-menu">
-      <span id="ver-label">v3</span>
+      <span id="ver-label">v4</span>
       <svg class="ver__chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="ver__menu" id="ver-menu" role="listbox" data-open="false">
       <button type="button" class="ver__opt" role="option" data-ver="v1" aria-selected="false">v1 <small>step ladders</small></button>
       <button type="button" class="ver__opt" role="option" data-ver="v2" aria-selected="false">v2 <small>ladder placement</small></button>
-      <button type="button" class="ver__opt" role="option" data-ver="v3" aria-selected="true">v3 <small>pure curves</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v3" aria-selected="false">v3 <small>pure curves</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="true">v4 <small>S gain · no flats</small></button>
     </div>
   </div>
   <span class="appbar__ctx">Redesign Color Palette — Pentagram</span>
@@ -266,11 +270,11 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="wrap">
 <header class="mast">
-  <p class="eyebrow" id="eyebrow">v3 · pure continuous curves</p>
-  <h1 id="mast-title">Every ramp from a curve — no step tables</h1>
-  <p class="lead" id="mast-lead">v3 drops hard-coded step values entirely. Hue is fixed per family; saturation and
-  lightness are continuous functions of gradient progression <i>t</i>. Named tokens are just equal samples
-  along that curve. The diagram below plots both functions before the ramps.</p>
+  <p class="eyebrow" id="eyebrow">v4 · continuous curves · per-family S gain</p>
+  <h1 id="mast-title">Continuous curves with a saturation gain per palette</h1>
+  <p class="lead" id="mast-lead">v4 keeps pure functions of <i>t</i> — no step tables, no flat S plateaus — and lifts
+  the light end of L so early samples stay brighter. Each colour family multiplies the saturation drop by its
+  own gain <code>k<sub>H</sub></code>, which pulls Mindaro, Pulse, Pink and the rest closer to Figma.</p>
   <div class="scoreboard" id="board"></div>
 </header>
 
@@ -305,7 +309,8 @@ footer b{color:var(--ink);font-weight:500}
     <h2 id="curves-title">Function curves</h2>
     <div class="curves__legend">
       <span><i class="L"></i>Lightness</span>
-      <span><i class="S"></i>Saturation</span>
+      <span><i class="S"></i>Saturation (k=1)</span>
+      <span id="leg-shi" hidden><i class="Shi"></i>Saturation (k≈2.45)</span>
     </div>
   </div>
   <svg class="curves__svg" id="curves-svg" viewBox="0 0 760 280" role="img" aria-label="Lightness in red and saturation in blue against gradient progression"></svg>
@@ -346,7 +351,7 @@ footer b{color:var(--ink);font-weight:500}
 const ALL = /*__DATA__*/;
 const ST = /*__STAT__*/;
 
-let ver = ALL.default || 'v3';
+let ver = ALL.default || 'v4';
 let vals = 'none', flt = 'all';
 
 const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
@@ -426,7 +431,24 @@ const COPY = {
   are <code>tᵢ = i/(N−1)</code> — equal samples of the curve, not a second lookup table.</p>
   <p><b>Curve shape.</b> Lightness eases from 96→15; saturation holds at 100 then smoothsteps down to 70.
   Both curves are shared across every chromatic family. Hue never moves.</p>`
+  },
+  v4: {
+    title: 'Continuous curves with a saturation gain per palette',
+    lead: 'v4 keeps pure functions of t — no step tables, no flat S plateaus — and lifts the light end of L so early samples stay brighter. Each colour family multiplies the saturation drop by its own gain k_H, which pulls Mindaro, Pulse, Pink and the rest closer to Figma.',
+    eyebrow: 'v4 · continuous curves · per-family S gain',
+    chip: 'Solid ramps · S gain · no flats',
+    fHead: 'The curve functions',
+    ladHead: 'Equal-t samples · k_H',
+    chrom: 'Nine hues. Shared L(t); S(t) uses a per-family gain k_H on the continuous drop. No plateaus. Named steps are equal samples along t.',
+    theme: 'Neutral and Greyscale reuse L(t). Neutral S is derived from L. No k_H — achromatic / tinted neutrals do not use the chromatic saturation gain.',
+    foot: `<p><b>No flats.</b> Saturation is a single smooth decline with a non-zero initial slope —
+  <code>u(t) = t·(1+3t)/4</code> — so it never holds at 100 or parks on a floor.</p>
+  <p><b>Lighter early L.</b> <code>L(t) = 96 − 81·t^1.35</code> eases more at the light end, so the equal-t
+  sample for step 50 lands near L&nbsp;92 instead of dropping too fast.</p>
+  <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority families use
+  <code>k_H ≈ 1.25</code>; Pulse/Pink ≈ 2.4–2.45; Flash ≈ 1.8; Mindaro ≈ 1.2 — fitted to Figma saturation.</p>`
   }
+
 };
 
 /* ---------- formula + ladder per version ---------- */
@@ -497,7 +519,7 @@ Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
       const dt = i===0 ? '—' : fx(r.t - rows[i-1].t, 3);
       return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
     }).join('');
-  } else {
+  } else if(ver==='v3'){
     // v3 — pure curves, equal-t samples
     document.getElementById('f-body').innerHTML =
 `${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
@@ -524,35 +546,75 @@ Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
 `Nothing here is a per-step lookup. Lightness and saturation are curves of <code>t</code>; named Figma
  steps are equal samples along that progression so you can still compare against the original palette.`;
 
-    const brand = ALL.v3.families.find(f=>f.name==='Brand');
+    const brand3 = ALL.v3.families.find(f=>f.name==='Brand');
     document.getElementById('lad-head').innerHTML =
       `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>Δt</th></tr>`;
-    const rows = brand.rows;
-    document.getElementById('lad').innerHTML = rows.map((r,i)=>{
-      const dt = i===0 ? '—' : fx(r.t - rows[i-1].t, 3);
+    const rows3 = brand3.rows;
+    document.getElementById('lad').innerHTML = rows3.map((r,i)=>{
+      const dt = i===0 ? '—' : fx(r.t - rows3[i-1].t, 3);
       return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
     }).join('');
+  } else {
+    // v4 — continuous, no flats, per-family S gain
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
+${K('// continuous — no plateaus, no step tables')}
+L(t) = ${V('96 − 81·t^1.35')}         ${K('lighter early end')}
+u(t) = ${V('t·(1 + 3t)/4')}           ${K('strictly rising drop shape')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// equal samples')}
+tᵢ = i / (N − 1)
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.20')}
+Flash  H ${V('32')}   k ${V('1.80')}    Pulse  H ${V('110')}  k ${V('2.45')}
+Pink   H ${V('350')}  k ${V('2.40')}`;
+
+    document.getElementById('f-note').innerHTML =
+`<code>u(t)</code> has a non-zero initial slope, so saturation never sits flat at 100 or on a floor.
+ <code>k_H</code> scales the drop per palette — Pulse/Pink fall further; majority families stay near 1.25.
+ <code>t^1.35</code> keeps step 50 near L&nbsp;92.`;
+
+    const brand4 = ALL.v4.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>k<sub>H</sub></th></tr>`;
+    document.getElementById('lad').innerHTML = brand4.rows.map(r=>
+      `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+    ).join('');
   }
 }
 
 /* ---------- curve diagram (L red, S blue) ---------- */
 function renderCurves(){
   const el = document.getElementById('curves');
-  const show = ver === 'v2' || ver === 'v3';
+  const show = ver === 'v2' || ver === 'v3' || ver === 'v4';
   el.dataset.show = show ? 'true' : 'false';
+  const legShi = document.getElementById('leg-shi');
+  if(legShi) legShi.hidden = ver !== 'v4';
   if(!show) return;
 
-  // Prefer v3 curve samples; for v2 synthesise from its meta by sampling Brand rows + interpolate
-  let curve = (ALL.v3 && ALL.v3.curves && ALL.v3.curves.chromatic) || null;
-  if(ver === 'v2'){
-    // Build a dense polyline from v2's L_cont / S_cont by reading Brand sample L/S at known t
-    // and also using the closed-form that matches build.py v2
+  let curve = null, curveHi = null;
+  if(ver === 'v4' && ALL.v4 && ALL.v4.curves){
+    curve = ALL.v4.curves.chromatic;
+    curveHi = ALL.v4.curves.chromatic_hi;
+  } else if(ver === 'v3' && ALL.v3 && ALL.v3.curves){
+    curve = ALL.v3.curves.chromatic;
+  } else if(ver === 'v2'){
     const ts=[], Ls=[], Ss=[];
     for(let i=0;i<=64;i++){
-      const t=i/64;
-      const L=96 - 81*Math.pow(t,1.25);
+      const tt=i/64;
+      const L=96 - 81*Math.pow(tt,1.25);
       const S=Math.max(70, Math.min(100, 100 - (75 - L)));
-      ts.push(t); Ls.push(L); Ss.push(S);
+      ts.push(tt); Ls.push(L); Ss.push(S);
     }
     curve = {t:ts, L:Ls, S:Ss};
   }
@@ -560,11 +622,11 @@ function renderCurves(){
 
   const W=760, H=280, padL=48, padR=18, padT=18, padB=36;
   const plotW=W-padL-padR, plotH=H-padT-padB;
-  const xOf=t=> padL + t*plotW;
+  const xOf=tt=> padL + tt*plotW;
   const yOf=v=> padT + (1 - v/100)*plotH;
 
-  const toPath=(vals)=> vals.map((v,i)=>{
-    const x=xOf(curve.t[i]), y=yOf(v);
+  const toPath=(src, vals)=> vals.map((v,i)=>{
+    const x=xOf(src.t[i]), y=yOf(v);
     return `${i===0?'M':'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(' ');
 
@@ -573,16 +635,18 @@ function renderCurves(){
 
   const grid = yTicks.map(v=>
     `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`
-  ).join('') + xTicks.map(t=>
-    `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`
+  ).join('') + xTicks.map(tt=>
+    `<line class="gridline" x1="${xOf(tt)}" y1="${padT}" x2="${xOf(tt)}" y2="${H-padB}"/>`
   ).join('');
 
   const yLabels = yTicks.map(v=>
     `<text class="label" x="${padL-8}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`
   ).join('');
-  const xLabels = xTicks.map(t=>
-    `<text class="label" x="${xOf(t)}" y="${H-padB+18}" text-anchor="middle">${t===0?'0':t===1?'1':t}</text>`
+  const xLabels = xTicks.map(tt=>
+    `<text class="label" x="${xOf(tt)}" y="${H-padB+18}" text-anchor="middle">${tt===0?'0':tt===1?'1':tt}</text>`
   ).join('');
+
+  const hiPath = curveHi ? `<path class="Shi" d="${toPath(curveHi, curveHi.S)}"/>` : '';
 
   document.getElementById('curves-svg').innerHTML =
     `${grid}
@@ -591,23 +655,28 @@ function renderCurves(){
      ${yLabels}${xLabels}
      <text class="title" x="${padL}" y="${padT-4}">value</text>
      <text class="title" x="${W-padR}" y="${H-8}" text-anchor="end">gradient progression t</text>
-     <path class="S" d="${toPath(curve.S)}"/>
-     <path class="L" d="${toPath(curve.L)}"/>`;
+     ${hiPath}
+     <path class="S" d="${toPath(curve, curve.S)}"/>
+     <path class="L" d="${toPath(curve, curve.L)}"/>`;
 
   document.getElementById('curves-hint').textContent =
-    ver==='v3'
-      ? 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). Shared chromatic curves — hue is constant per family.'
-      : 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). v2 curves (steps still use a lightness ladder).';
+    ver==='v4'
+      ? 'X = gradient progression t · Y = value (0–100). Red = L(t). Solid blue = S(t) at k=1; dashed blue = S at k≈2.45 (Pulse). Each family uses its own k_H.'
+      : ver==='v3'
+        ? 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). Shared chromatic curves — hue is constant per family.'
+        : 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). v2 curves (steps still use a lightness ladder).';
 }
 
-/* ---------- scoreboard ---------- */
+/* ---------- scoreboard/* ---------- scoreboard ---------- */
 function renderBoard(){
   const s = ST[ver];
   const last = ver==='v1'
     ? ['', '1', 'parameter per family — its hue']
-    : ver==='v3'
-      ? ['', 't', 'pure curves · equal samples']
-      : ['', 't', 'continuous parameter · lightness ladder'];
+    : ver==='v4'
+      ? ['', 'k_H', 'per-family S gain · equal-t samples']
+      : ver==='v3'
+        ? ['', 't', 'pure curves · equal samples']
+        : ['', 't', 'continuous parameter · lightness ladder'];
   document.getElementById('board').innerHTML = [
     ['', s.n, 'ramp swatches across 13 ramps'],
     ['g', s.inv, 'reproduced exactly (ΔE &lt; 1)'],
@@ -640,7 +709,8 @@ function v1Gradient(f){
 /* ---------- render ---------- */
 function famCard(f){
   const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
-  const param = f.kind==='grey' ? 'achromatic'
+    const param = f.kind==='grey' ? 'achromatic'
+    : ver==='v4' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
     : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
   const grad = f.gradient || v1Gradient(f);
   const n = f.rows.length;

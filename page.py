@@ -11,7 +11,7 @@ def stats(ver):
         "vis": sum(1 for r in rows if r["dE_hsl"] >= 3),
     }
 
-stat = {vid: stats(D[vid]) for vid in ("v1", "v2", "v3")}
+stat = {vid: stats(D[vid]) for vid in ("v1", "v2", "v3", "v4")}
 
 body = open('template.html', encoding='utf-8').read()
 body = body.replace('/*__DATA__*/', json.dumps(D, separators=(',',':')))
