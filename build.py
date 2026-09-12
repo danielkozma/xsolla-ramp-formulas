@@ -537,14 +537,16 @@ def build_v4():
 # v5 — full 0→100 domain; named steps are interior samples; sine S
 #
 # The continuous scale runs from 0 to 100 (t ∈ [0, 1]). Token numbers
-# map as scale = step/10 (so 25 → 2.5, 800 → 80, 900 → 90). Chromatic
-# 900 is formula-only (Figma has no swatch). Saturation uses an
-# asymmetric raised-cosine: flat at both ends, but the drop is front-
-# loaded so half the unit curve is done by t = 1/3.
+# map as scale = step/10 (so 25 → 2.5, 800 → 80, 850 → 85, 900 → 90).
+# Chromatic 850/900 are formula-only when Figma has no swatch.
+#
+# Saturation: asymmetric raised-cosine, front-loaded (half drop by t=1/3).
+# Lightness: power curve whose exponent is auto-biased by hue — yellow–
+# green hues (perceptually light) get a steeper early drop, then ease out.
 # =====================================================================
 
-# Chromatic samples on the 0→100 scale (900 is formula-only).
-CHROMATIC_STEPS_V5 = [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+# Chromatic samples on the 0→100 scale (850/900 often formula-only).
+CHROMATIC_STEPS_V5 = [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 850, 900]
 
 # Saturation drop gain per chromatic family (fitted to Figma on t=step/1000).
 S_GAIN_V5 = {
@@ -553,8 +555,13 @@ S_GAIN_V5 = {
 }
 
 # Power bias so g(1/3) = 1/2 → half the S-drop by one-third of the ramp.
-# g(t) = t^p keeps u flat at both ends (u'(0)=u'(1)=0) while breaking symmetry.
 S_POWER_V5 = math.log(0.5) / math.log(1.0 / 3.0)  # ≈ 0.6309
+
+# Lightness power: base (cool hues) minus amplitude peaking at yellow-green.
+# Lower power → darker sooner on the light end, then eases into the dark end.
+L_POWER_BASE_V5 = 0.83
+L_POWER_AMP_V5 = 0.38
+L_PEAK_HUE_V5 = 75.0  # Mindaro / chartreuse — perceptually lightest region
 
 def step_to_t_v5(step_key):
     """Map a Figma token onto the 0→100 scale. White=0, Black=100,
@@ -565,11 +572,27 @@ def step_to_t_v5(step_key):
         return 1.0
     return int(step_key) / 1000.0
 
-def L_v5(t):
-    """Lightness across the full 0→100 domain. Fitted so interior
-    samples near Figma's 25…800 ladder stay close, while t=0 / t=1
-    extrapolate lighter / darker than those named ends."""
-    return 99.0 - 98.0 * (t ** 0.83)
+def hue_light_weight_v5(H):
+    """1 at the yellow-green peak (perceptually lightest), 0 by ±90° away.
+    Squared half-cosine lobe — continuous in hue, no hard-coded family tables.
+    Only the light-appearing sector (≈ yellow / Mindaro / early green) is biased."""
+    d = abs((H - L_PEAK_HUE_V5 + 180.0) % 360.0 - 180.0) / 180.0  # 0..1
+    c = math.cos(math.pi * d)
+    return c * c if c > 0.0 else 0.0
+
+def L_power_v5(H=None):
+    """Hue-dependent lightness exponent. Mindaro (~75°) → steep early drop;
+    hues opposite on the wheel keep the base power."""
+    if H is None:
+        return L_POWER_BASE_V5
+    return L_POWER_BASE_V5 - L_POWER_AMP_V5 * hue_light_weight_v5(H)
+
+def L_v5(t, H=None):
+    """Lightness across the full 0→100 domain. Endpoints stay ~99.5→1;
+    the power (and thus early-ramp steepness) is auto-set from hue."""
+    # Light end sits at 99.5 (was 99) so step 25 stays a touch brighter
+    # without changing the power shape or the ~1 dark end.
+    return 99.5 - 98.5 * (t ** L_power_v5(H))
 
 def S_unit_v5(t):
     """Asymmetric raised-cosine unit curve: u(0)=0, u(1)=1, u'(0)=u'(1)=0.
@@ -585,12 +608,13 @@ def S_v5(t, k=1.0):
 def H_v5(H0, t):
     return H0
 
-def neutral_S_v5(theme, t):
-    L = L_v5(t)
+def neutral_S_v5(theme, t, H=None):
+    L = L_v5(t, H)
     return L / 10.0 if theme == "light" else 11.0 + (100.0 - L) / 9.0
 
 def sample_hex_v5(kind, hue, theme, t, k=1.0):
-    L = L_v5(t)
+    H_for_L = hue if kind == "chromatic" else None
+    L = L_v5(t, H_for_L)
     if kind == "chromatic":
         return hsl2hex(H_v5(hue, t), S_v5(t, k), L)
     if kind == "neutral":
@@ -604,13 +628,14 @@ def gradient_css_v5(kind, hue, theme, k=1.0, n=40):
         stops.append(f"{sample_hex_v5(kind, hue, theme, t, k)} {round(100 * t, 2)}%")
     return f"linear-gradient(to bottom, {', '.join(stops)})"
 
-def curve_samples_v5(kind="chromatic", theme="both", k=1.0, n=64):
+def curve_samples_v5(kind="chromatic", theme="both", k=1.0, H=None, n=64):
     ts, scales, Ls, Ss = [], [], [], []
+    use_H = H if kind == "chromatic" else None
     for i in range(n):
         t = i / (n - 1)
         ts.append(round(t, 4))
         scales.append(round(100.0 * t, 2))
-        Ls.append(round(L_v5(t), 3))
+        Ls.append(round(L_v5(t, use_H), 3))
         if kind == "chromatic":
             Ss.append(round(S_v5(t, k), 3))
         elif kind == "neutral":
@@ -619,15 +644,23 @@ def curve_samples_v5(kind="chromatic", theme="both", k=1.0, n=64):
             Ss.append(0.0)
     return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
 
+def merge_steps_v5(existing_keys, extra=(850, 900)):
+    """Keep existing numeric tokens, ensure extra steps are present, sort."""
+    nums = {int(k) for k in existing_keys if str(k).isdigit()}
+    nums.update(extra)
+    return [str(n) for n in sorted(nums)]
+
 def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
     rows = []
     positions = []
+    lp = round(L_power_v5(hue if kind == "chromatic" else None), 4)
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
-        o = orig_map.get(key)  # None when Figma has no swatch (chromatic 900)
+        o = orig_map.get(key)  # None when Figma has no swatch
         gen = sample_hex_v5(kind, hue, theme, t, k)
-        L = L_v5(t)
+        H_for_L = hue if kind == "chromatic" else None
+        L = L_v5(t, H_for_L)
         S = (S_v5(t, k) if kind == "chromatic"
              else (neutral_S_v5(theme, t) if kind == "neutral" else 0.0))
         rows.append({
@@ -639,11 +672,12 @@ def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
                 "S": round(S, 2),
                 "H": round(H_v5(hue, t) if kind != "grey" else 0, 1),
                 "k": k,
+                "lp": lp,
             }),
         })
     return {
         "name": name, "kind": kind, "theme": theme, "hue": hue,
-        "k": k, "rows": rows,
+        "k": k, "lp": lp, "rows": rows,
         "gradient": gradient_css_v5(kind, hue, theme, k),
         "positions": [round(t, 4) for t in positions],
     }
@@ -653,18 +687,31 @@ def build_v5():
         "id": "v5", "label": "v5", "families": [], "hues": HUES,
         "s_gain": S_GAIN_V5,
         "s_power": round(S_POWER_V5, 6),
+        "formula": {
+            "L0": 99.5,
+            "L_range": 98.5,
+            "L_power_base": L_POWER_BASE_V5,
+            "L_power_amp": L_POWER_AMP_V5,
+            "L_peak_hue": L_PEAK_HUE_V5,
+            "S_drop": 30.0,
+            "S_power": round(S_POWER_V5, 6),
+            "steps": CHROMATIC_STEPS_V5,
+        },
         "meta": {
-            "L": "L(t) = 99 − 98·t^0.83",
-            "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t^p))/2, 0, 100)",
-            "p": "p = log(1/2)/log(1/3) ≈ 0.631  →  half the S-drop by t = 1/3",
+            "L": "L(t,H) = 99.5 − 98.5·t^p(H)  with p(H) = 0.83 − 0.38·w(H)",
+            "w": "w(H) = (1 + cos(π·δ))/2, δ = circular distance from hue 75° / 180",
+            "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t^q))/2, 0, 100)",
+            "q": "q = log(1/2)/log(1/3) ≈ 0.631  →  half the S-drop by t = 1/3",
             "H": "H(t) = H₀  (constant per family)",
             "k": "k_H = per-family saturation gain (fitted to Figma)",
-            "steps": "scale = step/10 ∈ (0,100); t = scale/100 — includes 900 (formula-only on chromatics)",
+            "steps": "scale = step/10 ∈ (0,100); t = scale/100 — includes 850 & 900",
             "domain": "full gradient 0 → 100",
         },
         "curves": {
-            "chromatic": curve_samples_v5("chromatic", k=1.0),
-            "chromatic_hi": curve_samples_v5("chromatic", k=2.0),
+            # Shared S; L shown at Brand hue and at Mindaro (peak bias)
+            "chromatic": curve_samples_v5("chromatic", k=1.0, H=190),
+            "chromatic_hi": curve_samples_v5("chromatic", k=2.0, H=190),
+            "chromatic_L_peak": curve_samples_v5("chromatic", k=1.0, H=L_PEAK_HUE_V5),
             "neutral_light": curve_samples_v5("neutral", "light"),
             "neutral_dark": curve_samples_v5("neutral", "dark"),
             "grey": curve_samples_v5("grey"),
@@ -680,13 +727,13 @@ def build_v5():
 
     for theme in ("light", "dark"):
         steps = P[theme]["Neutral"]
-        keys = [k for k in steps if k not in ("White", "Black")]
+        keys = merge_steps_v5([k for k in steps if k not in ("White", "Black")])
         out["families"].append(
             build_family_v5("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps, 1.0))
 
     for theme in ("light", "dark"):
         steps = P[theme]["Greyscale"]
-        keys = list(steps.keys())
+        keys = merge_steps_v5(list(steps.keys()))
         out["families"].append(
             build_family_v5("Greyscale", "grey", theme, 0, keys, steps, 1.0))
 
@@ -727,8 +774,10 @@ def main():
             print("S power p:", out["v5"]["s_power"])
             brand = next(f for f in out["v5"]["families"] if f["name"] == "Brand")
             print("Brand samples:", [(r["step"], r["scale"], r["L"], r["S"], r.get("missing")) for r in brand["rows"]])
-            print(f"L(0)={L_v5(0):.1f}  L(0.025)={L_v5(0.025):.1f}  "
-                  f"L(0.8)={L_v5(0.8):.1f}  L(0.9)={L_v5(0.9):.1f}  L(1)={L_v5(1):.1f}")
+            print(f"L powers: Mindaro={L_power_v5(75):.3f} Yellow={L_power_v5(50):.3f} "
+                  f"Brand={L_power_v5(190):.3f} Core={L_power_v5(250):.3f} base={L_power_v5():.3f}")
+            print(f"L_Mindaro(0.1)={L_v5(0.1,75):.1f}  L_Brand(0.1)={L_v5(0.1,190):.1f}  "
+                  f"L_Mindaro(0.5)={L_v5(0.5,75):.1f}  L_Brand(0.5)={L_v5(0.5,190):.1f}")
             print(f"S_unit(0)={S_unit_v5(0):.3f}  S_unit(1/3)={S_unit_v5(1/3):.3f}  "
                   f"S_unit(0.5)={S_unit_v5(0.5):.3f}  S_unit(1)={S_unit_v5(1):.3f}")
 

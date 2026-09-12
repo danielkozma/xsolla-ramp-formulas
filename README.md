@@ -45,7 +45,7 @@ Saturation is a raised-cosine that stays flat at both ends but is
 drop is done by `t = 1/3`.
 
 ```
-L(t) = 99 − 98·t^0.83
+L(t,H) = 99.5 − 98.5·t^p(H)
 p    = log(1/2) / log(1/3) ≈ 0.631
 u(t) = (1 − cos(π·t^p))/2
 S(t) = clamp(100 − 30·k_H·u(t), 0, 100)
