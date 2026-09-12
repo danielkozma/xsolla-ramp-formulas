@@ -523,19 +523,171 @@ def build_v4():
 
     return out
 
+# =====================================================================
+# v5 — full 0→100 domain; named steps are interior samples; sine S
+#
+# The continuous scale runs from 0 to 100 (t ∈ [0, 1]). Token numbers
+# map as scale = step/10 (so 25 → 2.5, 800 → 80) — 25 and 800 are just
+# steps on the curve, not the ends. Saturation uses a raised-cosine
+# S-curve (flat derivatives at both ends, continuous in between).
+# =====================================================================
+
+# Saturation drop gain per chromatic family (fitted to Figma on t=step/1000).
+S_GAIN_V5 = {
+    "Brand": 1.25, "Core": 1.25, "Edge": 1.25, "Yellow": 1.25, "Mint": 1.25,
+    "Mindaro": 1.30, "Flash": 1.65, "Pulse": 2.00, "Pink": 1.95,
+}
+
+def step_to_t_v5(step_key):
+    """Map a Figma token onto the 0→100 scale. White=0, Black=100,
+    numeric tokens use step/1000 (display scale = step/10)."""
+    if step_key == "White":
+        return 0.0
+    if step_key == "Black":
+        return 1.0
+    return int(step_key) / 1000.0
+
+def L_v5(t):
+    """Lightness across the full 0→100 domain. Fitted so interior
+    samples near Figma's 25…800 ladder stay close, while t=0 / t=1
+    extrapolate lighter / darker than those named ends."""
+    return 99.0 - 98.0 * (t ** 0.83)
+
+def S_unit_v5(t):
+    """Raised-cosine unit S-curve: u(0)=0, u(1)=1, u'(0)=u'(1)=0.
+    Flat-ish at both ends, continuous sine-like ease through the middle."""
+    return (1.0 - math.cos(math.pi * t)) / 2.0
+
+def S_v5(t, k=1.0):
+    """S(t) = clamp(100 − 30·k_H·u(t), 0, 100) with sine u(t)."""
+    return clamp(100.0 - 30.0 * k * S_unit_v5(t), 0.0, 100.0)
+
+def H_v5(H0, t):
+    return H0
+
+def neutral_S_v5(theme, t):
+    L = L_v5(t)
+    return L / 10.0 if theme == "light" else 11.0 + (100.0 - L) / 9.0
+
+def sample_hex_v5(kind, hue, theme, t, k=1.0):
+    L = L_v5(t)
+    if kind == "chromatic":
+        return hsl2hex(H_v5(hue, t), S_v5(t, k), L)
+    if kind == "neutral":
+        return hsl2hex(hue, neutral_S_v5(theme, t), L)
+    return hsl2hex(0, 0, L)
+
+def gradient_css_v5(kind, hue, theme, k=1.0, n=40):
+    stops = []
+    for i in range(n):
+        t = i / (n - 1)
+        stops.append(f"{sample_hex_v5(kind, hue, theme, t, k)} {round(100 * t, 2)}%")
+    return f"linear-gradient(to bottom, {', '.join(stops)})"
+
+def curve_samples_v5(kind="chromatic", theme="both", k=1.0, n=64):
+    ts, scales, Ls, Ss = [], [], [], []
+    for i in range(n):
+        t = i / (n - 1)
+        ts.append(round(t, 4))
+        scales.append(round(100.0 * t, 2))
+        Ls.append(round(L_v5(t), 3))
+        if kind == "chromatic":
+            Ss.append(round(S_v5(t, k), 3))
+        elif kind == "neutral":
+            Ss.append(round(neutral_S_v5(theme, t), 3))
+        else:
+            Ss.append(0.0)
+    return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
+
+def build_family_v5(name, kind, theme, hue, step_keys, orig_map, k=1.0):
+    rows = []
+    positions = []
+    for key in step_keys:
+        t = step_to_t_v5(key)
+        positions.append(t)
+        o = orig_map[key]
+        gen = sample_hex_v5(kind, hue, theme, t, k)
+        L = L_v5(t)
+        S = (S_v5(t, k) if kind == "chromatic"
+             else (neutral_S_v5(theme, t) if kind == "neutral" else 0.0))
+        rows.append({
+            "step": key,
+            **entry(o, gen, {
+                "t": round(t, 4),
+                "scale": round(100.0 * t, 2),
+                "L": round(L, 2),
+                "S": round(S, 2),
+                "H": round(H_v5(hue, t) if kind != "grey" else 0, 1),
+                "k": k,
+            }),
+        })
+    return {
+        "name": name, "kind": kind, "theme": theme, "hue": hue,
+        "k": k, "rows": rows,
+        "gradient": gradient_css_v5(kind, hue, theme, k),
+        "positions": [round(t, 4) for t in positions],
+    }
+
+def build_v5():
+    out = {
+        "id": "v5", "label": "v5", "families": [], "hues": HUES,
+        "s_gain": S_GAIN_V5,
+        "meta": {
+            "L": "L(t) = 99 − 98·t^0.83",
+            "S": "S(t) = clamp(100 − 30·k_H·(1 − cos(π·t))/2, 0, 100)",
+            "H": "H(t) = H₀  (constant per family)",
+            "k": "k_H = per-family saturation gain (fitted to Figma)",
+            "steps": "scale = step/10 ∈ (0,100); t = scale/100 — 25 & 800 are interior samples",
+            "domain": "full gradient 0 → 100",
+        },
+        "curves": {
+            "chromatic": curve_samples_v5("chromatic", k=1.0),
+            "chromatic_hi": curve_samples_v5("chromatic", k=2.0),
+            "neutral_light": curve_samples_v5("neutral", "light"),
+            "neutral_dark": curve_samples_v5("neutral", "dark"),
+            "grey": curve_samples_v5("grey"),
+        },
+    }
+
+    for fam in CHROM:
+        steps = P["light"][fam]
+        keys = [str(s) for s in CHROMATIC_STEPS]
+        k = S_GAIN_V5[fam]
+        out["families"].append(
+            build_family_v5(fam, "chromatic", "both", HUES[fam], keys, steps, k))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Neutral"]
+        keys = [k for k in steps if k not in ("White", "Black")]
+        out["families"].append(
+            build_family_v5("Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps, 1.0))
+
+    for theme in ("light", "dark"):
+        steps = P[theme]["Greyscale"]
+        keys = list(steps.keys())
+        out["families"].append(
+            build_family_v5("Greyscale", "grey", theme, 0, keys, steps, 1.0))
+
+    return out
+
 # ---------- assemble ----------
 def main():
-    out = {"v1": build_v1(), "v2": build_v2(), "v3": build_v3(), "v4": build_v4(), "default": "v4"}
+    out = {
+        "v1": build_v1(), "v2": build_v2(), "v3": build_v3(),
+        "v4": build_v4(), "v5": build_v5(), "default": "v5",
+    }
     json.dump(out, open('data/generated.json', 'w'), indent=1)
 
-    for ver_id in ("v1", "v2", "v3", "v4"):
+    for ver_id in ("v1", "v2", "v3", "v4", "v5"):
         ver = out[ver_id]
         print(f"\n=== {ver_id} ===")
         print(f"{'family':<12}{'theme':<7}{'mean ΔE':>9}{'max':>7}   worst step")
         for f in ver["families"]:
             dh = [r["dE_hsl"] for r in f["rows"]]
             w = max(f["rows"], key=lambda r: r["dE_hsl"])
-            extra = f"  k={f['k']}" if ver_id == "v4" and f["kind"] == "chromatic" else ""
+            extra = ""
+            if ver_id in ("v4", "v5") and f["kind"] == "chromatic":
+                extra = f"  k={f['k']}"
             print(f'{f["name"]:<12}{f["theme"]:<7}{sum(dh)/len(dh):9.2f}{max(dh):7.2f}   '
                   f'{w["step"]:>4} {w["orig"]}→{w["hsl"]} ({w["px_hsl"]}/255){extra}')
         if ver_id == "v2":
@@ -544,8 +696,15 @@ def main():
             print("equal t (10):", [round(i/9, 4) for i in range(10)])
         if ver_id == "v4":
             print("S gains:", out["v4"]["s_gain"])
-            # light-end check
             print(f"L(1/9)={L_v4(1/9):.2f}  (step 50 target ~92)")
+        if ver_id == "v5":
+            print("S gains:", out["v5"]["s_gain"])
+            brand = next(f for f in out["v5"]["families"] if f["name"] == "Brand")
+            print("Brand samples:", [(r["step"], r["scale"], r["L"], r["S"]) for r in brand["rows"]])
+            print(f"L(0)={L_v5(0):.1f}  L(0.025)={L_v5(0.025):.1f}  "
+                  f"L(0.8)={L_v5(0.8):.1f}  L(1)={L_v5(1):.1f}")
+            print(f"S_unit(0)={S_unit_v5(0):.3f}  S_unit(0.5)={S_unit_v5(0.5):.3f}  "
+                  f"S_unit(1)={S_unit_v5(1):.3f}")
 
 if __name__ == "__main__":
     main()

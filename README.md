@@ -3,7 +3,7 @@
 Reverse-engineered HSL formulas for the Xsolla colour palette
 (Figma: *Redesign Color Palette — Pentagram*).
 
-Four versions ship side by side — switch them from the header dropdown.
+Five versions ship side by side — switch them from the header dropdown.
 
 ## v1 — discrete step ladders
 
@@ -34,10 +34,27 @@ H(t) = H₀
 tᵢ = i/(N−1)
 ```
 
-Typical gains: majority ≈ 1.25 · Flash ≈ 1.8 · Pulse/Pink ≈ 2.4–2.45 · Mindaro ≈ 1.2.
+## v5 — full 0→100 domain + sine saturation (default)
+
+Functions and the gradient span **0→100**. Named tokens map as
+`scale = step/10` (so 25 → 2.5, 800 → 80) — interior samples, not ends.
+Saturation is a raised-cosine S-curve (flat derivatives at both ends):
+
+```
+L(t) = 99 − 98·t^0.83
+u(t) = (1 − cos(π·t))/2
+S(t) = clamp(100 − 30·k_H·u(t), 0, 100)
+H(t) = H₀
+
+scale = step/10
+t     = scale/100
+```
+
+Typical gains: majority ≈ 1.25 · Flash ≈ 1.65 · Pulse/Pink ≈ 2.0 / 1.95 ·
+Mindaro ≈ 1.3.
 
 A diagram above the palettes plots **lightness (red)** and **saturation (blue)**
-against gradient progression (with a dashed high-`k` S curve on v4).
+against the scale (with a dashed high-`k` S curve on v4/v5).
 
 ## Files
 
@@ -45,7 +62,7 @@ against gradient progression (with a dashed high-`k` S curve on v4).
 |---|---|
 | `index.html` | built page |
 | `template.html` | source (`/*__DATA__*/`, `/*__STAT__*/`) |
-| `build.py` | applies v1–v4 → `data/generated.json` |
+| `build.py` | applies v1–v5 → `data/generated.json` |
 | `page.py` | injects data into the template |
 | `data/palette.json` | Figma values |
 

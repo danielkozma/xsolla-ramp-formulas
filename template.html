@@ -253,28 +253,29 @@ footer b{color:var(--ink);font-weight:500}
 <header class="appbar">
   <div class="ver" id="ver">
     <button type="button" class="ver__btn" id="ver-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ver-menu">
-      <span id="ver-label">v4</span>
+      <span id="ver-label">v5</span>
       <svg class="ver__chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="ver__menu" id="ver-menu" role="listbox" data-open="false">
       <button type="button" class="ver__opt" role="option" data-ver="v1" aria-selected="false">v1 <small>step ladders</small></button>
       <button type="button" class="ver__opt" role="option" data-ver="v2" aria-selected="false">v2 <small>ladder placement</small></button>
       <button type="button" class="ver__opt" role="option" data-ver="v3" aria-selected="false">v3 <small>pure curves</small></button>
-      <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="true">v4 <small>S gain · no flats</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="false">v4 <small>S gain · no flats</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v5" aria-selected="true">v5 <small>0–100 · sine S</small></button>
     </div>
   </div>
   <span class="appbar__ctx">Redesign Color Palette — Pentagram</span>
   <span class="appbar__spacer"></span>
-  <span class="appbar__chip" id="chip">Solid ramps · 137 swatches</span>
+  <span class="appbar__chip" id="chip">Solid ramps · 0–100 · sine S</span>
 </header>
 
 <div class="wrap">
 <header class="mast">
-  <p class="eyebrow" id="eyebrow">v4 · continuous curves · per-family S gain</p>
-  <h1 id="mast-title">Continuous curves with a saturation gain per palette</h1>
-  <p class="lead" id="mast-lead">v4 keeps pure functions of <i>t</i> — no step tables, no flat S plateaus — and lifts
-  the light end of L so early samples stay brighter. Each colour family multiplies the saturation drop by its
-  own gain <code>k<sub>H</sub></code>, which pulls Mindaro, Pulse, Pink and the rest closer to Figma.</p>
+  <p class="eyebrow" id="eyebrow">v5 · full 0–100 domain · sine saturation</p>
+  <h1 id="mast-title">Full 0–100 scale with a sine-shaped saturation curve</h1>
+  <p class="lead" id="mast-lead">v5 runs lightness and saturation across the whole 0→100 domain. Named tokens
+  (25, 800, …) are interior samples — not the ends of the gradient. Saturation follows a raised-cosine
+  S-curve: flat at both ends, continuous through the middle, scaled per family by <code>k<sub>H</sub></code>.</p>
   <div class="scoreboard" id="board"></div>
 </header>
 
@@ -310,7 +311,7 @@ footer b{color:var(--ink);font-weight:500}
     <div class="curves__legend">
       <span><i class="L"></i>Lightness</span>
       <span><i class="S"></i>Saturation (k=1)</span>
-      <span id="leg-shi" hidden><i class="Shi"></i>Saturation (k≈2.45)</span>
+      <span id="leg-shi" hidden><i class="Shi"></i>Saturation (high k)</span>
     </div>
   </div>
   <svg class="curves__svg" id="curves-svg" viewBox="0 0 760 280" role="img" aria-label="Lightness in red and saturation in blue against gradient progression"></svg>
@@ -351,7 +352,7 @@ footer b{color:var(--ink);font-weight:500}
 const ALL = /*__DATA__*/;
 const ST = /*__STAT__*/;
 
-let ver = ALL.default || 'v4';
+let ver = ALL.default || 'v5';
 let vals = 'none', flt = 'all';
 
 const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
@@ -447,6 +448,22 @@ const COPY = {
   sample for step 50 lands near L&nbsp;92 instead of dropping too fast.</p>
   <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority families use
   <code>k_H ≈ 1.25</code>; Pulse/Pink ≈ 2.4–2.45; Flash ≈ 1.8; Mindaro ≈ 1.2 — fitted to Figma saturation.</p>`
+  },
+  v5: {
+    title: 'Full 0–100 scale with a sine-shaped saturation curve',
+    lead: 'v5 runs lightness and saturation across the whole 0→100 domain. Named tokens (25, 800, …) are interior samples — not the ends of the gradient. Saturation follows a raised-cosine S-curve: flat at both ends, continuous through the middle, scaled per family by k_H.',
+    eyebrow: 'v5 · full 0–100 domain · sine saturation',
+    chip: 'Solid ramps · 0–100 · sine S',
+    fHead: 'The curve functions',
+    ladHead: 'Interior samples on 0–100',
+    chrom: 'Nine hues on one 0→100 continuous scale. Steps 25 and 800 sit inside the ramp (scale 2.5 and 80). Saturation is a raised-cosine S-curve with per-family gain k_H.',
+    theme: 'Neutral and Greyscale reuse the same L(t) on 0→100. Numeric tokens map as scale = step/10; White→0 and Black→100 when present.',
+    foot: `<p><b>0→100 domain.</b> Functions and the gradient column span the full scale. Token
+  <code>25</code> samples at 2.5 and <code>800</code> at 80 — neither is an endpoint.</p>
+  <p><b>Sine saturation.</b> <code>u(t) = (1 − cos(π·t))/2</code> is flat at both ends (zero derivatives)
+  and continuous in between — an S-shape rather than a linear drop or a mid-window plateau.</p>
+  <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority ≈ 1.25;
+  Flash ≈ 1.65; Pulse/Pink ≈ 2.0 / 1.95; Mindaro ≈ 1.3.</p>`
   }
 
 };
@@ -554,7 +571,7 @@ Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
       const dt = i===0 ? '—' : fx(r.t - rows3[i-1].t, 3);
       return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
     }).join('');
-  } else {
+  } else if(ver==='v4'){
     // v4 — continuous, no flats, per-family S gain
     document.getElementById('f-body').innerHTML =
 `${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
@@ -590,20 +607,59 @@ Pink   H ${V('350')}  k ${V('2.40')}`;
     document.getElementById('lad').innerHTML = brand4.rows.map(r=>
       `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
     ).join('');
+  } else {
+    // v5 — 0→100 domain, interior step samples, raised-cosine S
+    document.getElementById('f-body').innerHTML =
+`${K('// scale ∈ [0, 100]  ·  t = scale/100')}
+${K('// 25 and 800 are interior samples — not the ends')}
+L(t) = ${V('99 − 98·t^0.83')}
+u(t) = ${V('(1 − cos(π·t))/2')}     ${K('raised-cosine S-curve')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 800 → 80')}
+t     = scale / 100
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.30')}
+Flash  H ${V('32')}   k ${V('1.65')}    Pulse  H ${V('110')}  k ${V('2.00')}
+Pink   H ${V('350')}  k ${V('1.95')}`;
+
+    document.getElementById('f-note').innerHTML =
+`The gradient runs 0→100. Token labels are just sample points on that continuum —
+ <code>u(t)</code> is a sine-shaped ease with flat ends; <code>k_H</code> scales the drop per palette.`;
+
+    const brand5 = ALL.v5.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>k<sub>H</sub></th></tr>`;
+    document.getElementById('lad').innerHTML = brand5.rows.map(r=>
+      `<tr><td>${r.step}</td><td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+    ).join('');
   }
 }
 
 /* ---------- curve diagram (L red, S blue) ---------- */
 function renderCurves(){
   const el = document.getElementById('curves');
-  const show = ver === 'v2' || ver === 'v3' || ver === 'v4';
+  const show = ver === 'v2' || ver === 'v3' || ver === 'v4' || ver === 'v5';
   el.dataset.show = show ? 'true' : 'false';
   const legShi = document.getElementById('leg-shi');
-  if(legShi) legShi.hidden = ver !== 'v4';
+  if(legShi) legShi.hidden = !(ver === 'v4' || ver === 'v5');
   if(!show) return;
 
   let curve = null, curveHi = null;
-  if(ver === 'v4' && ALL.v4 && ALL.v4.curves){
+  if(ver === 'v5' && ALL.v5 && ALL.v5.curves){
+    curve = ALL.v5.curves.chromatic;
+    curveHi = ALL.v5.curves.chromatic_hi;
+  } else if(ver === 'v4' && ALL.v4 && ALL.v4.curves){
     curve = ALL.v4.curves.chromatic;
     curveHi = ALL.v4.curves.chromatic_hi;
   } else if(ver === 'v3' && ALL.v3 && ALL.v3.curves){
@@ -631,7 +687,12 @@ function renderCurves(){
   }).join(' ');
 
   const yTicks=[0,25,50,75,100];
-  const xTicks=[0,0.25,0.5,0.75,1];
+  const xTicks = ver === 'v5' ? [0,0.25,0.5,0.75,1] : [0,0.25,0.5,0.75,1];
+  const xLabel = tt => {
+    if(ver === 'v5') return String(Math.round(tt*100));
+    return tt===0?'0':tt===1?'1':String(tt);
+  };
+  const xAxisTitle = ver === 'v5' ? 'scale 0 → 100' : 'gradient progression t';
 
   const grid = yTicks.map(v=>
     `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`
@@ -643,7 +704,7 @@ function renderCurves(){
     `<text class="label" x="${padL-8}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`
   ).join('');
   const xLabels = xTicks.map(tt=>
-    `<text class="label" x="${xOf(tt)}" y="${H-padB+18}" text-anchor="middle">${tt===0?'0':tt===1?'1':tt}</text>`
+    `<text class="label" x="${xOf(tt)}" y="${H-padB+18}" text-anchor="middle">${xLabel(tt)}</text>`
   ).join('');
 
   const hiPath = curveHi ? `<path class="Shi" d="${toPath(curveHi, curveHi.S)}"/>` : '';
@@ -654,13 +715,15 @@ function renderCurves(){
      <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
      ${yLabels}${xLabels}
      <text class="title" x="${padL}" y="${padT-4}">value</text>
-     <text class="title" x="${W-padR}" y="${H-8}" text-anchor="end">gradient progression t</text>
+     <text class="title" x="${W-padR}" y="${H-8}" text-anchor="end">${xAxisTitle}</text>
      ${hiPath}
      <path class="S" d="${toPath(curve, curve.S)}"/>
      <path class="L" d="${toPath(curve, curve.L)}"/>`;
 
   document.getElementById('curves-hint').textContent =
-    ver==='v4'
+    ver==='v5'
+      ? 'X = scale 0–100 · Y = value (0–100). Red = L. Solid blue = S at k=1; dashed = S at k=2 (Pulse). Steps 25 and 800 sit inside the domain.'
+      : ver==='v4'
       ? 'X = gradient progression t · Y = value (0–100). Red = L(t). Solid blue = S(t) at k=1; dashed blue = S at k≈2.45 (Pulse). Each family uses its own k_H.'
       : ver==='v3'
         ? 'X = gradient progression t · Y = value (0–100). Red = L(t), blue = S(t). Shared chromatic curves — hue is constant per family.'
@@ -672,7 +735,9 @@ function renderBoard(){
   const s = ST[ver];
   const last = ver==='v1'
     ? ['', '1', 'parameter per family — its hue']
-    : ver==='v4'
+    : ver==='v5'
+      ? ['', '0–100', 'full domain · sine S · interior steps']
+      : ver==='v4'
       ? ['', 'k_H', 'per-family S gain · equal-t samples']
       : ver==='v3'
         ? ['', 't', 'pure curves · equal samples']
@@ -709,15 +774,15 @@ function v1Gradient(f){
 /* ---------- render ---------- */
 function famCard(f){
   const worst = Math.max(...f.rows.map(r=>r.dE_hsl));
-    const param = f.kind==='grey' ? 'achromatic'
-    : ver==='v4' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
+  const param = f.kind==='grey' ? 'achromatic'
+    : (ver==='v4' || ver==='v5') && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
     : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
   const grad = f.gradient || v1Gradient(f);
   const n = f.rows.length;
 
   const body = f.rows.map((r,i)=>{
     const d=r.dE_hsl, b=band(d);
-    const tPos = r.t!=null ? ` · t ${r.t.toFixed(3)}` : '';
+    const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
     const tip=`${r.step} · Figma ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
     return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
       `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}">${label(r,'orig',vals)}</span>`+
