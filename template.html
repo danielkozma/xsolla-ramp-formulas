@@ -108,6 +108,7 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 /* ---- section heads ---- */
 .sect{margin:0 0 12px}
 .sect h2{font-size:22px;line-height:1.1}
+.sect h2.sect-xl{font-size:40px}
 .sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
 
 .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
@@ -130,24 +131,24 @@ table.ladder tbody tr:last-child td{border-bottom:0}
             font-variant-numeric:tabular-nums;white-space:nowrap}
 
 .colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
-         column-gap:2px;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         column-gap:0;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
          letter-spacing:.04em;text-transform:uppercase}
 .colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
 .colhead span:last-child{text-align:right}
 
 .ramp-wrap{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
-           column-gap:2px;row-gap:0;padding:0 10px 13px;align-items:stretch}
+           column-gap:0;row-gap:0;padding:0 10px 13px;align-items:stretch}
 .ramp-steps{display:contents}
-.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:4px;
+.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;
           font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
 /* Current value and formula value share an edge — no gap, no radius, so the
    seam only appears where the two actually differ. */
 .tile.empty{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:18px;
-  color:var(--ink-3);box-shadow:inset 0 0 0 1px var(--rule)}
+  color:var(--ink-3)}
 .tile.empty::after{content:'—'}
 .grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
           box-shadow:none;position:relative}
-.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:2px}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:4px}
 .dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
 .dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
 .dl em{font-style:normal;font-size:14px;line-height:18px;color:var(--ink)}
@@ -186,13 +187,12 @@ footer b{color:var(--ink);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---- hue playground ---- */
-.playground{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+.playground{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
             align-items:stretch;margin:0 0 44px}
-/* The family cards are bare plates on the ground; the probes stay cards —
-   they are instruments sitting beside the palette, not part of it. */
-.play-card{border:1px solid var(--rule);border-radius:var(--r-lg)}
+/* Probe cards read as the same bare plates as the family cards — no frame,
+   no radius, no rule under the head. */
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
-                      padding:13px 14px 12px;border-bottom:1px solid var(--rule)}
+                      padding:13px 14px 12px}
 .play-head__top{display:flex;align-items:center;gap:8px;min-width:0}
 .play-card .play-head h3{margin:0;font-size:18px;line-height:1;flex:0 0 auto}
 .play-head__top .play-meta{margin-left:auto;text-align:right}
@@ -210,9 +210,15 @@ footer b{color:var(--ink);font-weight:500}
 
 .play-curves .play-head{gap:9px}
 .play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
+/* The plot is taken out of flow and pinned to its box, so the card's height is
+   set by the row (i.e. by the ramp card beside it) and never by the drawing —
+   the SVG is then sized to whatever box that leaves. On its own row the card
+   falls back to the diagram's own 380 x 300 proportion. */
 .play-curves{display:flex;flex-direction:column}
-.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;display:flex}
-.play-curves .curves__svg{max-height:none;width:100%;height:100%;flex:1 1 auto;min-height:0}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;
+                   position:relative;aspect-ratio:380/300}
+.play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
+                          width:auto;height:auto;max-height:none}
 .play-curves__svg .step{fill:#E24B4A}
 .play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
 .grad-split{display:flex;gap:1px}
@@ -249,7 +255,7 @@ footer b{color:var(--ink);font-weight:500}
 
 
 <div class="sect">
-  <h2>Chromatic families</h2>
+  <h2 class="sect-xl">Chromatic</h2>
 </div>
 <div class="legend">
   <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
@@ -266,7 +272,7 @@ footer b{color:var(--ink);font-weight:500}
 <div id="playground" class="playground"></div>
 
 <div class="sect">
-  <h2>Neutrals</h2>
+  <h2 class="sect-xl">Neutrals</h2>
 </div>
 
 <div class="grid" id="g-theme"></div>
@@ -311,11 +317,12 @@ e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps a
 L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
 
 ${K('// saturation and hue')}
-S(t) = clamp(${V('100 − 37.5·t^(2/3)')}, 0, 100)   ${K('one curve, every hue')}
+r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
+S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}
 H(t) = ${V('H₀')}
 
 ${K('// neutrals')}
-neutral·lt  hsl(  ${V('75')}, L/10,        L )
+neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
 neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
 
 ${K('// named tokens sample the scale')}
@@ -341,10 +348,48 @@ function ink(hex){
 }
 const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 
+/* ---------- perceptual lift ---------- */
+/* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
+   OKLab L, which is invisible in a swatch but reads as noise on a plotted curve. */
+function hsl2rgbf(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(Math.min(k-3,9-k,1),-1); };
+  return [f(0), f(8), f(4)];
+}
+/* OKLab L, 0–100 — the perceptual axis the palette's ΔE is measured on */
+function okLrgb(r,g,b){
+  const lin=c=>{c=Math.max(0,Math.min(1,c)); return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
+  const R=lin(r), G=lin(g), B=lin(b);
+  const cb=x=> x>0 ? Math.cbrt(x) : 0;
+  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
+  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
+  const q=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
+  return 100*(0.2104542553*l + 0.7936177850*m - 0.0040720468*q);
+}
+/* How much lighter a tinted step reads than a pure grey of the same nominal L.
+   This is the quantity the chromatic bend exists to cancel — so the palette cards
+   and the playgrounds both quote it, from this one function, off the same H/S/L. */
+function perceptualLift(H, S, L){
+  return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
+}
+function liftStr(v){ return (v<0?'−':'+')+Math.abs(v).toFixed(2); }
+/* the step that reads furthest from its nominal grey — signed, not absolute */
+function peakLift(rows){
+  return rows.reduce((a,r)=>{
+    const v=perceptualLift(r.H, r.S, r.L);
+    return Math.abs(v)>Math.abs(a) ? v : a;
+  }, 0);
+}
+
 /* ---------- render ---------- */
 function famCard(f){
+  /* Lift is quoted on the neutrals only — there it is the evidence that they need
+     no correction. On a chromatic ramp the dip already answers for it. */
+  const showLift = f.kind==='neutral';
   const param = f.kind==='grey' ? 'achromatic'
-    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`
+      + (showLift ? ` · peak lift ${liftStr(peakLift(f.rows))}` : '');
   const grad = f.gradient;
   const n = f.rows.length;
 
@@ -352,9 +397,10 @@ function famCard(f){
     const missing = !!(r.missing || r.orig==null);
     const d=r.dE_hsl, b=band(d);
     const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
+    const tLift = showLift ? ` · lift ${liftStr(perceptualLift(r.H, r.S, r.L))}` : '';
     const tip = missing
-      ? `${r.step} · no current swatch → formula ${r.hsl}${tPos}`
-      : `${r.step} · current ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}`;
+      ? `${r.step} · no current swatch → formula ${r.hsl}${tPos}${tLift}`
+      : `${r.step} · current ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}${tLift}`;
     const figmaTile = missing
       ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
       : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}"></span>`;
@@ -434,7 +480,9 @@ function Qplay(t, H, F, corr){
   return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
 }
 function Splay(t,F){
-  return Math.max(0, Math.min(100, 100 - F.S_drop*Math.pow(t, F.S_power)));
+  /* Hill switch: flat on 100 below the knee, flat on the floor above it */
+  const r = Math.pow(t/F.S_knee, F.S_order);
+  return 100 - F.S_drop*r/(1 + r);
 }
 
 /* The diagram card is stretched to the height of the ramp card beside it, so the
@@ -590,33 +638,10 @@ function renderPlayground(){
 }
 
 
-/* ---------- neutrals: functions, perceptual lift, playgrounds ---------- */
+/* ---------- neutrals: functions and playgrounds ---------- */
 function neutralS(theme, L){
-  return theme==='light' ? L/10 : 22 - L/9;
-}
-
-/* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
-   OKLab L, which is invisible in a swatch but reads as noise on a plotted curve. */
-function hsl2rgbf(h,s,l){
-  h=((h%360)+360)%360; s/=100; l/=100;
-  const a=s*Math.min(l,1-l);
-  const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(Math.min(k-3,9-k,1),-1); };
-  return [f(0), f(8), f(4)];
-}
-/* OKLab L, 0–100 — the perceptual axis the palette's ΔE is measured on */
-function okLrgb(r,g,b){
-  const lin=c=>{c=Math.max(0,Math.min(1,c)); return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
-  const R=lin(r), G=lin(g), B=lin(b);
-  const cb=x=> x>0 ? Math.cbrt(x) : 0;
-  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
-  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
-  const q=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
-  return 100*(0.2104542553*l + 0.7936177850*m - 0.0040720468*q);
-}
-/* How much lighter a tinted step reads than a pure grey of the same nominal L.
-   This is the quantity the chromatic bend exists to cancel. */
-function perceptualLift(H, S, L){
-  return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
+  /* the light ramp keeps a floor of tint — it never reaches neutral grey */
+  return theme==='light' ? L/10 + 0.7 : 22 - L/9;
 }
 
 /* one neutral diagram — same grid, pads and classes as the chromatic one */
@@ -685,7 +710,7 @@ function updateNeutralTheme(theme){
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
     `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
-      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${r.lift.toFixed(2)}"></span>`
+      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${liftStr(r.lift)}"></span>`
   ).join('');
 
   document.getElementById(`nplay-${theme}-ramp`).innerHTML = body +
@@ -694,9 +719,8 @@ function updateNeutralTheme(theme){
   document.getElementById(`nplay-${theme}-hue-val`).textContent = hue+'°';
 
   const at=rows.reduce((a,b)=> Math.abs(b.lift)>Math.abs(a.lift) ? b : a);
-  const sgn=v=> (v>0?'+':'−')+Math.abs(v).toFixed(2);
   document.getElementById(`nplay-${theme}-stats`).textContent =
-    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${sgn(at.lift)}`;
+    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${liftStr(at.lift)}`;
   const nsvg=document.getElementById(`nplay-${theme}-svg`);
   nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;

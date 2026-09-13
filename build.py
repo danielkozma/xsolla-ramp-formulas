@@ -914,11 +914,13 @@ def build_v6(v5):
 # b is the same bell in log-t that v5 draws with a Gaussian, written without
 # ln or exp: zero at t=0, 1 at t=c, slow decay after. No integration is
 # needed because t^e is 0 at t=0 and 1 at t=1 whatever e does — the ends pin
-# themselves. Saturation, the gains and the endpoints are v6's dumb versions;
-# the hue lobe is v5's, which is one cos and buys real accuracy.
+# themselves. The gains and the endpoints are v6's dumb versions; the hue lobe
+# is v5's, which is one cos and buys real accuracy. Saturation is neither —
+# every power law tried there bled chroma out of the light steps, so it is a
+# Hill switch instead (see below).
 #
-# Mean ΔE 0.59 from v5's output, worst swatch 1.43, and the light-end fan-out
-# is intact (Mindaro 6.5 / 8.9 / 11.2 against v5's 6.5 / 8.9 / 11.0).
+# The light-end fan-out is intact (Mindaro 6.5 / 8.9 / 11.2 against v5's
+# 6.5 / 8.9 / 11.0).
 # =====================================================================
 P_BASE_V7 = 0.84       # exponent away from the dip
 DIP_V7 = 0.20          # how far the dip pulls it down at w = 1
@@ -927,9 +929,22 @@ DIP_C_V7 = 0.09        # where the dip bottoms out, on the 0–1 scale
 # through step 500; only Pulse, Pink and Flash peel off in the dark tail — seven
 # hand-edited swatches, not a hue effect. A whole-ramp gain chasing them
 # desaturated the light and mid steps, which were already exact, so it is gone.
-# 37.5 is the old 30 x 1.25 default folded into the drop.
-S_DROP_V7 = 37.5
-S_POWER_V7 = 2.0/3.0
+#
+# The curve is a switch, not a slide. A power law starts falling at t = 0 and
+# falls fastest there, so every light step paid for the dark end's desaturation:
+# 100/200/300 came out at S 92/87/83 where the palette holds a flat 100/100/90.
+# A Hill function moves all of that motion into a window around its knee:
+#
+#     S(t) = 100 − 30·(t/c)^n / (1 + (t/c)^n),   c = 1/3, n = 6
+#
+# (t/c)^n is negligible below the knee and saturates above it, so S sits on 100
+# through the lights, swings 100 → 70 across the mids, and settles on the floor
+# for the dark tail — the three regimes the palette actually has. n sets how
+# sharply it changes its mind; the ends need no clamp because the ratio is
+# bounded by construction.
+S_DROP_V7 = 30.0       # 100 at the light end down to a floor of 70
+S_KNEE_V7 = 1.0/3.0    # half the drop is spent here — the 0–1 scale, so step 333
+S_ORDER_V7 = 6.0       # how abruptly the hold gives way to the floor
 
 def dip_shape_v7(t):
     """A bell in log t with no ln in sight: 0 at t=0, 1 at t=c, fat tail after."""
@@ -945,10 +960,18 @@ def L_v7(t, H=None):
     return 100.0 if t <= 0.0 else 100.0 - 100.0 * (t ** L_exponent_v7(t, H))
 
 def S_v7(t):
-    return clamp(100.0 - S_DROP_V7 * (t ** S_POWER_V7), 0.0, 100.0)
+    """Full chroma until the knee, then one swing down to the floor."""
+    r = (t / S_KNEE_V7) ** S_ORDER_V7
+    return 100.0 - S_DROP_V7 * r / (1.0 + r)
+
+# The light ramp never reaches neutral grey: the palette holds ~2 points of tint
+# at its darkest step, where L/10 alone has already fallen to 0.85. The slope was
+# right (least squares gives L/10.11) — only the floor was missing, so the offset
+# goes in and nothing else moves.
+NEUTRAL_S_FLOOR_V7 = 0.7
 
 def neutral_S_v7(theme, L):
-    return L / 10.0 if theme == "light" else 22.0 - L / 9.0
+    return L / 10.0 + NEUTRAL_S_FLOOR_V7 if theme == "light" else 22.0 - L / 9.0
 
 def sample_hex_v7(kind, hue, theme, t):
     L = L_v7(t, hue if kind == "chromatic" else None)
@@ -1015,14 +1038,15 @@ def build_v7(v5):
             "L0": 100.0, "L_range": 100.0,
             "p_base": P_BASE_V7, "dip": DIP_V7, "dip_c": DIP_C_V7,
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
-            "S_drop": S_DROP_V7, "S_power": round(S_POWER_V7, 6),
+            "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
+            "S_order": S_ORDER_V7,
             "steps": CHROMATIC_STEPS_V5,
         },
         "meta": {
             "b": "b(t) = 4c\u00b7t/(t+c)\u00b2 with c = 0.09  \u2014 a log-t bell, no ln",
             "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
-            "S": "S(t) = clamp(100 \u2212 37.5\u00b7t^(2/3), 0, 100)  \u2014 one curve, every hue",
+            "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
         "curves": {

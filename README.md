@@ -109,30 +109,77 @@ is slid straight into the power law rather than integrated:
 b(t) = 4c·t/(t + c)²          # c = 0.09 — a bell in log t, no ln
 e(t) = 0.84 − 0.20·w(H)·b(t)  # w(H) is v5's cos² lobe, unchanged
 L(t,H) = 100 − 100·t^e(t)     # t^e is 0 at t=0 and 1 at t=1 for any e
-S(t) = clamp(100 − 37.5·t^(2/3), 0, 100)   # one curve, every hue
+r(t) = (3t)⁶                   # 1 at the knee, t = 1/3
+S(t) = 100 − 30·r/(1 + r)      # one curve, every hue
 ```
+
+**Saturation is a switch, not a slide.** A power law starts falling at `t = 0`
+and falls fastest there, so the light steps paid for the dark end: 100 / 200 /
+300 came out at S 92 / 87 / 83 where the palette holds a flat 100 / 100 / 90.
+The Hill form puts all the motion in a window around its knee — `(t/c)ⁿ` is
+negligible below it and saturates above it — so S sits on 100 through the
+lights, swings 100 → 70 across the mids, and settles on the floor for the dark
+tail. Those are the three regimes the palette actually has, and `n` is the one
+knob for how sharply it changes its mind. No clamp: the ratio is bounded by
+construction.
+
+| step | 25 | 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| palette S | 100 | 100 | 100 | 100 | 90 | 80 | 70 | 70 | 70 | 71 |
+| `t^(2/3)` | 97 | 95 | 92 | 87 | 83 | 80 | 76 | 73 | 70 | 68 |
+| Hill | 100 | 100 | 100 | 99 | 90 | 78 | 72 | 71 | 70 | 70 |
 
 **No per-family saturation gain.** The palette's own ramps are identical
 through step 500; only Pulse, Pink and Flash peel off, and only in the dark
 tail — seven hand-edited swatches, not a hue effect. A whole-ramp gain chasing
 them desaturated the light and mid steps, which were already exact. Dropping
-it improves the fit (mean ΔE 1.99 → 1.88) and leaves hue as the single
-per-family parameter, so the hue playground reproduces every card exactly.
+it leaves hue as the single per-family parameter, so the hue playground
+reproduces every card exactly.
 
 No integration is needed because the ends pin themselves whatever the
-exponent does — what v5 proves, v7 gets for free. Mean ΔE **0.59** from v5's
-output with no swatch past 1.43, and it fits the current palette marginally
-better. The fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's
-6.5 / 8.9 / 11.0, where v6's flat cut gives 4.5 / 7.5.
+exponent does — what v5 proves, v7 gets for free. It fits the current palette
+better than v5 does (mean ΔE **1.84** against 2.11); the drift from v5's own
+output is 1.06, almost all of it the saturation change in the mids. The
+fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
+where v6's flat cut gives 4.5 / 7.5.
+
+**The light neutral keeps a floor of tint.**
+
+```
+neutral·lt  hsl(  75, L/10 + 0.7,  L )
+neutral·dk  hsl( 190, 22 − L/9,    L )
+```
+
+`L/10` on its own sat under the palette at **every** step of the light ramp —
+by 0.4 S at the top and 1.1 at the bottom, mean 0.68 — which reads as a formula
+column visibly greyer than the current one through the mids. The slope was not
+the problem: least squares on the Figma swatches gives `L/10.11`, so 1/10 is
+right and only the floor was missing. `L/10` forces S → 0 as L → 0, but the
+palette's light neutrals still carry ~2 points of tint at step 900. Adding the
+offset takes the light ramp from mean ΔE 0.92 to **0.86** (300: 1.29 → 1.00,
+400: 1.30 → 1.08, 600: 0.31 → 0.16). Step 800 is the one that gets worse,
+2.08 → 2.35, and it is not a saturation miss — the formula is too *light*
+there. The dark ramp was already sitting slightly above the palette's chroma,
+so `22 − L/9` is unchanged.
+
+**Neutral lift is quoted on the palette cards, not just the playground.** The
+tinted neutrals still get measured against the grey of the same nominal L: the
+light ramp peaks at **+1.66** OKLab points (step 400), the dark at **+2.17**
+(step 500), against 24.3 for Mindaro at the same step. That is the evidence for
+giving neutrals no correction — and it survives the floor, which buys 0.19 of
+lift against an order of magnitude of headroom. The two neutral cards carry the
+number in their header (`peak lift`) and in every swatch tooltip, off the same
+`perceptualLift()` the neutral playground plots — the card and the playground
+cannot disagree. The chromatic cards do not quote it; there the dip already
+answers for it.
 
 Measured cost of each simplification on its own, against v5's output:
 
 | dropped | mean ΔE |
 |---|---|
 | per-family gain dropped | — |
-| neutral S rounded | 0.00 |
+| neutral S rounded (dark) | 0.00 |
 | hue lobe cos² → triangle | 0.30 |
-| S raised cosine → `t^(2/3)` | 0.44 |
 | endpoints 99.5/98.5 → 100/100 | 0.50 |
 | **bend → flat cut** | **1.07** |
 
