@@ -109,21 +109,27 @@ is slid straight into the power law rather than integrated:
 b(t) = 4c·t/(t + c)²          # c = 0.09 — a bell in log t, no ln
 e(t) = 0.84 − 0.20·w(H)·b(t)  # w(H) is v5's cos² lobe, unchanged
 L(t,H) = 100 − 100·t^e(t)     # t^e is 0 at t=0 and 1 at t=1 for any e
-S(t) = clamp(100 − 30·k·t^(2/3), 0, 100)
-k = 2 Pulse/Pink · 1.75 Flash · 1.25 the rest
+S(t) = clamp(100 − 37.5·t^(2/3), 0, 100)   # one curve, every hue
 ```
+
+**No per-family saturation gain.** The palette's own ramps are identical
+through step 500; only Pulse, Pink and Flash peel off, and only in the dark
+tail — seven hand-edited swatches, not a hue effect. A whole-ramp gain chasing
+them desaturated the light and mid steps, which were already exact. Dropping
+it improves the fit (mean ΔE 1.99 → 1.88) and leaves hue as the single
+per-family parameter, so the hue playground reproduces every card exactly.
 
 No integration is needed because the ends pin themselves whatever the
 exponent does — what v5 proves, v7 gets for free. Mean ΔE **0.59** from v5's
 output with no swatch past 1.43, and it fits the current palette marginally
-better (1.99 against 2.11). The fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L
-against v5's 6.5 / 8.9 / 11.0, where v6's flat cut gives 4.5 / 7.5.
+better. The fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's
+6.5 / 8.9 / 11.0, where v6's flat cut gives 4.5 / 7.5.
 
 Measured cost of each simplification on its own, against v5's output:
 
 | dropped | mean ΔE |
 |---|---|
-| nine gains → three | 0.06 |
+| per-family gain dropped | — |
 | neutral S rounded | 0.00 |
 | hue lobe cos² → triangle | 0.30 |
 | S raised cosine → `t^(2/3)` | 0.44 |

@@ -923,12 +923,13 @@ def build_v6(v5):
 P_BASE_V7 = 0.84       # exponent away from the dip
 DIP_V7 = 0.20          # how far the dip pulls it down at w = 1
 DIP_C_V7 = 0.09        # where the dip bottoms out, on the 0–1 scale
-S_DROP_V7 = 30.0
+# One saturation curve for all nine hues. The palette's own ramps are identical
+# through step 500; only Pulse, Pink and Flash peel off in the dark tail — seven
+# hand-edited swatches, not a hue effect. A whole-ramp gain chasing them
+# desaturated the light and mid steps, which were already exact, so it is gone.
+# 37.5 is the old 30 x 1.25 default folded into the drop.
+S_DROP_V7 = 37.5
 S_POWER_V7 = 2.0/3.0
-S_GAIN_V7 = {"Flash": 1.75, "Pulse": 2.0, "Pink": 2.0}   # everything else 1.25
-
-def k_v7(name):
-    return S_GAIN_V7.get(name, 1.25)
 
 def dip_shape_v7(t):
     """A bell in log t with no ln in sight: 0 at t=0, 1 at t=c, fat tail after."""
@@ -943,34 +944,34 @@ def L_exponent_v7(t, H=None):
 def L_v7(t, H=None):
     return 100.0 if t <= 0.0 else 100.0 - 100.0 * (t ** L_exponent_v7(t, H))
 
-def S_v7(t, k=1.0):
-    return clamp(100.0 - S_DROP_V7 * k * (t ** S_POWER_V7), 0.0, 100.0)
+def S_v7(t):
+    return clamp(100.0 - S_DROP_V7 * (t ** S_POWER_V7), 0.0, 100.0)
 
 def neutral_S_v7(theme, L):
     return L / 10.0 if theme == "light" else 22.0 - L / 9.0
 
-def sample_hex_v7(kind, hue, theme, t, k=1.0):
+def sample_hex_v7(kind, hue, theme, t):
     L = L_v7(t, hue if kind == "chromatic" else None)
     if kind == "chromatic":
-        return hsl2hex(hue, S_v7(t, k), L)
+        return hsl2hex(hue, S_v7(t), L)
     return hsl2hex(hue, neutral_S_v7(theme, L), L)
 
-def gradient_css_v7(kind, hue, theme, k=1.0, n=40):
-    stops = [f"{sample_hex_v7(kind, hue, theme, i/(n-1), k)} {round(100*i/(n-1), 2)}%"
+def gradient_css_v7(kind, hue, theme, n=40):
+    stops = [f"{sample_hex_v7(kind, hue, theme, i/(n-1))} {round(100*i/(n-1), 2)}%"
              for i in range(n)]
     return f"linear-gradient(to bottom, {', '.join(stops)})"
 
-def curve_samples_v7(kind="chromatic", theme="both", k=1.0, H=None, n=64):
+def curve_samples_v7(kind="chromatic", theme="both", H=None, n=64):
     ts, scales, Ls, Ss = [], [], [], []
     use_H = H if kind == "chromatic" else None
     for i in range(n):
         t = i / (n - 1)
         L = L_v7(t, use_H)
         ts.append(round(t, 4)); scales.append(round(100.0*t, 2)); Ls.append(round(L, 3))
-        Ss.append(round(S_v7(t, k) if kind == "chromatic" else neutral_S_v7(theme, L), 3))
+        Ss.append(round(S_v7(t) if kind == "chromatic" else neutral_S_v7(theme, L), 3))
     return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
 
-def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, k=1.0):
+def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows):
     rows, positions = [], []
     H_for_L = hue if kind == "chromatic" else None
     dip = round(DIP_V7 * (hue_light_weight_v5(hue) if kind == "chromatic" else 0.0), 4)
@@ -979,9 +980,9 @@ def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, k=1.0)
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
-        gen = sample_hex_v7(kind, hue, theme, t, k)
+        gen = sample_hex_v7(kind, hue, theme, t)
         L = L_v7(t, H_for_L)
-        S = S_v7(t, k) if kind == "chromatic" else neutral_S_v7(theme, L)
+        S = S_v7(t) if kind == "chromatic" else neutral_S_v7(theme, L)
         ref = v5_by_step.get(key)
         e5 = round(dE(ref, gen), 2) if ref else None
         if e5 is not None:
@@ -994,16 +995,15 @@ def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, k=1.0)
                 "L": round(L, 2),
                 "S": round(S, 2),
                 "H": round(hue, 1),
-                "k": k,
                 "e": round(L_exponent_v7(t, H_for_L), 3),
                 "dE_v5": e5,
             }),
         })
     return {
         "name": name, "kind": kind, "theme": theme, "hue": hue,
-        "k": k, "dip": dip, "rows": rows,
+        "dip": dip, "rows": rows,
         "d5": round(sum(d5)/len(d5), 2) if d5 else None,
-        "gradient": gradient_css_v7(kind, hue, theme, k),
+        "gradient": gradient_css_v7(kind, hue, theme),
         "positions": [round(t, 4) for t in positions],
     }
 
@@ -1016,19 +1016,18 @@ def build_v7(v5):
             "p_base": P_BASE_V7, "dip": DIP_V7, "dip_c": DIP_C_V7,
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "S_drop": S_DROP_V7, "S_power": round(S_POWER_V7, 6),
-            "s_gain": S_GAIN_V7,
             "steps": CHROMATIC_STEPS_V5,
         },
         "meta": {
             "b": "b(t) = 4c\u00b7t/(t+c)\u00b2 with c = 0.09  \u2014 a log-t bell, no ln",
             "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
-            "S": "S(t) = clamp(100 \u2212 30\u00b7k\u00b7t^(2/3), 0, 100),  k = 1.25 / 1.75 / 2",
+            "S": "S(t) = clamp(100 \u2212 37.5\u00b7t^(2/3), 0, 100)  \u2014 one curve, every hue",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
         "curves": {
-            "chromatic": curve_samples_v7("chromatic", k=1.25, H=190),
-            "chromatic_L_peak": curve_samples_v7("chromatic", k=1.25, H=L_PEAK_HUE_V5),
+            "chromatic": curve_samples_v7("chromatic", H=190),
+            "chromatic_L_peak": curve_samples_v7("chromatic", H=L_PEAK_HUE_V5),
             "neutral_light": curve_samples_v7("neutral", "light"),
             "neutral_dark": curve_samples_v7("neutral", "dark"),
         },
@@ -1038,14 +1037,14 @@ def build_v7(v5):
         keys = [str(s) for s in CHROMATIC_STEPS_V5]
         out["families"].append(build_family_v7(
             fam, "chromatic", "both", HUES[fam], keys, P["light"][fam],
-            v5_fam[(fam, "both")], k_v7(fam)))
+            v5_fam[(fam, "both")]))
 
     for theme in ("light", "dark"):
         steps = P[theme]["Neutral"]
         keys = merge_steps_v5([k for k in steps if k not in ("White", "Black")])
         out["families"].append(build_family_v7(
             "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
-            v5_fam[("Neutral", theme)], 1.0))
+            v5_fam[("Neutral", theme)]))
 
     rows = [r for f in out["families"] for r in f["rows"]]
     d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]
@@ -1073,7 +1072,7 @@ def main():
             compared = [r for r in f["rows"] if r["dE_hsl"] is not None]
             w = max(compared, key=lambda r: r["dE_hsl"]) if compared else f["rows"][0]
             extra = ""
-            if ver_id in ("v4", "v5", "v6", "v7") and f["kind"] == "chromatic":
+            if ver_id in ("v4", "v5", "v6") and f["kind"] == "chromatic":
                 extra = f"  k={f['k']}"
             mean = (sum(dh) / len(dh)) if dh else 0.0
             mx = max(dh) if dh else 0.0

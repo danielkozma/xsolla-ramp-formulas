@@ -321,9 +321,8 @@ e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps a
 L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
 
 ${K('// saturation and hue')}
-S(t) = clamp(${V('100 − 30·k·t^(2/3)')}, 0, 100)
+S(t) = clamp(${V('100 − 37.5·t^(2/3)')}, 0, 100)   ${K('one curve, every hue')}
 H(t) = ${V('H₀')}
-k = ${V('2.00')} Pulse / Pink · ${V('1.75')} Flash · ${V('1.25')} the rest
 
 ${K('// neutrals')}
 neutral·lt  hsl(  ${V('75')}, L/10,        L )
@@ -360,7 +359,7 @@ const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 /* ---------- render ---------- */
 function famCard(f){
   const param = f.kind==='grey' ? 'achromatic'
-    : `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)}`;
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
   const grad = f.gradient;
   const n = f.rows.length;
 
@@ -414,7 +413,6 @@ let playHue  = 75;
 const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
 let playBuilt = false;
 
-const PLAY_K   = 1.25;     /* saturation gain used by the probe */
 
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 function hsl2hex(h,s,l){
@@ -450,8 +448,8 @@ function Lplay(t, H, F, corr){
 function Qplay(t, H, F, corr){
   return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
 }
-function Splay(t,k,F){
-  return Math.max(0, Math.min(100, 100 - F.S_drop*k*Math.pow(t, F.S_power)));
+function Splay(t,F){
+  return Math.max(0, Math.min(100, 100 - F.S_drop*Math.pow(t, F.S_power)));
 }
 
 /* ---- live diagram, same geometry and classes as the big one above ---- */
@@ -498,7 +496,7 @@ function playCurvesSvg(F, corr){
     <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
     <path class="Q" d="${path(t=>Qplay(t,playHue,F,corr), yQ)}"/>
     <path class="Lpeak" d="${path(t=>Lplay(t,playHue,F,0))}"/>
-    <path class="S" d="${path(t=>Splay(t,PLAY_K,F))}"/>
+    <path class="S" d="${path(t=>Splay(t,F))}"/>
     <path class="L" d="${path(t=>Lplay(t,playHue,F,corr))}"/>
     ${marks}`;
 }
@@ -513,13 +511,13 @@ function updatePlayground(){
   const rows=F.steps.map(step=>{
     const t=step/1000;
     const L=Lplay(t, playHue, F, corr);
-    const S=Splay(t, PLAY_K, F);
+    const S=Splay(t, F);
     return {step, L, S, hex:hsl2hex(playHue, S, L)};
   });
   const gradStops=[];
   for(let i=0;i<48;i++){
     const t=i/47;
-    gradStops.push(`${hsl2hex(playHue, Splay(t,PLAY_K,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
+    gradStops.push(`${hsl2hex(playHue, Splay(t,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
@@ -534,7 +532,7 @@ function updatePlayground(){
     `title="Playground continuous scale"></div>`;
   document.getElementById('play-hue-val').textContent  = playHue+'°';
   document.getElementById('play-stats').textContent =
-    `k ${PLAY_K} · w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
+    `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
 
   document.getElementById('play-svg').innerHTML = playCurvesSvg(F, corr);
   document.getElementById('play-curve-meta').textContent =
