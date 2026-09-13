@@ -277,11 +277,9 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="sect" id="nplay-sect">
   <h2>Neutral playground</h2>
-  <p>One pair per theme, tint hue free. Both ride the plain power law — only S differs — and the diagrams are why
-  they carry no lightness correction: green is the <i>perceptual lift</i>, how much lighter a tinted step reads
-  than a pure grey of the same nominal L, in OKLab points. It runs about 1.5 on light and 2.2 on dark at the
-  shipped tints, and never clears 6 at any hue, against roughly 24 across the chromatic ramps — and it peaks
-  mid-ramp rather than at the light end, where the bend does its work. Nothing there to cancel.</p>
+  <p>One pair per theme, tint hue free. Green is the <i>perceptual lift</i> — how much lighter a tinted step
+  reads than a grey of the same L, in OKLab points. It stays near 2 at any hue, against roughly 24 across the
+  chromatic ramps, which is why the neutrals need no lightness correction.</p>
 </div>
 <div id="playground-neutral" class="playground"></div>
 
@@ -293,22 +291,19 @@ footer b{color:var(--ink);font-weight:500}
 <script>
 const ALL = /*__DATA__*/;
 
-/* v7 is the only version this page carries */
-const ver = 'v7';
-
 const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
-/* v5's mean ΔE against the current palette — the figure v7 is measured against.
-   v5 itself is no longer shipped, so the number is baked in at build time. */
-const MEAN_V5 = /*__MEANV5__*/;
 const fx=(n,d=0)=> Number(n).toFixed(d);
 
 /* ---------- page copy ---------- */
 const COPY = {
-  title: "", lead: "", eyebrow: "",
-  fHead: "The middle ground",
-  ladHead: "Interior samples on 0\u2013100",
-  chrom: "v5's intent without v5's calculus. The exponent still dips where the light steps are \u2014 along a rational bell instead of a Gaussian derivative, slid straight into the power law rather than integrated \u2014 so the fan-out survives where v6 lost it. Saturation, the gains and the endpoints are v6's dumb versions; the hue lobe is v5's.",
-  theme: "Neutral saturation rounded off, same as v6. The lightness exponent is the flat 0.84 here \u2014 achromatic sets never enter the dip.",
+  eyebrow: "",
+  lead: "Every ramp in the palette regenerates from one hue per family and two shared curves. Each card "
+      + "puts the current Figma values next to the formula output, so any drift is visible without reading a number.",
+  fHead: "The formula",
+  ladHead: "Brand, step by step",
+  chrom: "Nine hues, steps 25\u2013800. Light and Dark hold identical values, so one formula serves both.",
+  theme: "Neutral and Greyscale are the only sets with separate Light and Dark values \u2014 a warm tint that "
+       + "fades into the shadows on light, a cool one that grows into them on dark.",
   foot: ''
 };
 
@@ -316,46 +311,41 @@ const COPY = {
 function renderFormula(){
   const VD=ALL.v7, F=ALL.v7.formula;
   document.getElementById('f-body').innerHTML =
-`${K('// the middle ground — v5\'s shape, none of its calculus')}
-w(H) = ${V('cos²(½π·d)')} if d<1 else 0   ${K('v5\'s lobe, kept as is')}
+`${K('// hue weight — 1 at hue 75, 0 past the lobe')}
 d(H) = ${V('|H − 75| / (145 up, 90 down)')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0
 
-${K('// a bell in log t, written without ln or exp')}
-b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('0 at t=0 · 1 at t=c · fat tail')}
-e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('the exponent dips where the light steps are')}
-L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('t^e is 0 at 0 and 1 at 1 — ends pin themselves')}
+${K('// lightness')}
+b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
+e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}
+L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
 
+${K('// saturation and hue')}
 S(t) = clamp(${V('100 − 30·k·t^(2/3)')}, 0, 100)
 H(t) = ${V('H₀')}
-
-${K('// three gains')}
 k = ${V('2.00')} Pulse / Pink · ${V('1.75')} Flash · ${V('1.25')} the rest
 
 ${K('// neutrals')}
 neutral·lt  hsl(  ${V('75')}, L/10,        L )
 neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
 
-${K('// what this drops from v5')}
-bend        Δ·[G(ln t) − G(0)] integrated   →  e(t) plugged straight in
-saturation  raised cosine on t^0.631        →  t^(2/3)
-gains       nine fitted k_H                 →  three
-endpoints   99.5 and 98.5                   →  100 and 100`;
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 850 → 85')}
+t     = scale / 100`;
 
   document.getElementById('f-note').innerHTML =
-`Mean ΔE from v5 is <b>${VD.vs_v5.mean}</b> and no swatch is further than ${VD.vs_v5.max} — inside a
- just-noticeable difference almost everywhere. Against the current palette it scores <b>${VD.vs_current.mean}</b>
- where v5 scores ${MEAN_V5.toFixed(2)}. The point of the rational bell is locality: the dip bottoms out at
- <code>t = c</code>, so Mindaro keeps the light-end fan-out at 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
- where v6's flat cut gives 4.5 / 7.5. No integration is needed because <code>t^e</code> is 0 at
- <code>t = 0</code> and 1 at <code>t = 1</code> for any exponent — what v5 proves, v7 gets for free.`;
+`Mean ΔE against the current palette is <b>${VD.vs_current.mean}</b> — inside a just-noticeable difference
+ almost everywhere. The exponent dips near the light end, which is what keeps 25 / 50 / 100 apart, and both
+ ends of every ramp stay pinned whatever it does. Steps <code>850</code> / <code>900</code> are formula-only,
+ where the current palette has no swatch.`;
 
   const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
   document.getElementById('lad-head').innerHTML =
-    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE v5</th></tr>`;
+    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE</th></tr>`;
   document.getElementById('lad').innerHTML = brand7.rows.map(r=>
     `<tr><td>${r.step}</td>`+
     `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
-    `<td>${fx(r.e,3)}</td><td>${r.dE_v5==null?'—':fx(r.dE_v5,2)}</td></tr>`
+    `<td>${fx(r.e,3)}</td><td>${r.dE_hsl==null?'—':fx(r.dE_hsl,2)}</td></tr>`
   ).join('');
 }
 
@@ -370,7 +360,7 @@ const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 /* ---------- render ---------- */
 function famCard(f){
   const param = f.kind==='grey' ? 'achromatic'
-    : `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`;
+    : `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)}`;
   const grad = f.gradient;
   const n = f.rows.length;
 
@@ -418,7 +408,7 @@ function render(){
 /* ---------- hue playground ---------- */
 const playF   = ()=> ALL.v7.formula;
 const basePow = F => F.p_base;
-/* the dip: the same bell in log t that v5 drew with a Gaussian, minus the ln */
+/* the dip: a bell in log t, written without ln or exp */
 const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
 let playHue  = 75;
 const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
@@ -553,9 +543,8 @@ function updatePlayground(){
   /* the numbers being eyeballed: contrast between the first few steps */
   const d=(a,b)=> (rows[a].L-rows[b].L).toFixed(1);
   document.getElementById('play-hint').innerHTML =
-    `Left axis L · right axis the exponent e (green). It dips along <code>4c·t/(t+c)²</code> and bottoms `+
-    `out at t = ${F.dip_c}, which is why the light steps still fan out — the same locality v5 gets from `+
-    `its Gaussian, without the ln.<br>`+
+    `Left axis L · right axis the exponent e (green). It bottoms out at t = ${F.dip_c}, `+
+    `which is what makes the light steps fan out.<br>`+
     `<span class="dlt">ΔL 25→50 <b>${d(0,1)}</b> · 50→100 <b>${d(1,2)}</b> · `+
     `100→200 <b>${d(2,3)}</b> · 200→300 <b>${d(3,4)}</b></span>`;
 }
@@ -726,10 +715,9 @@ function updateNeutralTheme(theme){
   document.getElementById(`nplay-${theme}-svg`).innerHTML = neutralSvg(F, hue, theme);
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
   document.getElementById(`nplay-${theme}-hint`).innerHTML =
-    `Left axis L and S · right axis the perceptual lift, −6…+6 OKLab points with zero on the middle `+
-    `gridline. Biggest deviation here is <b>${sgn(at.lift)}</b> at step ${at.step}; the chromatic ramps reach `+
-    `about 24, which is what their bend is for — nothing this small is worth correcting, so the `+
-    `${theme} exponent stays constant at ${basePow(F)}.`;
+    `Left axis L and S · right axis the perceptual lift, −6…+6 OKLab points, zero on the middle gridline. `+
+    `Biggest deviation here is <b>${sgn(at.lift)}</b> at step ${at.step} — too small to be worth correcting, `+
+    `so the ${theme} exponent stays flat at ${basePow(F)}.`;
 }
 
 function neutralCardPair(theme, n){
@@ -811,9 +799,8 @@ function renderPage(){
   document.getElementById('f-heading').textContent = c.fHead;
   document.getElementById('lad-heading').textContent = c.ladHead;
   put('play-blurb',
-    `The exponent dips where the light steps are — a rational bell rather than a
-     Gaussian derivative, and slid straight into the power law instead of integrated — so the green line
-     has a trough and the \u0394L row lands back on v5's numbers.`, true);
+    `Drag the hue to see how much correction it asks for — yellow\u2013green needs the most, cool hues none.`,
+    true);
   renderFormula();
   render();
   renderPlayground();
