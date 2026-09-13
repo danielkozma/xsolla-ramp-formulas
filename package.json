@@ -1,0 +1,6 @@
+{
+  "name": "xsolla-ramp-formulas",
+  "private": true,
+  "type": "module",
+  "description": "Static page; the only JavaScript Vercel builds is the password gate in middleware.js."
+}

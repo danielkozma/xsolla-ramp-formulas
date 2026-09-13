@@ -53,6 +53,36 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;l
 a{color:inherit}
 :focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
 
+/* ---- application bar ---- */
+.appbar{display:flex;align-items:center;gap:12px;
+        height:48px;padding:0 16px;background:var(--panel);color:var(--ink);
+        border-bottom:1px solid var(--rule)}
+.appbar__ctx{font-size:14px;line-height:18px;font-weight:500;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.appbar__spacer{margin-left:auto}
+
+/* version dropdown — leftmost in the header */
+.ver{position:relative;flex:0 0 auto}
+.ver__btn{appearance:none;display:inline-flex;align-items:center;gap:6px;
+          height:28px;padding:0 8px 0 10px;margin:0;border:1px solid var(--rule);
+          background:var(--panel);border-radius:var(--r-sm);color:var(--ink);
+          font:500 13px/16px var(--body);font-variant-numeric:tabular-nums;cursor:pointer}
+.ver__btn:hover{background:var(--sunk)}
+.ver__btn[aria-expanded="true"]{background:var(--sunk);border-color:var(--rule-2)}
+.ver__chev{display:block;width:10px;height:10px;flex:0 0 auto;
+           transition:transform .16s ease}
+.ver__btn[aria-expanded="true"] .ver__chev{transform:rotate(180deg)}
+.ver__menu{position:absolute;top:calc(100% + 6px);left:0;min-width:148px;
+           padding:4px;background:var(--panel);border:1px solid var(--rule);
+           border-radius:var(--r-md);box-shadow:0 8px 24px rgba(0,0,0,.08);display:none;z-index:80}
+.ver__menu[data-open="true"]{display:block}
+.ver__opt{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          width:100%;padding:8px 10px;border:0;background:transparent;border-radius:var(--r-xs);
+          color:var(--ink);font:400 13px/16px var(--body);cursor:pointer;text-align:left}
+.ver__opt:hover{background:var(--sunk)}
+.ver__opt[aria-selected="true"]{font-weight:500;background:var(--brand-soft);color:var(--brand-ink)}
+.ver__opt small{color:var(--ink-3);font-size:11px}
+
 /* ---- curve diagram ---- */
 /* Diagram cards ride in the same track as the palette cards, so every card on
    the page is one column wide. */
@@ -184,6 +214,7 @@ footer b{color:var(--ink);font-weight:500}
   .panel{grid-template-columns:1fr}
   .panel>div+div{border-left:0;border-top:1px solid var(--rule)}
   .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+  .appbar__ctx{display:none}
 }
 @media (max-width:420px){
   .tile{padding:0 2px;font-size:8.5px}
@@ -224,6 +255,26 @@ footer b{color:var(--ink);font-weight:500}
 .curves__legend i.Qdk{background:#1E8A6A;opacity:.45}
 
 </style>
+
+<header class="appbar">
+  <div class="ver" id="ver">
+    <button type="button" class="ver__btn" id="ver-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ver-menu">
+      <span id="ver-label">v5</span>
+      <svg class="ver__chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="ver__menu" id="ver-menu" role="listbox" data-open="false">
+      <button type="button" class="ver__opt" role="option" data-ver="v1" aria-selected="false">v1 <small>step ladders</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v2" aria-selected="false">v2 <small>ladder placement</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v3" aria-selected="false">v3 <small>pure curves</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v4" aria-selected="false">v4 <small>S gain · no flats</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v5" aria-selected="true">v5 <small>0–100 · bent exponent</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v6" aria-selected="false">v6 <small>the dumb version</small></button>
+      <button type="button" class="ver__opt" role="option" data-ver="v7" aria-selected="false">v7 <small>middle ground</small></button>
+    </div>
+  </div>
+  <span class="appbar__ctx">Xsolla Colour Formulas</span>
+  <span class="appbar__spacer"></span>
+</header>
 
 <div class="wrap">
 <header class="mast">
@@ -292,30 +343,278 @@ footer b{color:var(--ink);font-weight:500}
 
 <script>
 const ALL = /*__DATA__*/;
+const ST = /*__STAT__*/;
 
-/* v7 is the only version this page carries */
-const ver = 'v7';
+let ver = ALL.default || 'v5';
 
 const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
-/* v5's mean ΔE against the current palette — the figure v7 is measured against.
-   v5 itself is no longer shipped, so the number is baked in at build time. */
-const MEAN_V5 = /*__MEANV5__*/;
+/* mean ΔE of a version against the current palette, straight from the data */
+const meanDE=v=>{
+  const d=ALL[v].families.flatMap(f=>f.rows.map(r=>r.dE_hsl)).filter(x=>x!=null);
+  return d.reduce((a,b)=>a+b,0)/d.length;
+};
 const fx=(n,d=0)=> Number(n).toFixed(d);
 
-/* ---------- page copy ---------- */
+/* ---------- version dropdown ---------- */
+const verBtn = document.getElementById('ver-btn');
+const verMenu = document.getElementById('ver-menu');
+function setVerOpen(open){
+  verBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  verMenu.dataset.open = open ? 'true' : 'false';
+}
+verBtn.addEventListener('click', e=>{
+  e.stopPropagation();
+  setVerOpen(verMenu.dataset.open !== 'true');
+});
+verMenu.querySelectorAll('.ver__opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    ver = opt.dataset.ver;
+    verMenu.querySelectorAll('.ver__opt').forEach(o=>o.setAttribute('aria-selected', o.dataset.ver===ver?'true':'false'));
+    document.getElementById('ver-label').textContent = ver;
+    setVerOpen(false);
+    applyVersion();
+  });
+});
+document.addEventListener('click', ()=> setVerOpen(false));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') setVerOpen(false); });
+
+/* ---------- copy per version ---------- */
 const COPY = {
-  title: "", lead: "", eyebrow: "",
-  fHead: "The middle ground",
-  ladHead: "Interior samples on 0\u2013100",
-  chrom: "v5's intent without v5's calculus. The exponent still dips where the light steps are \u2014 along a rational bell instead of a Gaussian derivative, slid straight into the power law rather than integrated \u2014 so the fan-out survives where v6 lost it. Saturation, the gains and the endpoints are v6's dumb versions; the hue lobe is v5's.",
-  theme: "Neutral saturation rounded off, same as v6. The lightness exponent is the flat 0.84 here \u2014 achromatic sets never enter the dip.",
-  foot: ''
+  v1: {
+    title: 'Every ramp from one hue and two ladders',
+    lead: 'The Xsolla palette is far more systematic than it looks. Hue is constant down each ramp; lightness and saturation follow ladders shared by every family. One parameter per family — its hue — regenerates the whole set. Below, each ramp\'s Figma values sit edge-to-edge against the formula output, so any drift is visible without reading a number.',
+    eyebrow: 'v1 · discrete step ladders',
+    fHead: 'The formula',
+    ladHead: 'Step ladder',
+    chrom: 'Nine hues, steps 25–800. These carry a single set of variables — Figma\'s Solid / Light and Solid / Dark frames hold identical values, so one formula serves both themes.',
+    theme: 'Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them on dark — one expression each.',
+    foot: `<p><b>The step-50 drift.</b> Brand, Core, Edge and Pink sit at L&nbsp;92 where every other family sits at
+  90. It reads as drift rather than intent — the ladder is otherwise exact — so the formula normalises it.
+  Cost: four swatches, ΔE 1.3–3.0.</p>
+  <p><b>Mindaro.</b> Its whole ramp runs five lightness points darker from step 100 down (80/70/60/…/10
+  against 85/75/65/…/15). That is the largest single decision in the set: normalising it lightens the
+  acid-green noticeably at 500–800. If the punch is intentional, keep Mindaro on a −5 lightness offset —
+  one extra parameter, and the family lands exactly.</p>
+  <p><b>Muted dark tails.</b> Pulse and Pink desaturate below step 500 (S 60/39/26 instead of 70/70/70),
+  and Flash does the same at 800 alone. Almost certainly hand-tuning so dark greens and reds don't go
+  muddy. The formula clamps them at 70; if you want the tuning back it is a per-family tail curve.</p>`
+  },
+  v2: {
+    title: 'Every ramp from continuous H, S and L',
+    lead: 'v2 replaces the discrete step ladders with continuous functions of a single parameter t. Named steps sit on an even lightness ladder (96, 90, 85, 75…15) inverted through L(t), so early stops stay light and consecutive tokens feel evenly paced. Figma remains the fit target. The third column is the full continuous scale.',
+    eyebrow: 'v2 · continuous gradient functions',
+    fHead: 'The continuous functions',
+    ladHead: 'Even step placement',
+    chrom: 'Nine hues along one continuous (H,S,L) curve. Steps 25–800 land on the shared even-lightness ladder inverted through L(t). The Gradient column is the full t ∈ [0,1] scale.',
+    theme: 'Neutral and Greyscale reuse the same L(t). Neutral saturation is derived from L — fading tint on light, growing tint on dark — and steps share the same ladder placement.',
+    foot: `<p><b>Even steps.</b> Named tokens are not at equal <code>t</code>. They sit where <code>L(t)</code> hits the
+  even lightness ladder — 96, 90, 85, then −10 down to 15 — so 50/100 stay light.</p>
+  <p><b>Ease on L.</b> <code>L(t) = 96 − 81·t^1.25</code> keeps more of the continuous ramp in the light half.</p>
+  <p><b>Hue stays constant.</b> Figma holds hue within rounding down each family, so <code>H(t) = H₀</code>.</p>`
+  },
+  v3: {
+    title: 'Every ramp from a curve — no step tables',
+    lead: 'v3 drops hard-coded step values entirely. Hue is fixed per family; saturation and lightness are continuous functions of gradient progression t. Named tokens are just equal samples along that curve. The diagram plots both functions before the ramps.',
+    eyebrow: 'v3 · pure continuous curves',
+    fHead: 'The curve functions',
+    ladHead: 'Equal-t samples',
+    chrom: 'Nine hues. Hue is constant; saturation and lightness come only from the continuous curves above. Named steps are equal samples along t — no lightness ladder, no per-step table.',
+    theme: 'Neutral and Greyscale reuse the same L(t). Neutral S is derived from L(t). Sample positions are equal progression on t, same as the chromatic families.',
+    foot: `<p><b>No step tables.</b> v1 hard-codes L/S per step number. v2 still places tokens on a hard-coded
+  lightness ladder. v3 has neither — only <code>L(t)</code>, <code>S(t)</code>, and <code>H₀</code>.</p>
+  <p><b>Equal progression.</b> Named Figma tokens (25, 50, 100…) are labels for comparison. Their positions
+  are <code>tᵢ = i/(N−1)</code> — equal samples of the curve, not a second lookup table.</p>
+  <p><b>Curve shape.</b> Lightness eases from 96→15; saturation holds at 100 then smoothsteps down to 70.
+  Both curves are shared across every chromatic family. Hue never moves.</p>`
+  },
+  v4: {
+    title: 'Continuous curves with a saturation gain per palette',
+    lead: 'v4 keeps pure functions of t — no step tables, no flat S plateaus — and lifts the light end of L so early samples stay brighter. Each colour family multiplies the saturation drop by its own gain k_H, which pulls Mindaro, Pulse, Pink and the rest closer to Figma.',
+    eyebrow: 'v4 · continuous curves · per-family S gain',
+    fHead: 'The curve functions',
+    ladHead: 'Equal-t samples · k_H',
+    chrom: 'Nine hues. Shared L(t); S(t) uses a per-family gain k_H on the continuous drop. No plateaus. Named steps are equal samples along t.',
+    theme: 'Neutral and Greyscale reuse L(t). Neutral S is derived from L. No k_H — achromatic / tinted neutrals do not use the chromatic saturation gain.',
+    foot: `<p><b>No flats.</b> Saturation is a single smooth decline with a non-zero initial slope —
+  <code>u(t) = t·(1+3t)/4</code> — so it never holds at 100 or parks on a floor.</p>
+  <p><b>Lighter early L.</b> <code>L(t) = 96 − 81·t^1.35</code> eases more at the light end, so the equal-t
+  sample for step 50 lands near L&nbsp;92 instead of dropping too fast.</p>
+  <p><b>Per-family S gain.</b> <code>S(t) = clamp(100 − 30·k_H·u(t), 0, 100)</code>. Majority families use
+  <code>k_H ≈ 1.25</code>; Pulse/Pink ≈ 2.4–2.45; Flash ≈ 1.8; Mindaro ≈ 1.2 — fitted to Figma saturation.</p>`
+  },
+  v5: {
+    title: "Full 0\u2013100 scale with hue-aware lightness and sine saturation",
+    lead: "",
+    eyebrow: "",
+    fHead: "The curve functions",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "",
+    theme: "",
+    foot: ''
+  },
+
+  v6: {
+    title: "", lead: "", eyebrow: "",
+    fHead: "The dumb version",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "An experiment, not a proposal: every function in v5 replaced by the stupidest thing that could work \u2014 a triangle for the hue lobe, a flat 0.10 off the exponent instead of the Gaussian bend, one power for saturation, two gain values instead of nine. Each card reports its drift from v5.",
+    theme: "Same two expressions, with the neutral saturation rounded off. v5's neutral S was already linear in L, so there was nothing left to simplify.",
+    foot: ''
+  },
+
+  v7: {
+    title: "", lead: "", eyebrow: "",
+    fHead: "The middle ground",
+    ladHead: "Interior samples on 0\u2013100",
+    chrom: "v5's intent without v5's calculus. The exponent still dips where the light steps are \u2014 along a rational bell instead of a Gaussian derivative, slid straight into the power law rather than integrated \u2014 so the fan-out survives where v6 lost it. Saturation, the gains and the endpoints are v6's dumb versions; the hue lobe is v5's.",
+    theme: "Neutral saturation rounded off, same as v6. The lightness exponent is the flat 0.84 here \u2014 achromatic sets never enter the dip.",
+    foot: ''
+  }
+
 };
 
-/* ---------- formula + ladder ---------- */
+/* ---------- formula + ladder per version ---------- */
 function renderFormula(){
-  const VD=ALL.v7, F=ALL.v7.formula;
-  document.getElementById('f-body').innerHTML =
+  if(ver==='v1'){
+    document.getElementById('f-body').innerHTML =
+`${K('// lightness ladder')}
+L(step) = 96                       ${K('if step = 25')}
+        = 95 − step/10             ${K('if step ≤ 800')}
+        = 15 − (step − 800)/20     ${K('below 800')}
+
+${K('// saturation ladder')}
+S(step) = clamp(120 − step/10, 70, 100)
+
+${K('// per family — the only parameter')}
+chromatic   hsl( ${V('H')}, S(step), L(step) )
+neutral·lt  hsl(  ${V('75')}, L/10,            L )
+neutral·dk  hsl( ${V('190')}, 11 + (100−L)/9,  L )
+greyscale   hsl(   ${V('0')}, 0%,              L )
+
+${K('// H per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+    document.getElementById('f-note').innerHTML =
+`Steps 100–800 collapse to <code>L = 95 − step/10</code> exactly. Step 25 is pinned at 96.`;
+
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Step</th><th>L</th><th>S</th><th>Neutral S<sub>light</sub></th><th>Neutral S<sub>dark</sub></th></tr>`;
+    const STEPS=[25,50,100,200,300,400,500,600,700,800,850,900,950];
+    const Lof=s=> s===25?96 : s<=800 ? 95-s/10 : 15-(s-800)/20;
+    const Sof=s=> Math.max(70,Math.min(100,120-s/10));
+    const nS =(t,L)=> t==='light' ? L/10 : 11+(100-L)/9;
+    document.getElementById('lad').innerHTML = STEPS.map(s=>{
+      const L=Lof(s), ext=s>800;
+      return `<tr><td>${s}</td><td>${fx(L,1)}</td><td>${ext?'—':fx(Sof(s))}</td>`+
+             `<td>${fx(nS('light',L),1)}</td><td>${fx(nS('dark',L),1)}</td></tr>`;
+    }).join('');
+  } else if(ver==='v2'){
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  light → dark')}
+L(t) = ${V('96 − 81·t^1.25')}
+S(t) = clamp(${V('100 − (75 − L(t))')}, 70, 100)
+H(t) = ${V('H₀')}
+
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// step placement still uses a hard-coded ladder')}
+ladder = ${V('96, 90, 85, 75, …, 15')}
+tᵢ     = L⁻¹(ladderᵢ)
+
+${K('// H₀ per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+    document.getElementById('f-note').innerHTML =
+`v2 still places named steps on a hard-coded lightness ladder. See <b>v3</b> for pure curves with no step tables.`;
+
+    const brand = ALL.v2.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Step</th><th>t</th><th>L(t)</th><th>S(t)</th><th>Δt</th></tr>`;
+    const rows = brand.rows;
+    document.getElementById('lad').innerHTML = rows.map((r,i)=>{
+      const dt = i===0 ? '—' : fx(r.t - rows[i-1].t, 3);
+      return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
+    }).join('');
+  } else if(ver==='v3'){
+    // v3 — pure curves, equal-t samples
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
+${K('// no step tables — only continuous functions')}
+L(t) = ${V('96 − 81·t^1.2')}
+S(t) = ${V('100 − 30·smoothstep(0.28, 0.55, t)')}
+H(t) = ${V('H₀')}                    ${K('fixed per family')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+greyscale   hsl(   ${V('0')}, 0%,                L(t) )
+
+${K('// named tokens are equal samples — not a ladder')}
+tᵢ = i / (N − 1)
+
+${K('// H₀ per family')}
+Edge  ${V('10')}   Flash ${V('32')}   Yellow ${V('50')}
+Mindaro ${V('75')} Pulse ${V('110')}  Mint  ${V('145')}
+Brand ${V('190')}  Core  ${V('250')}  Pink  ${V('350')}`;
+
+    document.getElementById('f-note').innerHTML =
+`Nothing here is a per-step lookup. Lightness and saturation are curves of <code>t</code>; named Figma
+ steps are equal samples along that progression so you can still compare against the original palette.`;
+
+    const brand3 = ALL.v3.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>Δt</th></tr>`;
+    const rows3 = brand3.rows;
+    document.getElementById('lad').innerHTML = rows3.map((r,i)=>{
+      const dt = i===0 ? '—' : fx(r.t - rows3[i-1].t, 3);
+      return `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${dt}</td></tr>`;
+    }).join('');
+  } else if(ver==='v4'){
+    // v4 — continuous, no flats, per-family S gain
+    document.getElementById('f-body').innerHTML =
+`${K('// parameter t ∈ [0, 1]  ·  gradient progression')}
+${K('// continuous — no plateaus, no step tables')}
+L(t) = ${V('96 − 81·t^1.35')}         ${K('lighter early end')}
+u(t) = ${V('t·(1 + 3t)/4')}           ${K('strictly rising drop shape')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// equal samples')}
+tᵢ = i / (N − 1)
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.20')}
+Flash  H ${V('32')}   k ${V('1.80')}    Pulse  H ${V('110')}  k ${V('2.45')}
+Pink   H ${V('350')}  k ${V('2.40')}`;
+
+    document.getElementById('f-note').innerHTML =
+`<code>u(t)</code> has a non-zero initial slope, so saturation never sits flat at 100 or on a floor.
+ <code>k_H</code> scales the drop per palette — Pulse/Pink fall further; majority families stay near 1.25.
+ <code>t^1.35</code> keeps step 50 near L&nbsp;92.`;
+
+    const brand4 = ALL.v4.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>t</th><th>L(t)</th><th>S(t)</th><th>k<sub>H</sub></th></tr>`;
+    document.getElementById('lad').innerHTML = brand4.rows.map(r=>
+      `<tr><td>${r.step}</td><td>${fx(r.t,3)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.k,2)}</td></tr>`
+    ).join('');
+  } else if(ver==='v7'){
+    const VD=ALL.v7, F=ALL.v7.formula;
+    document.getElementById('f-body').innerHTML =
 `${K('// the middle ground — v5\'s shape, none of its calculus')}
 w(H) = ${V('cos²(½π·d)')} if d<1 else 0   ${K('v5\'s lobe, kept as is')}
 d(H) = ${V('|H − 75| / (145 up, 90 down)')}
@@ -341,22 +640,109 @@ saturation  raised cosine on t^0.631        →  t^(2/3)
 gains       nine fitted k_H                 →  three
 endpoints   99.5 and 98.5                   →  100 and 100`;
 
-  document.getElementById('f-note').innerHTML =
+    document.getElementById('f-note').innerHTML =
 `Mean ΔE from v5 is <b>${VD.vs_v5.mean}</b> and no swatch is further than ${VD.vs_v5.max} — inside a
  just-noticeable difference almost everywhere. Against the current palette it scores <b>${VD.vs_current.mean}</b>
- where v5 scores ${MEAN_V5.toFixed(2)}. The point of the rational bell is locality: the dip bottoms out at
+ where v5 scores ${meanDE('v5').toFixed(2)}. The point of the rational bell is locality: the dip bottoms out at
  <code>t = c</code>, so Mindaro keeps the light-end fan-out at 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
  where v6's flat cut gives 4.5 / 7.5. No integration is needed because <code>t^e</code> is 0 at
  <code>t = 0</code> and 1 at <code>t = 1</code> for any exponent — what v5 proves, v7 gets for free.`;
 
-  const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
-  document.getElementById('lad-head').innerHTML =
-    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE v5</th></tr>`;
-  document.getElementById('lad').innerHTML = brand7.rows.map(r=>
-    `<tr><td>${r.step}</td>`+
-    `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
-    `<td>${fx(r.e,3)}</td><td>${r.dE_v5==null?'—':fx(r.dE_v5,2)}</td></tr>`
-  ).join('');
+    const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE v5</th></tr>`;
+    document.getElementById('lad').innerHTML = brand7.rows.map(r=>
+      `<tr><td>${r.step}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+      `<td>${fx(r.e,3)}</td><td>${r.dE_v5==null?'—':fx(r.dE_v5,2)}</td></tr>`
+    ).join('');
+  } else if(ver==='v6'){
+    const VD=ALL.v6;
+    document.getElementById('f-body').innerHTML =
+`${K('// the dumb version — five constants, one pow per channel')}
+w(H) = ${V('max(0, 1 − |H − 75| / 120)')}   ${K('a triangle, not a cosine lobe')}
+p(H) = ${V('0.82 − 0.10·w(H)')}             ${K('flat cut, not a bend')}
+L(t,H) = ${V('100 − 100·t^p(H)')}
+S(t) = clamp(${V('100 − 30·k·t^(2/3)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// two gains instead of nine')}
+k = ${V('2.00')} for Flash / Pulse / Pink, else ${V('1.25')}
+
+${K('// neutrals — v5 was already linear in L')}
+neutral·lt  hsl(  ${V('75')}, L/10,        L )
+neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
+
+${K('// what v5 spends on the same job')}
+hue lobe    two-sided cos²,  145° / 90°   →  one triangle, 120°
+correction  Δ·[G(ln t) − G(0)],  G Gaussian  →  0.10·w off the exponent
+saturation  raised cosine on t^0.631      →  t^(2/3)
+gains       nine fitted k_H               →  1.25 or 2
+endpoints   99.5 and 98.5                 →  100 and 100`;
+
+    document.getElementById('f-note').innerHTML =
+`Mean ΔE from v5's own output is <b>${VD.vs_v5.mean}</b> (worst single swatch ${VD.vs_v5.max}), and against the
+ current palette it scores <b>${VD.vs_current.mean}</b> where v5 scores ${meanDE('v5').toFixed(2)} — the same fit,
+ from a fifth of the machinery. What it loses is the light-end fan-out: a flat cut to the exponent darkens the whole
+ ramp a little instead of concentrating curvature at the top, so Mindaro's 25→50 gap comes back as 4.5 L
+ against v5's 6.5. Dropping the power law entirely (straight lines with a kink) is the one simplification that
+ does break: mean ΔE 2.1, worst swatch 7.1.`;
+
+    const brand6 = ALL.v6.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>ΔE v5</th></tr>`;
+    document.getElementById('lad').innerHTML = brand6.rows.map(r=>
+      `<tr><td>${r.step}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+      `<td>${r.dE_v5==null?'—':fx(r.dE_v5,2)}</td></tr>`
+    ).join('');
+  } else {
+    // v5 — 0→100 domain, interior samples incl. 900, asymmetric raised-cosine S
+    document.getElementById('f-body').innerHTML =
+`${K('// scale ∈ [0, 100]  ·  t = scale/100')}
+${K('// 25 / 850 / 900 are interior samples — not the ends')}
+d(H) = ${V('|H − 75| / (145 up, 90 down)')}  ${K('0 at hue 75, 1 at 220 / 345')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0
+Δ(H) = ${V('0.50·w(H)')}               ${K('bend strength — 0 for cool hues')}
+G(x) = ${V('exp(−½·((x − ln 0.055)/1.15)²)')}
+q(t) = ${V("0.83 + Δ·G′(ln t)")}       ${K('exponent bends with scale position')}
+L(t,H) = ${V('99.5 − 98.5·t^0.83·exp(Δ·[G(ln t) − G(0)])')}
+q    = ${V('log(½) / log(⅓)')} ≈ 0.631 ${K('half the S-drop by t = 1/3')}
+u(t) = ${V('(1 − cos(π·t^q))/2')}     ${K('asymmetric raised-cosine')}
+S(t) = clamp(${V('100 − 30·k_H·u(t)')}, 0, 100)
+H(t) = ${V('H₀')}
+
+${K('// assembly')}
+chromatic   hsl( H₀, S(t), L(t) )
+neutral·lt  hsl(  ${V('75')}, L(t)/10,           L(t) )
+neutral·dk  hsl( ${V('190')}, 11+(100−L(t))/9,   L(t) )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 850 → 85, 900 → 90')}
+t     = scale / 100
+
+${K('// H₀ and k_H per family')}
+Brand  H ${V('190')}  k ${V('1.25')}    Core   H ${V('250')}  k ${V('1.25')}
+Edge   H ${V('10')}   k ${V('1.25')}    Yellow H ${V('50')}   k ${V('1.25')}
+Mint   H ${V('145')}  k ${V('1.25')}    Mindaro H ${V('75')}  k ${V('1.30')}
+Flash  H ${V('32')}   k ${V('1.65')}    Pulse  H ${V('110')}  k ${V('2.00')}
+Pink   H ${V('350')}  k ${V('1.95')}`;
+
+    document.getElementById('f-note').innerHTML =
+`The gradient runs 0→100. <code>t^q</code> front-loads the cosine so saturation is already halfway down
+ by one-third of the ramp. Lightness is a power law whose exponent is <i>bent</i> by hue: <code>G′</code> is a
+ Gaussian derivative, so its area is zero — the bend steepens <code>q</code> before <code>t_c</code> and relaxes it
+ after by the same amount, which fixes both ends of the ramp at <code>Δ</code> of any size. Steps
+ <code>850</code>/<code>900</code> are formula-only where the current palette has no swatch.`;
+
+    const brand5 = ALL.v5.families.find(f=>f.name==='Brand');
+    document.getElementById('lad-head').innerHTML =
+      `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>q(t)</th></tr>`;
+    document.getElementById('lad').innerHTML = brand5.rows.map(r=>
+      `<tr><td>${r.step}</td>`+
+      `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td><td>${fx(r.q,2)}</td></tr>`
+    ).join('');
+  }
 }
 
 /* ---------- swatch text contrast ---------- */
@@ -367,11 +753,22 @@ function ink(hex){
 }
 const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
 
+/* ---------- v1 synthetic gradient ---------- */
+function v1Gradient(f){
+  const n = f.rows.length;
+  const stops = f.rows.map((r,i)=> `${r.hsl} ${((i/(n-1))*100).toFixed(2)}%`);
+  return `linear-gradient(to bottom, ${stops.join(', ')})`;
+}
+
 /* ---------- render ---------- */
 function famCard(f){
   const param = f.kind==='grey' ? 'achromatic'
-    : `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`;
-  const grad = f.gradient;
+    : ver==='v6' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · p ${Number(f.p).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`
+    : ver==='v7' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · dip ${Number(f.dip).toFixed(2)} · ≈v5 ${f.d5==null?'—':f.d5.toFixed(2)}`
+    : ver==='v5' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)} · Δ ${Number(f.bend).toFixed(2)}`
+    : ver==='v4' && f.kind==='chromatic' ? `H₀ ${f.hue} · k ${Number(f.k).toFixed(2)}`
+    : (ver!=='v1' ? `H₀ ${f.hue}` : `H ${f.hue}`);
+  const grad = f.gradient || v1Gradient(f);
   const n = f.rows.length;
 
   const body = f.rows.map((r,i)=>{
@@ -404,7 +801,7 @@ function famCard(f){
 }
 
 function render(){
-  const D = ALL.v7;
+  const D = ALL[ver];
   const put=(id,list)=>{
     document.getElementById(id).innerHTML = list.length ? list.map(famCard).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
@@ -415,16 +812,25 @@ function render(){
 }
 
 
-/* ---------- hue playground ---------- */
-const playF   = ()=> ALL.v7.formula;
-const basePow = F => F.p_base;
-/* the dip: the same bell in log t that v5 drew with a Gaussian, minus the ln */
+/* ---------- hue playground (v5 and v6) ---------- */
+/* Both versions are probed by the same cards. Every v5 code path below is
+   untouched; v6 takes an early return wherever the model differs. */
+const playVer = ()=> ((ver==='v6' || ver==='v7') ? ver : 'v5');
+const isDumbS = ()=> (ver==='v6' || ver==='v7');   /* both use the one-power S */
+const playF   = ()=> ALL[playVer()].formula;
+const basePow = F => (F.L_power_base!=null ? F.L_power_base : F.p_base);
+/* v7's dip: the same bell in log t that v5 draws with a Gaussian, minus the ln */
 const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
 let playHue  = 75;
 const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
 let playBuilt = false;
 
 const PLAY_K   = 1.25;     /* saturation gain used by the probe */
+/* the shipped bend, straight from the generator — the probe and the families
+   above are the same function at the same settings */
+const BEND_REF = (ALL.v5 && ALL.v5.formula && ALL.v5.formula.bend_ref)   || 0.50;
+const BEND_TC  = (ALL.v5 && ALL.v5.formula && ALL.v5.formula.bend_tc)    || 0.055;
+const BEND_S   = (ALL.v5 && ALL.v5.formula && ALL.v5.formula.bend_sigma) || 1.15;
 
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 function hsl2hex(h,s,l){
@@ -442,26 +848,67 @@ function hsl2hex(h,s,l){
 /* How much a hue needs the correction: 1 at the perceptual-peak hue, easing to 0
    at the edge of the lobe — wider on the green side, since greens stay
    perceptually light much further round the wheel than the warm hues do. */
+const LOBE_UP = (ALL.v5 && ALL.v5.formula && ALL.v5.formula.lobe_up) || 145;
+const LOBE_DN = (ALL.v5 && ALL.v5.formula && ALL.v5.formula.lobe_dn) || 90;
 function hueWeight(H, F){
   if(H==null) return 0;
-  const LOBE_UP = F.lobe_up, LOBE_DN = F.lobe_dn;
+  if(ver==='v6'){                     /* a triangle, one span each way */
+    const d=Math.abs(((H-F.peak_hue+180)%360+360)%360-180)/F.lobe;
+    return d>=1 ? 0 : 1-d;
+  }
+  /* v7 keeps v5's lobe, so it falls through to the code below */
   const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
   const d=Math.abs(delta)/(delta>=0 ? LOBE_UP : LOBE_DN);
   if(d>=1) return 0;
   const c=Math.cos(Math.PI/2*d);
   return c*c;
 }
+function bendDelta(H, F, corr){
+  return BEND_REF * hueWeight(H,F) * (corr==null ? 1 : corr);
+}
+
+/* ── the bend ───────────────────────────────────────────────────────────────
+   The base ramp is a power law, a straight line in log–log:  drop = R·t^p.
+   The correction bends that line by making the exponent a smooth function of
+   scale position rather than a constant:
+
+       q(t) = p + Δ·G'(ln t)            G(x) = exp(−½((x−ln t_c)/σ)²)
+
+   G' is the derivative of a Gaussian, so its area is zero: the bend steepens
+   the exponent on the light side of t_c and relaxes it by the same amount on
+   the dark side, which is why nothing is added or subtracted overall.
+   Integrating q gives a closed form — one Gaussian factor on the power law:
+
+       drop(t) = R · t^p · exp( Δ·[G(ln t) − G(0)] )
+
+   Δ=0 is exactly the base curve; drop(1)=R for every Δ, so both ends of the
+   ramp are fixed and the curvature lands where t_c and σ put it. Monotone as
+   long as Δ·e^(−½)/σ < p, which the slider range respects.            */
+function bendG(x, F){
+  const z=(x-Math.log(BEND_TC))/BEND_S;
+  return Math.exp(-0.5*z*z);
+}
 function Lplay(t, H, F, corr){
   if(t<=0) return F.L0;
-  /* the exponent goes straight into the power law */
-  return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
+  /* v6 and v7 put the exponent straight into the power law */
+  if(ver==='v6' || ver==='v7') return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
+  const d=bendDelta(H,F,corr), x=Math.log(t);
+  const drop=F.L_range*Math.exp(F.L_power_base*x + d*(bendG(x,F)-bendG(0,F)));
+  return F.L0 - drop;
 }
-/* local exponent of the ramp at t — the curve the dip actually reshapes */
+/* local exponent of the ramp at t — the curve the bend actually reshapes */
 function Qplay(t, H, F, corr){
-  return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
+  if(ver==='v6') return F.p_base - F.p_amp*hueWeight(H,F)*(corr==null ? 1 : corr);
+  if(ver==='v7') return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
+  if(t<=0) return F.L_power_base;
+  const d=bendDelta(H,F,corr), x=Math.log(t);
+  return F.L_power_base - d*((x-Math.log(BEND_TC))/(BEND_S*BEND_S))*bendG(x,F);
 }
-function Splay(t,k,F){
-  return Math.max(0, Math.min(100, 100 - F.S_drop*k*Math.pow(t, F.S_power)));
+function Sv5(t,k,F){
+  if(isDumbS()) return Math.max(0, Math.min(100, 100 - F.S_drop*k*Math.pow(t, F.S_power)));
+  const g=Math.pow(t, F.S_power);
+  const u=(1-Math.cos(Math.PI*g))/2;
+  return Math.max(0, Math.min(100, 100 - F.S_drop*k*u));
 }
 
 /* ---- live diagram, same geometry and classes as the big one above ---- */
@@ -505,10 +952,10 @@ function playCurvesSvg(F, corr){
     <text class="title" x="${padL}" y="${padT-3}">L</text>
     <text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">q</text>
     <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
-    <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
+    <line class="qbase" x1="${padL}" y1="${yQ(F.L_power_base)}" x2="${W-padR}" y2="${yQ(F.L_power_base)}"/>
     <path class="Q" d="${path(t=>Qplay(t,playHue,F,corr), yQ)}"/>
     <path class="Lpeak" d="${path(t=>Lplay(t,playHue,F,0))}"/>
-    <path class="S" d="${path(t=>Splay(t,PLAY_K,F))}"/>
+    <path class="S" d="${path(t=>Sv5(t,PLAY_K,F))}"/>
     <path class="L" d="${path(t=>Lplay(t,playHue,F,corr))}"/>
     ${marks}`;
 }
@@ -519,17 +966,18 @@ function updatePlayground(){
   const F=playF();
   const corr=PLAY_CORR;
   const w=hueWeight(playHue,F);
+  const delta=bendDelta(playHue,F,corr);
 
   const rows=F.steps.map(step=>{
     const t=step/1000;
     const L=Lplay(t, playHue, F, corr);
-    const S=Splay(t, PLAY_K, F);
+    const S=Sv5(t, PLAY_K, F);
     return {step, L, S, hex:hsl2hex(playHue, S, L)};
   });
   const gradStops=[];
   for(let i=0;i<48;i++){
     const t=i/47;
-    gradStops.push(`${hsl2hex(playHue, Splay(t,PLAY_K,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
+    gradStops.push(`${hsl2hex(playHue, Sv5(t,PLAY_K,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
@@ -544,18 +992,29 @@ function updatePlayground(){
     `title="Playground continuous scale"></div>`;
   document.getElementById('play-hue-val').textContent  = playHue+'°';
   document.getElementById('play-stats').textContent =
-    `k ${PLAY_K} · w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
+      ver==='v6' ? `k ${PLAY_K} · w ${w.toFixed(2)} · p ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+    : ver==='v7' ? `k ${PLAY_K} · w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`
+    : `k ${PLAY_K} · w ${w.toFixed(2)} · Δ ${delta.toFixed(2)}`;
 
   document.getElementById('play-svg').innerHTML = playCurvesSvg(F, corr);
   document.getElementById('play-curve-meta').textContent =
-    `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
+      ver==='v6' ? `H ${playHue}° · p ${basePow(F)} → ${Qplay(0.5,playHue,F,corr).toFixed(2)}`
+    : ver==='v7' ? `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`
+    : `H ${playHue}° · p ${basePow(F)} · q at 25 ${Qplay(0.025,playHue,F,corr).toFixed(2)}`;
 
   /* the numbers being eyeballed: contrast between the first few steps */
   const d=(a,b)=> (rows[a].L-rows[b].L).toFixed(1);
   document.getElementById('play-hint').innerHTML =
-    `Left axis L · right axis the exponent e (green). It dips along <code>4c·t/(t+c)²</code> and bottoms `+
-    `out at t = ${F.dip_c}, which is why the light steps still fan out — the same locality v5 gets from `+
-    `its Gaussian, without the ln.<br>`+
+    (ver==='v7'
+      ? `Left axis L · right axis the exponent e (green). It dips along <code>4c·t/(t+c)²</code> and bottoms `+
+        `out at t = ${F.dip_c}, which is why the light steps still fan out — the same locality v5 gets from `+
+        `its Gaussian, without the ln.<br>`
+    : ver==='v6'
+      ? `Left axis L · right axis the exponent q (green). The dumb correction is a flat cut, so q is a `+
+        `<i>straight line</i> — ${basePow(F)} shifted down by ${F.p_amp}·w — and the whole ramp darkens a `+
+        `little instead of gaining curvature at the top. Compare the gaps with v5.<br>`
+      : `Left axis L · right axis the local exponent q (green): the bend lifts q on the light side of `+
+        `t<sub>c</sub> ${BEND_TC} and relaxes it after, so both ends of the ramp stay put.<br>`)+
     `<span class="dlt">ΔL 25→50 <b>${d(0,1)}</b> · 50→100 <b>${d(1,2)}</b> · `+
     `100→200 <b>${d(2,3)}</b> · 200→300 <b>${d(3,4)}</b></span>`;
 }
@@ -564,7 +1023,7 @@ function renderPlayground(){
   const host=document.getElementById('playground');
   const sect=document.getElementById('play-sect');
   if(!host) return;
-  const show = !!playF();
+  const show = (ver==='v5' || ver==='v6' || ver==='v7') && !!playF();
   if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
@@ -616,7 +1075,8 @@ function renderPlayground(){
 
 /* ---------- neutrals: functions, perceptual lift, playgrounds ---------- */
 function neutralS(theme, L){
-  return theme==='light' ? L/10 : 22 - L/9;
+  if(isDumbS()) return theme==='light' ? L/10 : 22 - L/9;
+  return theme==='light' ? L/10 : 11 + (100-L)/9;
 }
 
 /* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
@@ -694,7 +1154,7 @@ let nPlayBuilt = false;
 function updateNeutralTheme(theme){
   const F=playF();
   const hue=N_HUE[theme];
-  const steps=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
+  const steps=(ALL[playVer()].families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
   const rows=steps.map(step=>{
     const t=Number(step)/1000;
     const L=Lplay(t, null, F, 0);
@@ -773,11 +1233,11 @@ function renderNeutralPlayground(){
   const host=document.getElementById('playground-neutral');
   const sect=document.getElementById('nplay-sect');
   if(!host) return;
-  const show = !!playF();
+  const show = (ver==='v5' || ver==='v6' || ver==='v7') && !!playF();
   if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
-  const n=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
+  const n=(ALL[playVer()].families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
 
   if(!nPlayBuilt){
     host.innerHTML = neutralCardPair('light', n) + neutralCardPair('dark', n);
@@ -792,10 +1252,10 @@ function renderNeutralPlayground(){
 }
 
 
-function renderPage(){
-  const c = COPY;
-  /* the page runs without most of the prose — each element is filled when
-     there is copy for it and hidden when there is not */
+function applyVersion(){
+  const c = COPY[ver];
+  /* v5 runs without the prose; older versions still carry theirs, so each
+     element is filled when there is copy for it and hidden when there is not */
   const put=(id, text, html)=>{
     const el=document.getElementById(id);
     if(!el) return;
@@ -810,15 +1270,26 @@ function renderPage(){
   put('foot',        c.foot, true);
   document.getElementById('f-heading').textContent = c.fHead;
   document.getElementById('lad-heading').textContent = c.ladHead;
-  put('play-blurb',
-    `The exponent dips where the light steps are — a rational bell rather than a
-     Gaussian derivative, and slid straight into the power law instead of integrated — so the green line
-     has a trough and the \u0394L row lands back on v5's numbers.`, true);
+  document.getElementById('ver-label').textContent = ver;
+  const PLAY_COPY = {
+    v5: `Drag <b>Hue</b> to see how much correction a hue asks for — yellow–green needs the most, cool hues none.
+         The bend is fixed at the shipped <code>Δ = 0.5·w(H)</code>, so this is the curve the families above are
+         generated from. The diagram redraws live: dashed red is the unbent curve, green is the exponent
+         <code>q</code> being bent.`,
+    v6: `The same probe on the dumb model. <code>w(H)</code> is now a triangle and the correction is a flat
+         <code>0.10·w</code> off the exponent, so the green line is straight rather than bent — the whole ramp
+         darkens slightly instead of gaining curvature where the light steps are. Dashed red is the uncorrected
+         curve; the ΔL row under the diagram is what to compare against v5.`,
+    v7: `The middle ground. The exponent still dips where the light steps are — a rational bell rather than a
+         Gaussian derivative, and slid straight into the power law instead of integrated — so the green line
+         has a trough and the ΔL row lands back on v5's numbers. Compare all three.`
+  };
+  put('play-blurb', PLAY_COPY[ver], true);
   renderFormula();
   render();
   renderPlayground();
   renderNeutralPlayground();
 }
 
-renderPage();
+applyVersion();
 </script>

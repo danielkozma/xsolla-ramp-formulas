@@ -3,9 +3,7 @@
 Reverse-engineered HSL formulas for the Xsolla colour palette
 (Figma: *Redesign Color Palette — Pentagram*).
 
-The published page ships **v7 only**. Earlier versions v1–v6 are kept in
-`backup-all-versions/` (the page exactly as it was, with the version dropdown)
-and `build.py` still computes all seven — v7's numbers are quoted against v5.
+Seven versions ship side by side — switch them from the header dropdown.
 
 ## v1 — discrete step ladders
 
@@ -137,50 +135,12 @@ v7 keeps a localised correction and drops everything else.
 
 | | |
 |---|---|
-| `index.html` | built page — v7 only |
-| `template.html` | source (`/*__DATA__*/`, `/*__MEANV5__*/`) |
+| `index.html` | built page |
+| `template.html` | source (`/*__DATA__*/`, `/*__STAT__*/`) |
 | `build.py` | applies v1–v7 → `data/generated.json` |
-| `page.py` | injects v7 into the template |
+| `page.py` | injects data into the template |
 | `data/palette.json` | Figma values |
-| `middleware.js` | password gate (see below) |
-| `backup-all-versions/` | the previous page, all seven versions, unmodified |
 
 ```bash
 python3 build.py && python3 page.py
-```
-
-## Password
-
-The whole site sits behind a single shared password, enforced by
-`middleware.js` (Vercel Routing Middleware) before anything static is served —
-the page, `data/`, and `fonts/` alike.
-
-Set it as an environment variable on the Vercel project:
-
-| | |
-|---|---|
-| Name | `SITE_PASSWORD` |
-| Where | Vercel → **xsolla-ramp-formulas** → Settings → Environment Variables |
-| Environments | Production, Preview, Development |
-
-or from the CLI:
-
-```bash
-vercel env add SITE_PASSWORD production
-```
-
-Redeploy after changing it. Until it is set, every route serves the login
-screen with a note saying so.
-
-The password is never sent over the network: the login page hashes it in the
-browser (salted SHA-256) and stores the hash in the `xcf_gate` cookie, which
-the middleware compares against a hash of `SITE_PASSWORD`. Changing
-`SITE_PASSWORD` invalidates every existing cookie. The cookie lasts 30 days.
-
-This is a shared-link gate, not per-user auth — anyone with the password gets in.
-
-To run it locally:
-
-```bash
-SITE_PASSWORD=whatever vercel dev
 ```
