@@ -85,10 +85,10 @@ a{color:inherit}
 .mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
 
 /* ---- formula panel ---- */
-.panel{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(300px,1fr);
-       background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);margin-bottom:40px}
-.panel>div{padding:22px 24px;min-width:0}
-.panel>div+div{border-left:1px solid var(--rule)}
+/* Two equal panes, square-edged and borderless, separated by a 4px seam. */
+.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+       background:transparent;border:0;border-radius:0;margin-bottom:40px}
+.panel>div{padding:22px 24px;min-width:0;background:var(--panel);border:0;border-radius:0}
 .panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
           color:var(--ink-3);margin-bottom:14px}
 pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
@@ -119,10 +119,9 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 /* ---- family cards ----
    Three colour columns (Current · Formula · Gradient) stay side-by-side
    at every width — never stack. Step label + Δ stay narrow. */
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
-.fam{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);overflow:hidden}
-.fam header{display:flex;align-items:baseline;gap:8px;padding:13px 14px 11px;
-            border-bottom:1px solid var(--rule)}
+.grid{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
+.fam{background:var(--panel);overflow:clip}
+.fam header{display:flex;align-items:flex-start;gap:8px;padding:13px 14px 11px}
 .fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
 .fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
             font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
@@ -143,18 +142,15 @@ table.ladder tbody tr:last-child td{border-bottom:0}
           font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
 /* Current value and formula value share an edge — no gap, no radius, so the
    seam only appears where the two actually differ. */
-.tile.empty{background:
-  repeating-linear-gradient(-45deg,
-    transparent 0 5px,
-    color-mix(in srgb, var(--ink-3) 18%, transparent) 5px 6px);
-  color:var(--ink-3); justify-content:center; box-shadow:inset 0 0 0 1px var(--rule)}
+.tile.empty{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:18px;
+  color:var(--ink-3);box-shadow:inset 0 0 0 1px var(--rule)}
 .tile.empty::after{content:'—'}
 .grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
           box-shadow:none;position:relative}
 .dl{display:flex;align-items:center;justify-content:flex-end;padding-left:2px}
 .dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
 .dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
-.dl em{font-style:normal;font-size:9px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.dl em{font-style:normal;font-size:14px;line-height:18px;color:var(--ink)}
 
 /* ---- deviation table ---- */
 .dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
@@ -181,7 +177,6 @@ footer b{color:var(--ink);font-weight:500}
 
 @media (max-width:880px){
   .panel{grid-template-columns:1fr}
-  .panel>div+div{border-left:0;border-top:1px solid var(--rule)}
   .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
 }
 @media (max-width:420px){
@@ -192,7 +187,10 @@ footer b{color:var(--ink);font-weight:500}
 
 /* ---- hue playground ---- */
 .playground{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-            align-items:start;margin:0 0 44px}
+            align-items:stretch;margin:0 0 44px}
+/* The family cards are bare plates on the ground; the probes stay cards —
+   they are instruments sitting beside the palette, not part of it. */
+.play-card{border:1px solid var(--rule);border-radius:var(--r-lg)}
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
                       padding:13px 14px 12px;border-bottom:1px solid var(--rule)}
 .play-head__top{display:flex;align-items:center;gap:8px;min-width:0}
@@ -204,10 +202,17 @@ footer b{color:var(--ink);font-weight:500}
 .play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
 .play-slider .play-meta{text-align:right}
 
+/* Playground ramps have no Figma reference, so they drop the Current column and
+   the drift gutter; the card itself stays one grid track wide like every other. */
+.play-card .colhead,
+.play-card .ramp-wrap{grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+.play-card .grad-col{grid-column:3}
+
 .play-curves .play-head{gap:9px}
 .play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
-.play-curves__body{padding:10px 12px 13px}
-.play-curves .curves__svg{max-height:none}
+.play-curves{display:flex;flex-direction:column}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;display:flex}
+.play-curves .curves__svg{max-height:none;width:100%;height:100%;flex:1 1 auto;min-height:0}
 .play-curves__svg .step{fill:#E24B4A}
 .play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
 .grad-split{display:flex;gap:1px}
@@ -432,9 +437,22 @@ function Splay(t,F){
   return Math.max(0, Math.min(100, 100 - F.S_drop*Math.pow(t, F.S_power)));
 }
 
+/* The diagram card is stretched to the height of the ramp card beside it, so the
+   plot is drawn to whatever height that leaves instead of being letterboxed in it.
+   viewBox width stays 380, so one user unit is the same size as before and the
+   labels keep their type size — only the plot gets taller. */
+function fitSvg(svg){
+  const body=svg.parentElement, r=body.getBoundingClientRect(), cs=getComputedStyle(body);
+  const w=r.width  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const h=r.height - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+  const vh = (w>0 && h>0) ? Math.max(240, Math.min(900, Math.round(380*h/w))) : 300;
+  svg.setAttribute('viewBox', `0 0 380 ${vh}`);
+  return vh;
+}
+
 /* ---- live diagram, same geometry and classes as the big one above ---- */
-function playCurvesSvg(F, corr){
-  const W=380, H=300, padL=34, padR=32, padT=14, padB=32;
+function playCurvesSvg(F, corr, H=300){
+  const W=380, padL=34, padR=32, padT=14, padB=32;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xOf=t=> padL + t*plotW;
   const yOf=v=> padT + (1 - v/100)*plotH;
@@ -501,10 +519,8 @@ function updatePlayground(){
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
-    `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="playground — no current value"></span>`+
-    `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hex}" `+
-      `title="${r.step} · ${r.hex} · H ${playHue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`+
-    `<span class="dl" style="grid-row:${i+1};grid-column:5" title="L ${r.L.toFixed(1)}"> </span>`
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${r.step} · ${r.hex} · H ${playHue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
   ).join('');
 
   document.getElementById('play-ramp').innerHTML = body +
@@ -514,7 +530,8 @@ function updatePlayground(){
   document.getElementById('play-stats').textContent =
     `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
 
-  document.getElementById('play-svg').innerHTML = playCurvesSvg(F, corr);
+  const psvg=document.getElementById('play-svg');
+  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg));
   document.getElementById('play-curve-meta').textContent =
     `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
 
@@ -544,7 +561,7 @@ function renderPlayground(){
             <span class="play-meta" id="play-hue-val"></span>
           </div>
         </div>
-        <div class="colhead"><span></span><span>Current</span><span>Formula</span><span>Gradient</span><span></span></div>
+        <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
         <div class="ramp-wrap" id="play-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
       </article>
       <article class="fam play-card play-curves">
@@ -603,8 +620,8 @@ function perceptualLift(H, S, L){
 }
 
 /* one neutral diagram — same grid, pads and classes as the chromatic one */
-function neutralSvg(F, hue, theme){
-  const W=380, H=300, padT=14, padB=32;
+function neutralSvg(F, hue, theme, H=300){
+  const W=380, padT=14, padB=32;
   const padL=34, padR=32;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xOf=t=> padL + t*plotW;
@@ -667,10 +684,8 @@ function updateNeutralTheme(theme){
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
-    `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="playground — no current value"></span>`+
-    `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hex}" `+
-      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${r.lift.toFixed(2)}"></span>`+
-    `<span class="dl" style="grid-row:${i+1};grid-column:5" title="L ${r.L.toFixed(1)}"> </span>`
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${r.lift.toFixed(2)}"></span>`
   ).join('');
 
   document.getElementById(`nplay-${theme}-ramp`).innerHTML = body +
@@ -682,7 +697,8 @@ function updateNeutralTheme(theme){
   const sgn=v=> (v>0?'+':'−')+Math.abs(v).toFixed(2);
   document.getElementById(`nplay-${theme}-stats`).textContent =
     `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${sgn(at.lift)}`;
-  document.getElementById(`nplay-${theme}-svg`).innerHTML = neutralSvg(F, hue, theme);
+  const nsvg=document.getElementById(`nplay-${theme}-svg`);
+  nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
 }
 
@@ -700,7 +716,7 @@ function neutralCardPair(theme, n){
           <span class="play-meta" id="nplay-${theme}-hue-val"></span>
         </div>
       </div>
-      <div class="colhead"><span></span><span>Current</span><span>Formula</span><span>Gradient</span><span></span></div>
+      <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
       <div class="ramp-wrap" id="nplay-${theme}-ramp" style="grid-template-rows:repeat(${n},32px)"></div>
     </article>
     <article class="fam play-card play-curves">
@@ -744,6 +760,16 @@ function renderNeutralPlayground(){
   updateNeutralTheme('dark');
 }
 
+
+/* the plots are sized from the box they land in, so a resize has to redraw them */
+let fitRaf=0;
+addEventListener('resize', ()=>{
+  cancelAnimationFrame(fitRaf);
+  fitRaf=requestAnimationFrame(()=>{
+    if(playBuilt) updatePlayground();
+    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
+  });
+});
 
 function renderPage(){
   const c = COPY;
