@@ -275,9 +275,6 @@ footer b{color:var(--ink);font-weight:500}
 <div class="grid" id="g-chromatic"></div>
 
 
-<div class="sect" id="play-sect">
-  <h2>Hue playground</h2>
-</div>
 <div id="playground" class="playground"></div>
 
 <div class="sect">
@@ -286,9 +283,6 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="grid" id="g-theme"></div>
 
-<div class="sect" id="nplay-sect">
-  <h2>Neutral playground</h2>
-</div>
 <div id="playground-neutral" class="playground"></div>
 
 
@@ -596,10 +590,8 @@ function updatePlayground(){
 
 function renderPlayground(){
   const host=document.getElementById('playground');
-  const sect=document.getElementById('play-sect');
   if(!host) return;
   const show = !!playF();
-  if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
   const F=playF();
@@ -773,10 +765,8 @@ function neutralCardPair(theme, n){
 
 function renderNeutralPlayground(){
   const host=document.getElementById('playground-neutral');
-  const sect=document.getElementById('nplay-sect');
   if(!host) return;
   const show = !!playF();
-  if(sect) sect.style.display = show ? '' : 'none';
   host.style.display = show ? '' : 'none';
   if(!show) return;
   const n=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
