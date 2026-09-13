@@ -83,7 +83,6 @@ a{color:inherit}
                       stroke-dasharray:5 4;opacity:.45}
 .curves__legend i.Shi{background:#2F6FED;opacity:.4}
 .curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
-.curves__hint{margin:10px 0 0;font-size:12px;line-height:16px;color:var(--ink-3)}
 
 .wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
 
@@ -217,8 +216,6 @@ footer b{color:var(--ink);font-weight:500}
 .play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
 .play-curves__body{padding:10px 12px 13px}
 .play-curves .curves__svg{max-height:none}
-.play-curves .curves__hint{margin:8px 2px 0;font-size:11.5px;line-height:15px}
-.play-curves .dlt{font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .play-curves__svg .step{fill:#E24B4A}
 .play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
 .grad-split{display:flex;gap:1px}
@@ -246,7 +243,6 @@ footer b{color:var(--ink);font-weight:500}
   <div>
     <h2 id="f-heading">The formula</h2>
     <pre class="f" id="f-body"></pre>
-    <p class="note" id="f-note"></p>
   </div>
   <div>
     <h2 id="lad-heading">Step ladder</h2>
@@ -258,37 +254,29 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="sect">
   <h2>Chromatic families</h2>
-  <p id="chrom-blurb"></p>
 </div>
 <div class="legend">
-  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1 · no visible difference</span>
-  <span><i class="s" style="background:var(--slight)"></i>1–3 · detectable side by side</span>
-  <span><i class="v" style="background:var(--warn)"></i>3–6 · clearly different</span>
-  <span><i class="b" style="background:var(--bad)"></i>&gt; 6 · deliberate normalisation</span>
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6</span>
 </div>
 <div class="grid" id="g-chromatic"></div>
 
 
 <div class="sect" id="play-sect">
   <h2>Hue playground</h2>
-  <p id="play-blurb"></p>
 </div>
 <div id="playground" class="playground"></div>
 
 <div class="sect">
   <h2>Neutrals</h2>
-  <p id="theme-blurb">Neutral and Greyscale are the only sets with separate Light and Dark values. Neutral is the step
-  ladder with a hue-75 tint that fades into the shadows on light, and a hue-190 tint that grows into them
-  on dark — one expression each.</p>
 </div>
 
 <div class="grid" id="g-theme"></div>
 
 <div class="sect" id="nplay-sect">
   <h2>Neutral playground</h2>
-  <p>One pair per theme, tint hue free. Green is the <i>perceptual lift</i> — how much lighter a tinted step
-  reads than a grey of the same L, in OKLab points. It stays near 2 at any hue, against roughly 24 across the
-  chromatic ramps, which is why the neutrals need no lightness correction.</p>
 </div>
 <div id="playground-neutral" class="playground"></div>
 
@@ -310,9 +298,6 @@ const COPY = {
       + "puts the current Figma values next to the formula output, so any drift is visible without reading a number.",
   fHead: "The formula",
   ladHead: "Brand, step by step",
-  chrom: "Nine hues, steps 25\u2013800. Light and Dark hold identical values, so one formula serves both.",
-  theme: "Neutral and Greyscale are the only sets with separate Light and Dark values \u2014 a warm tint that "
-       + "fades into the shadows on light, a cool one that grows into them on dark.",
   foot: ''
 };
 
@@ -341,11 +326,6 @@ ${K('// named tokens sample the scale')}
 scale = step / 10                 ${K('25 → 2.5, 850 → 85')}
 t     = scale / 100`;
 
-  document.getElementById('f-note').innerHTML =
-`Mean ΔE against the current palette is <b>${VD.vs_current.mean}</b> — inside a just-noticeable difference
- almost everywhere. The exponent dips near the light end, which is what keeps 25 / 50 / 100 apart, and both
- ends of every ramp stay pinned whatever it does. Steps <code>850</code> / <code>900</code> are formula-only,
- where the current palette has no swatch.`;
 
   const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
   document.getElementById('lad-head').innerHTML =
@@ -547,13 +527,6 @@ function updatePlayground(){
   document.getElementById('play-curve-meta').textContent =
     `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
 
-  /* the numbers being eyeballed: contrast between the first few steps */
-  const d=(a,b)=> (rows[a].L-rows[b].L).toFixed(1);
-  document.getElementById('play-hint').innerHTML =
-    `Left axis L · right axis the exponent e (green). It bottoms out at t = ${F.dip_c}, `+
-    `which is what makes the light steps fan out.<br>`+
-    `<span class="dlt">ΔL 25→50 <b>${d(0,1)}</b> · 50→100 <b>${d(1,2)}</b> · `+
-    `100→200 <b>${d(2,3)}</b> · 200→300 <b>${d(3,4)}</b></span>`;
 }
 
 function renderPlayground(){
@@ -599,7 +572,6 @@ function renderPlayground(){
         <div class="play-curves__body">
           <svg class="curves__svg play-curves__svg" id="play-svg" viewBox="0 0 380 300"
                role="img" aria-label="Lightness with and without the light-end correction"></svg>
-          <p class="curves__hint" id="play-hint"></p>
         </div>
       </article>`;
     const hue=document.getElementById('play-hue');
@@ -721,10 +693,6 @@ function updateNeutralTheme(theme){
     `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${sgn(at.lift)}`;
   document.getElementById(`nplay-${theme}-svg`).innerHTML = neutralSvg(F, hue, theme);
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
-  document.getElementById(`nplay-${theme}-hint`).innerHTML =
-    `Left axis L and S · right axis the perceptual lift, −6…+6 OKLab points, zero on the middle gridline. `+
-    `Biggest deviation here is <b>${sgn(at.lift)}</b> at step ${at.step} — too small to be worth correcting, `+
-    `so the ${theme} exponent stays flat at ${basePow(F)}.`;
 }
 
 function neutralCardPair(theme, n){
@@ -759,7 +727,6 @@ function neutralCardPair(theme, n){
       <div class="play-curves__body">
         <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
              role="img" aria-label="Neutral ${theme} lightness, saturation and perceptual lift"></svg>
-        <p class="curves__hint" id="nplay-${theme}-hint"></p>
       </div>
     </article>`;
 }
@@ -800,14 +767,9 @@ function renderPage(){
   };
   put('mast-lead',   c.lead);
   put('eyebrow',     c.eyebrow);
-  put('chrom-blurb', c.chrom);
-  put('theme-blurb', c.theme);
   put('foot',        c.foot, true);
   document.getElementById('f-heading').textContent = c.fHead;
   document.getElementById('lad-heading').textContent = c.ladHead;
-  put('play-blurb',
-    `Drag the hue to see how much correction it asks for — yellow\u2013green needs the most, cool hues none.`,
-    true);
   renderFormula();
   render();
   renderPlayground();
