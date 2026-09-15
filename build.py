@@ -946,6 +946,21 @@ S_DROP_V7 = 30.0       # 100 at the light end down to a floor of 70
 S_KNEE_V7 = 1.0/3.0    # half the drop is spent here — the 0–1 scale, so step 333
 S_ORDER_V7 = 6.0       # how abruptly the hold gives way to the floor
 
+# The UI families (Pulse, Flash, Pink) keep falling where the rest hold their
+# floor: the palette runs them 70 → 60 → 39 → 26 across 500–800 while every other
+# ramp sits flat on 70. That is a second switch, not a different curve — so they
+# get the same Hill term again, with its knee at 2/3 of the scale instead of 1/3
+# and twice the order. Below 500 it is numerically zero, so the light and mid
+# steps are untouched and the base formula is unchanged for every family.
+SEMANTIC_V7 = ("Pulse", "Flash", "Pink")
+GROUPS_V7 = [
+    ("Brand & Labels", ["Brand", "Core", "Mindaro", "Mint", "Yellow", "Edge"]),
+    ("UI (Semantic)",  list(SEMANTIC_V7)),
+]
+S_SEM_DROP_V7 = 50.0
+S_SEM_KNEE_V7 = 2.0/3.0
+S_SEM_ORDER_V7 = 12.0
+
 def dip_shape_v7(t):
     """A bell in log t with no ln in sight: 0 at t=0, 1 at t=c, fat tail after."""
     return 4.0 * DIP_C_V7 * t / ((t + DIP_C_V7) ** 2)
@@ -959,10 +974,16 @@ def L_exponent_v7(t, H=None):
 def L_v7(t, H=None):
     return 100.0 if t <= 0.0 else 100.0 - 100.0 * (t ** L_exponent_v7(t, H))
 
-def S_v7(t):
-    """Full chroma until the knee, then one swing down to the floor."""
+def S_v7(t, semantic=False):
+    """Full chroma until the knee, then one swing down to the floor.
+
+    The UI families take the same swing a second time, later and sharper."""
     r = (t / S_KNEE_V7) ** S_ORDER_V7
-    return 100.0 - S_DROP_V7 * r / (1.0 + r)
+    S = 100.0 - S_DROP_V7 * r / (1.0 + r)
+    if semantic:
+        s = (t / S_SEM_KNEE_V7) ** S_SEM_ORDER_V7
+        S -= S_SEM_DROP_V7 * s / (1.0 + s)
+    return clamp(S, 0.0, 100.0)
 
 # The light ramp never reaches neutral grey: the palette holds ~2 points of tint
 # at its darkest step, where L/10 alone has already fallen to 0.85. The slope was
@@ -973,39 +994,41 @@ NEUTRAL_S_FLOOR_V7 = 0.7
 def neutral_S_v7(theme, L):
     return L / 10.0 + NEUTRAL_S_FLOOR_V7 if theme == "light" else 22.0 - L / 9.0
 
-def sample_hex_v7(kind, hue, theme, t):
+def sample_hex_v7(kind, hue, theme, t, semantic=False):
     L = L_v7(t, hue if kind == "chromatic" else None)
     if kind == "chromatic":
-        return hsl2hex(hue, S_v7(t), L)
+        return hsl2hex(hue, S_v7(t, semantic), L)
     return hsl2hex(hue, neutral_S_v7(theme, L), L)
 
-def gradient_css_v7(kind, hue, theme, n=40):
-    stops = [f"{sample_hex_v7(kind, hue, theme, i/(n-1))} {round(100*i/(n-1), 2)}%"
+def gradient_css_v7(kind, hue, theme, n=40, semantic=False):
+    stops = [f"{sample_hex_v7(kind, hue, theme, i/(n-1), semantic)} {round(100*i/(n-1), 2)}%"
              for i in range(n)]
     return f"linear-gradient(to bottom, {', '.join(stops)})"
 
-def curve_samples_v7(kind="chromatic", theme="both", H=None, n=64):
+def curve_samples_v7(kind="chromatic", theme="both", H=None, n=64, semantic=False):
     ts, scales, Ls, Ss = [], [], [], []
     use_H = H if kind == "chromatic" else None
     for i in range(n):
         t = i / (n - 1)
         L = L_v7(t, use_H)
         ts.append(round(t, 4)); scales.append(round(100.0*t, 2)); Ls.append(round(L, 3))
-        Ss.append(round(S_v7(t) if kind == "chromatic" else neutral_S_v7(theme, L), 3))
+        Ss.append(round(S_v7(t, semantic) if kind == "chromatic"
+                        else neutral_S_v7(theme, L), 3))
     return {"t": ts, "scale": scales, "L": Ls, "S": Ss}
 
-def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows):
+def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, group=""):
     rows, positions = [], []
     H_for_L = hue if kind == "chromatic" else None
+    sem = name in SEMANTIC_V7
     dip = round(DIP_V7 * (hue_light_weight_v5(hue) if kind == "chromatic" else 0.0), 4)
     v5_by_step = {r["step"]: r["hsl"] for r in v5_rows}
     d5 = []
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
-        gen = sample_hex_v7(kind, hue, theme, t)
+        gen = sample_hex_v7(kind, hue, theme, t, sem)
         L = L_v7(t, H_for_L)
-        S = S_v7(t) if kind == "chromatic" else neutral_S_v7(theme, L)
+        S = S_v7(t, sem) if kind == "chromatic" else neutral_S_v7(theme, L)
         ref = v5_by_step.get(key)
         e5 = round(dE(ref, gen), 2) if ref else None
         if e5 is not None:
@@ -1024,9 +1047,10 @@ def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows):
         })
     return {
         "name": name, "kind": kind, "theme": theme, "hue": hue,
+        "group": group, "semantic": sem,
         "dip": dip, "rows": rows,
         "d5": round(sum(d5)/len(d5), 2) if d5 else None,
-        "gradient": gradient_css_v7(kind, hue, theme),
+        "gradient": gradient_css_v7(kind, hue, theme, semantic=sem),
         "positions": [round(t, 4) for t in positions],
     }
 
@@ -1040,6 +1064,9 @@ def build_v7(v5):
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
             "S_order": S_ORDER_V7,
+            "S_sem_drop": S_SEM_DROP_V7, "S_sem_knee": round(S_SEM_KNEE_V7, 6),
+            "S_sem_order": S_SEM_ORDER_V7, "semantic": list(SEMANTIC_V7),
+            "groups": [{"name": g, "families": f} for g, f in GROUPS_V7],
             "steps": CHROMATIC_STEPS_V5,
         },
         "meta": {
@@ -1047,28 +1074,31 @@ def build_v7(v5):
             "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
             "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
+            "S_sem": "UI families subtract 50\u00b7(1.5t)\u00b9\u00b2/(1 + (1.5t)\u00b9\u00b2)",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
         "curves": {
             "chromatic": curve_samples_v7("chromatic", H=190),
+            "chromatic_semantic": curve_samples_v7("chromatic", H=190, semantic=True),
             "chromatic_L_peak": curve_samples_v7("chromatic", H=L_PEAK_HUE_V5),
             "neutral_light": curve_samples_v7("neutral", "light"),
             "neutral_dark": curve_samples_v7("neutral", "dark"),
         },
     }
 
-    for fam in CHROM:
-        keys = [str(s) for s in CHROMATIC_STEPS_V5]
-        out["families"].append(build_family_v7(
-            fam, "chromatic", "both", HUES[fam], keys, P["light"][fam],
-            v5_fam[(fam, "both")]))
+    for group, fams in GROUPS_V7:
+        for fam in fams:
+            keys = [str(s) for s in CHROMATIC_STEPS_V5]
+            out["families"].append(build_family_v7(
+                fam, "chromatic", "both", HUES[fam], keys, P["light"][fam],
+                v5_fam[(fam, "both")], group))
 
     for theme in ("light", "dark"):
         steps = P[theme]["Neutral"]
         keys = merge_steps_v5([k for k in steps if k not in ("White", "Black")])
         out["families"].append(build_family_v7(
             "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
-            v5_fam[("Neutral", theme)]))
+            v5_fam[("Neutral", theme)], "Neutrals"))
 
     rows = [r for f in out["families"] for r in f["rows"]]
     d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]

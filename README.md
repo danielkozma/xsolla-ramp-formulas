@@ -129,16 +129,30 @@ construction.
 | `t^(2/3)` | 97 | 95 | 92 | 87 | 83 | 80 | 76 | 73 | 70 | 68 |
 | Hill | 100 | 100 | 100 | 99 | 90 | 78 | 72 | 71 | 70 | 70 |
 
-**No per-family saturation gain.** The palette's own ramps are identical
-through step 500; only Pulse, Pink and Flash peel off, and only in the dark
-tail — seven hand-edited swatches, not a hue effect. A whole-ramp gain chasing
-them desaturated the light and mid steps, which were already exact. Dropping
-it leaves hue as the single per-family parameter, so the hue playground
-reproduces every card exactly.
+**No per-family saturation gain — one group correction instead.** The palette's
+own ramps are identical through step 500; only Pulse, Flash and Pink peel off,
+and only in the dark tail, where the palette runs them 70 / 60 / 39 / 26 across
+500–800 while every other ramp holds flat on 70. A whole-ramp gain chasing that
+desaturated the light and mid steps, which were already exact. What fits is the
+same Hill switch a second time, with its knee at 2/3 of the scale instead of 1/3
+and twice the order:
+
+```
+s(t) = (1.5t)¹²
+S(t) = S(t) − 50·s/(1 + s)      # UI families only
+```
+
+Below step 500 `s` is numerically zero, so the base formula is untouched for
+every family at every light and mid step — the correction only exists in the
+dark tail. It takes the three UI ramps from mean ΔE 2.81 to **2.22** (Pink
+1.84 → 0.83, Pulse 4.24 → 3.29) and the whole palette from 1.84 to **1.69**.
+Flash is the one that pays: its 600 and 700 hold at S 70 where Pulse and Pink
+have already dropped, so it trades 5.46 at step 800 for 4.44 at 700. Hue stays
+the only per-family parameter; the group is the only other one.
 
 No integration is needed because the ends pin themselves whatever the
 exponent does — what v5 proves, v7 gets for free. It fits the current palette
-better than v5 does (mean ΔE **1.84** against 2.11); the drift from v5's own
+better than v5 does (mean ΔE **1.69** against 2.11); the drift from v5's own
 output is 1.06, almost all of it the saturation change in the mids. The
 fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
 where v6's flat cut gives 4.5 / 7.5.
@@ -190,7 +204,7 @@ v7 keeps a localised correction and drops everything else.
 
 | | |
 |---|---|
-| `index.html` | built page — v7 only |
+| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals |
 | `template.html` | source (`/*__DATA__*/`, `/*__MEANV5__*/`) |
 | `build.py` | applies v1–v7 → `data/generated.json` |
 | `page.py` | injects v7 into the template |

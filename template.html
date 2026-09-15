@@ -87,7 +87,7 @@ a{color:inherit}
 /* ---- formula panel ---- */
 /* Two equal panes, square-edged and borderless, separated by a 4px seam. */
 .panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
-       background:transparent;border:0;border-radius:0;margin-bottom:40px}
+       background:transparent;border:0;border-radius:0;margin-bottom:14px}
 .panel>div{padding:22px 24px;min-width:0;background:var(--panel);border:0;border-radius:0}
 .panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
           color:var(--ink-3);margin-bottom:14px}
@@ -111,7 +111,7 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 .sect h2.sect-xl{font-size:40px}
 .sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
 
-.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:0 0 30px;
         font-size:12px;line-height:16px;color:var(--ink-3)}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
@@ -254,16 +254,22 @@ footer b{color:var(--ink);font-weight:500}
 
 
 
-<div class="sect">
-  <h2 class="sect-xl">Chromatic</h2>
-</div>
 <div class="legend">
   <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
   <span><i class="s" style="background:var(--slight)"></i>1–3</span>
   <span><i class="v" style="background:var(--warn)"></i>3–6</span>
   <span><i class="b" style="background:var(--bad)"></i>&gt; 6</span>
 </div>
-<div class="grid" id="g-chromatic"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">Brand &amp; Labels</h2>
+</div>
+<div class="grid" id="g-brand"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">UI (Semantic)</h2>
+</div>
+<div class="grid" id="g-semantic"></div>
 
 
 <div id="playground" class="playground"></div>
@@ -314,6 +320,10 @@ ${K('// saturation and hue')}
 r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
 S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}
 H(t) = ${V('H₀')}
+
+${K('// UI families — Pulse · Flash · Pink')}
+s(t) = ${V('(1.5t)¹²')}                     ${K('the same knee, at t = 2/3')}
+S(t) = ${V('S(t) − 50·s/(1 + s)')}          ${K('70 → 20, dark end only')}
 
 ${K('// neutrals')}
 neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
@@ -423,8 +433,9 @@ function render(){
     document.getElementById(id).innerHTML = list.length ? list.map(famCard).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
   };
-  put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
-  put('g-theme',     D.families.filter(f=>f.kind==='neutral'));
+  put('g-brand',    D.families.filter(f=>f.group==='Brand & Labels'));
+  put('g-semantic', D.families.filter(f=>f.group==='UI (Semantic)'));
+  put('g-theme',    D.families.filter(f=>f.kind==='neutral'));
 
 }
 
