@@ -70,7 +70,7 @@ a{color:inherit}
 .curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
 .curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
 
-.wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
+.wrap{margin:0 auto;padding:0 16px 80px}
 
 /* ---- page head ---- */
 .mast{padding:36px 0 26px}
@@ -114,7 +114,8 @@ table.ladder tbody tr:last-child td{border-bottom:0}
 /* ---- family cards ----
    Three colour columns (Current · Formula · Gradient) stay side-by-side
    at every width — never stack. Step label + Δ stay narrow. */
-.grid{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
+.grid{display:grid;gap:4px;margin:0 0 44px;
+      grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
 .fam{background:var(--panel);overflow:clip}
 .fam header{display:flex;align-items:flex-start;gap:8px;padding:13px 14px 11px}
 .fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
@@ -181,8 +182,9 @@ footer b{color:var(--ink);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---- hue playground ---- */
-.playground{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+.playground{display:grid;gap:4px;grid-template-columns:repeat(2,minmax(0,1fr));
             align-items:stretch;margin:0 0 44px}
+@media (max-width:760px){ .playground{grid-template-columns:1fr} }
 /* Probe cards read as the same bare plates as the family cards — no frame,
    no radius, no rule under the head. */
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
@@ -209,8 +211,11 @@ footer b{color:var(--ink);font-weight:500}
    the SVG is then sized to whatever box that leaves. On its own row the card
    falls back to the diagram's own 380 x 300 proportion. */
 .play-curves{display:flex;flex-direction:column}
-.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;
-                   position:relative;aspect-ratio:380/300}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:260px;position:relative}
+/* Beside its ramp the plot takes whatever height the ramp card sets, so the two
+   cards end level. Only when the playground stacks does it fall back to its own
+   380 x 300 proportion. */
+@media (max-width:760px){ .play-curves__body{aspect-ratio:380/300} }
 .play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
                           width:auto;height:auto;max-height:none}
 .grad-split{display:flex;gap:1px}
