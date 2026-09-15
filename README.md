@@ -76,9 +76,8 @@ roughly 24 across the chromatic ramps, so there is nothing to cancel.
 Typical gains: majority ≈ 1.25 · Flash ≈ 1.65 · Pulse/Pink ≈ 2.0 / 1.95 ·
 Mindaro ≈ 1.3.
 
-Playgrounds probe the live functions — one for the chromatic hues (with L and S
-plotted beside it) and one pair for the neutrals, light and dark, each showing
-its perceptual lift.
+Playgrounds probe the live functions — one for the chromatic hues and one pair
+for the neutrals, light and dark, each with L and S plotted beside it.
 
 ## v6 — the dumb version
 
@@ -205,7 +204,7 @@ light ramp peaks at **+1.66** OKLab points (step 400), the dark at **+2.17**
 giving neutrals no correction — and it survives the floor, which buys 0.19 of
 lift against an order of magnitude of headroom. The two neutral cards carry the
 number in their header (`peak lift`) and in every swatch tooltip, off the same
-`perceptualLift()` the neutral playground plots — the card and the playground
+`perceptualLift()` the neutral playground quotes — the card and the playground
 cannot disagree. The chromatic cards do not quote it; there the dip already
 answers for it.
 

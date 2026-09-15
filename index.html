@@ -223,10 +223,6 @@ footer b{color:var(--ink);font-weight:500}
                           width:auto;height:auto;max-height:none}
 .grad-split{display:flex;gap:1px}
 .grad-split i{display:block;flex:1 1 0;min-width:0}
-.play-curves__svg path.Q{fill:none;stroke:#1E8A6A;stroke-width:1.6;stroke-linecap:round;
-                         stroke-linejoin:round;stroke-dasharray:5 3}
-.play-curves__svg .qbase{stroke:#1E8A6A;stroke-width:1;stroke-dasharray:1 4;opacity:.5}
-.curves__legend i.Q{background:#1E8A6A;opacity:.85}
 
 </style>
 </head>
@@ -621,7 +617,7 @@ function renderPlayground(key){
       <article class="fam play-card play-curves">
         <div class="play-head">
           <div class="play-head__top">
-            <h3>Correction curve</h3>
+            <h3>Curve</h3>
             <span class="play-meta" id="${id}-curve-meta"></span>
           </div>
           <div class="curves__legend">
@@ -655,9 +651,6 @@ function neutralSvg(F, hue, theme, H=300){
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xOf=t=> padL + t*plotW;
   const yOf=v=> padT + (1 - v/100)*plotH;
-  /* right axis: −6…+6 OKLab points, zero on the middle gridline. Tinted neutrals
-     span −5.6…+6.0 across every hue and step, so nothing clips. */
-  const yLift=v=> yOf(50 + v*(100/12));
 
   const N=140, ts=[];
   for(let i=0;i<=N;i++) ts.push(i/N);
@@ -674,20 +667,12 @@ function neutralSvg(F, hue, theme, H=300){
     `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
   const xLabels = xTicks.map(t=>
     `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
-  const liftAxis =
-      `<line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>`+
-      [-6,-3,0,3,6].map(v=>`<text class="label" x="${W-padR+6}" y="${yLift(v)+4}">${v}</text>`).join('')+
-      `<line class="qbase" x1="${padL}" y1="${yLift(0)}" x2="${W-padR}" y2="${yLift(0)}"/>`+
-      `<text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">lift</text>`+
-      `<path class="Q" d="${path(t=>perceptualLift(hue, neutralS(theme,Lb(t)), Lb(t)), yLift)}"/>`;
-
   return `${grid}
     <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
     <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
     ${yLabels}${xLabels}
     <text class="title" x="${padL}" y="${padT-3}">value</text>
     <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
-    ${liftAxis}
     <path class="S" d="${path(t=>neutralS(theme, Lb(t)))}"/>
     <path class="L" d="${path(Lb)}"/>`;
 }
@@ -750,18 +735,17 @@ function neutralCardPair(theme, n){
     <article class="fam play-card play-curves">
       <div class="play-head">
         <div class="play-head__top">
-          <h3>${theme==='light' ? 'Light curve' : 'Dark curve'}</h3>
+          <h3>Curve</h3>
           <span class="play-meta" id="nplay-${theme}-meta"></span>
         </div>
         <div class="curves__legend">
           <span><i class="L"></i>L</span>
           <span><i class="S"></i>S ${theme}</span>
-          <span><i class="Q"></i>lift</span>
         </div>
       </div>
       <div class="play-curves__body">
         <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
-             role="img" aria-label="Neutral ${theme} lightness, saturation and perceptual lift"></svg>
+             role="img" aria-label="Neutral ${theme} lightness and saturation"></svg>
       </div>
     </article>`;
 }
