@@ -138,35 +138,39 @@ get the same one-line switch as everything else, with three numbers changed:
 
 ```
 g(H) = 1 − 0.4·cos²(½π·|H − 32|/50)     # 1 away from the lobe, 0.6 at its centre
-u(t) = (1.5t)³
-S(t) = 100 − 114·g(H)·u/(1 + u)         # UI families
+u(t) = (1.6t)³
+S(t) = 100 − 106·g(H)·u/(1 + u)         # UI families
 ```
 
 The drop is deep enough to run past the shared floor, the knee sits later than
-the shared one (t = 2/3 against 1/3) and the order is gentle, so it reads as one
+the shared one (t = 5/8 against 1/3) and the order is gentle, so it reads as one
 slope instead of a hold and a step down.
 
 **The drop is weighted by hue**, on the same cos² lobe shape the lightness bend
 uses, because the three ramps do not peel off together: the palette keeps
 Flash's 600 and 700 up on S 70 while Pulse and Pink have already fallen to 60
 and 39. The lobe sits on Flash's own hue and takes 40% off the drop there, so
-green and red-pink take it in full (114 / 112) and orange takes 68.
+green and red-pink take it in full (106 / 104) and orange takes 64.
 
 **One curve cannot do both ends.** The palette's UI ramp turns twice — once near
-step 250 and once near 550 — and a Hill turns once. The knee is set so the fall is already
-under way at 300 — that puts 300 and 400 on the palette's own numbers (S 90 and
-80) and lets 500 and 600 run a few points under it (66 and 52 against 70 and
-60), which is the way round that reads correctly. A two-term version fitted
+step 250 and once near 550 — and a Hill turns once. The knee is set so the fall is
+already under way at 300, and it is also the one knob that lowers the middle of
+a one-knee curve without moving either end: pulling it in from 2/3 to 5/8, with
+the drop rescaled from 114 to 106 to hold the dark end, takes about two points
+out of steps 400–600 and leaves 100 / 200 and 800 where they were. The ramp runs
+S 100 / 97 / 89 / 78 / 64 / 50 / 38 / 28 against the palette's 100 / 100 / 90 /
+80 / 70 / 60 / 39 / 26 — on the numbers at the ends, a little under through the
+middle, which is the way round that reads correctly. A two-term version fitted
 every step and drew a visibly two-stage curve; the single curve is the one that
 ships. Hue stays the only per-family parameter and the group the only
 other one.
 
-The three UI ramps go from mean ΔE 2.81 uncorrected to **2.23**, and the whole
-palette from 1.84 to **1.69**.
+The three UI ramps go from mean ΔE 2.81 uncorrected to **2.31**, and the whole
+palette from 1.84 to **1.71**.
 
 No integration is needed because the ends pin themselves whatever the
 exponent does — what v5 proves, v7 gets for free. It fits the current palette
-better than v5 does (mean ΔE **1.69** against 2.11); the drift from v5's own
+better than v5 does (mean ΔE **1.71** against 2.11); the drift from v5's own
 output is 1.06, almost all of it the saturation change in the mids. The
 fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
 where v6's flat cut gives 4.5 / 7.5.
