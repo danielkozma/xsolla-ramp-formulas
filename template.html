@@ -68,12 +68,6 @@ a{color:inherit}
 .curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
 .curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
 .curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
-.curves__svg path.Lpeak{fill:none;stroke:#C45A2A;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
-  stroke-dasharray:5 4;opacity:.85}
-.curves__legend i.Lpeak{background:#C45A2A;opacity:.7}
-.curves__svg path.Shi{fill:none;stroke:#2F6FED;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
-                      stroke-dasharray:5 4;opacity:.45}
-.curves__legend i.Shi{background:#2F6FED;opacity:.4}
 .curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
 
 .wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
@@ -219,17 +213,12 @@ footer b{color:var(--ink);font-weight:500}
                    position:relative;aspect-ratio:380/300}
 .play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
                           width:auto;height:auto;max-height:none}
-.play-curves__svg .step{fill:#E24B4A}
-.play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
 .grad-split{display:flex;gap:1px}
 .grad-split i{display:block;flex:1 1 0;min-width:0}
-.play-curves__svg path.Qdk{fill:none;stroke:#1E8A6A;stroke-width:1.4;opacity:.45;
-                           stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 3}
 .play-curves__svg path.Q{fill:none;stroke:#1E8A6A;stroke-width:1.6;stroke-linecap:round;
                          stroke-linejoin:round;stroke-dasharray:5 3}
 .play-curves__svg .qbase{stroke:#1E8A6A;stroke-width:1;stroke-dasharray:1 4;opacity:.5}
 .curves__legend i.Q{background:#1E8A6A;opacity:.85}
-.curves__legend i.Qdk{background:#1E8A6A;opacity:.45}
 
 </style>
 
@@ -521,13 +510,12 @@ function fitSvg(svg){
   return vh;
 }
 
-/* ---- live diagram, same geometry and classes as the big one above ---- */
+/* ---- live diagram: L and S across the scale, nothing else ---- */
 function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null){
   const W=380, padL=34, padR=32, padT=14, padB=32;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xOf=t=> padL + t*plotW;
   const yOf=v=> padT + (1 - v/100)*plotH;
-  const yQ =q=> yOf(50*q);            /* right-hand axis: q 0–2 on the same gridlines */
 
   const N=160, ts=[];
   for(let i=0;i<=N;i++) ts.push(i/N);
@@ -541,33 +529,17 @@ function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null){
       `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
   const yLabels = yTicks.map(v=>
     `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
-  const qLabels = [0,1,2].map(q=>
-    `<text class="label" x="${W-padR+6}" y="${yQ(q)+4}">${q}</text>`).join('');
   const xLabels = xTicks.map(t=>
     `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
 
-  /* the steps the bend reshapes, so the gaps it opens up are visible */
-  const marks = F.steps.filter(st=>st/1000<=0.35).map(st=>{
-    const t=st/1000, L=Lplay(t,hue,F,corr);
-    return `<line class="stepline" x1="${xOf(t).toFixed(2)}" y1="${yOf(L).toFixed(2)}" `+
-           `x2="${xOf(t).toFixed(2)}" y2="${H-padB}"/>`+
-           `<circle class="step" cx="${xOf(t).toFixed(2)}" cy="${yOf(L).toFixed(2)}" r="2.6"/>`;
-  }).join('');
-
   return `${grid}
     <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
-    <line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>
     <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
-    ${yLabels}${qLabels}${xLabels}
+    ${yLabels}${xLabels}
     <text class="title" x="${padL}" y="${padT-3}">L</text>
-    <text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">q</text>
     <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
-    <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
-    <path class="Q" d="${path(t=>Qplay(t,hue,F,corr), yQ)}"/>
-    <path class="Lpeak" d="${path(t=>Lplay(t,hue,F,0))}"/>
     <path class="S" d="${path(t=>Splay(t,F,uiHue))}"/>
-    <path class="L" d="${path(t=>Lplay(t,hue,F,corr))}"/>
-    ${marks}`;
+    <path class="L" d="${path(t=>Lplay(t,hue,F,corr))}"/>`;
 }
 
 /* Repaint only what the sliders change — the inputs themselves are never replaced,
@@ -642,15 +614,13 @@ function renderPlayground(key){
             <span class="play-meta" id="${id}-curve-meta"></span>
           </div>
           <div class="curves__legend">
-            <span><i class="L"></i>L corrected</span>
-            <span><i class="Lpeak"></i>L base</span>
+            <span><i class="L"></i>L</span>
             <span><i class="S"></i>S</span>
-            <span><i class="Q"></i>q (exponent)</span>
           </div>
         </div>
         <div class="play-curves__body">
           <svg class="curves__svg play-curves__svg" id="${id}-svg" viewBox="0 0 380 300"
-               role="img" aria-label="Lightness with and without the light-end correction"></svg>
+               role="img" aria-label="Lightness and saturation across the scale"></svg>
         </div>
       </article>`;
     const sl=document.getElementById(id+'-hue');

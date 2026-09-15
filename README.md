@@ -76,9 +76,9 @@ roughly 24 across the chromatic ramps, so there is nothing to cancel.
 Typical gains: majority ≈ 1.25 · Flash ≈ 1.65 · Pulse/Pink ≈ 2.0 / 1.95 ·
 Mindaro ≈ 1.3.
 
-Playgrounds probe the live functions — one for the chromatic hues (with the
-correction curve and the exponent beside it) and one pair for the neutrals, light
-and dark, each showing its perceptual lift.
+Playgrounds probe the live functions — one for the chromatic hues (with L and S
+plotted beside it) and one pair for the neutrals, light and dark, each showing
+its perceptual lift.
 
 ## v6 — the dumb version
 
