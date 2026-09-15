@@ -960,16 +960,16 @@ S_ORDER_V7 = 6.0       # how abruptly the hold gives way to the floor
 #
 # One curve cannot both hold the palette's mids and reach its dark tail — the
 # palette turns twice (once near step 250, once near 550) and a Hill turns once.
-# This one follows the tail, so steps 300–500 come out a few points more
-# saturated than Figma has them; the alternative was the two-term version, which
-# fitted those steps and drew a visibly two-stage curve.
+# The knee is set so the fall is already under way at 300: that puts 300 and 400
+# on the palette's own numbers and lets 500 and 600 run a few points under it,
+# which is the way round that reads correctly.
 SEMANTIC_V7 = ("Pulse", "Flash", "Pink")
 GROUPS_V7 = [
     ("Brand & Labels", ["Brand", "Core", "Mindaro", "Mint", "Yellow", "Edge"]),
     ("UI (Semantic)",  list(SEMANTIC_V7)),
 ]
-S_UI_DROP_V7 = 140.0     # deep enough that the ramp runs past the shared floor
-S_UI_KNEE_V7 = 0.8       # late knee — the fall lands on 500–800
+S_UI_DROP_V7 = 114.0     # deep enough that the ramp runs past the shared floor
+S_UI_KNEE_V7 = 2.0/3.0   # the knee — early enough that the fall is under way by 300
 S_UI_ORDER_V7 = 3.0      # gentle, so it is one slope and not a staircase
 S_UI_HUE_V7 = 32.0       # centre of the lobe — Flash's hue, where the drop is cut
 S_UI_LOBE_V7 = 50.0      # half-width of the lobe, in degrees
@@ -1088,7 +1088,7 @@ def build_v7(v5):
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
             "S_order": S_ORDER_V7,
-            "S_ui_drop": S_UI_DROP_V7, "S_ui_knee": S_UI_KNEE_V7,
+            "S_ui_drop": S_UI_DROP_V7, "S_ui_knee": round(S_UI_KNEE_V7, 6),
             "S_ui_order": S_UI_ORDER_V7, "semantic": list(SEMANTIC_V7),
             "S_ui_hue": S_UI_HUE_V7, "S_ui_lobe": S_UI_LOBE_V7,
             "S_ui_cut": S_UI_CUT_V7,
@@ -1100,7 +1100,7 @@ def build_v7(v5):
             "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
             "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
-            "S_ui": "UI: S(t) = 100 \u2212 140\u00b7g(H)\u00b7u/(1 + u), u = (1.25t)\u00b3",
+            "S_ui": "UI: S(t) = 100 \u2212 114\u00b7g(H)\u00b7u/(1 + u), u = (1.5t)\u00b3",
             "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7|H\u221232|/50)",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
