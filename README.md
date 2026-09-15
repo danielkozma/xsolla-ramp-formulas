@@ -137,7 +137,7 @@ desaturated the light and mid steps, which were already exact. The UI families
 get the same one-line switch as everything else, with three numbers changed:
 
 ```
-dₛ(H) = |H − 32| / (118 up, 50 down)    # 1 outside the lobe, 0.6 at its centre
+dₛ(H) = |H − 32| / (68 up, 50 down)     # 1 outside the lobe, 0.6 at its centre
 g(H) = 1 − 0.4·cos²(½π·dₛ)  if dₛ<1 else 1
 u(t) = (1.6t)³
 S(t) = 100 − 106·g(H)·u/(1 + u)         # UI families
@@ -169,12 +169,12 @@ every step and drew a visibly two-stage curve; the single curve is the one that
 ships. Hue stays the only per-family parameter and the group the only
 other one.
 
-The three UI ramps go from mean ΔE 2.81 uncorrected to **2.23**, and the whole
-palette from 1.84 to **1.69**.
+The three UI ramps go from mean ΔE 2.81 uncorrected to **2.31**, and the whole
+palette from 1.84 to **1.71**.
 
 No integration is needed because the ends pin themselves whatever the
 exponent does — what v5 proves, v7 gets for free. It fits the current palette
-better than v5 does (mean ΔE **1.69** against 2.11); the drift from v5's own
+better than v5 does (mean ΔE **1.71** against 2.11); the drift from v5's own
 output is 1.06, almost all of it the saturation change in the mids. The
 fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
 where v6's flat cut gives 4.5 / 7.5.

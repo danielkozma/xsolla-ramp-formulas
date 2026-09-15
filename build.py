@@ -957,9 +957,9 @@ S_ORDER_V7 = 6.0       # how abruptly the hold gives way to the floor
 # uses, because the three ramps do not peel off together: the palette keeps
 # Flash's 600 and 700 up on S 70 while Pulse and Pink have already fallen to 60
 # and 39. The lobe sits on Flash's own hue and takes 40% off the drop there. It
-# is asymmetric, like the lightness lobe: it reaches out to hue 150 on the green
-# side, so Pulse sits inside it, and dies at 342 on the warm side so Pink keeps
-# very nearly the whole drop.
+# is asymmetric, like the lightness lobe: it runs to hue 100 on the green side
+# and dies at 342 on the warm side, so it covers the yellow-orange band and
+# leaves Pulse and Pink on the whole drop.
 #
 # One curve cannot both hold the palette's mids and reach its dark tail — the
 # palette turns twice (once near step 250, once near 550) and a Hill turns once.
@@ -976,13 +976,13 @@ S_UI_DROP_V7 = 106.0     # deep enough that the ramp runs past the shared floor
 S_UI_KNEE_V7 = 0.625     # the knee — early enough that the fall is under way by 300
 S_UI_ORDER_V7 = 3.0      # gentle, so it is one slope and not a staircase
 S_UI_HUE_V7 = 32.0       # centre of the lobe — Flash's hue, where the drop is cut
-S_UI_LOBE_UP_V7 = 118.0  # 32° → 150° (yellow, green) — gone only at 150
+S_UI_LOBE_UP_V7 = 68.0   # 32° → 100° (yellow, into green) — gone by 100
 S_UI_LOBE_DN_V7 = 50.0   # 32° → 342° (red, magenta)
 S_UI_CUT_V7 = 0.4        # how much of the drop the lobe takes away at its centre
 
 def S_hue_gain_v7(H):
     """1 outside the lobe, 0.6 at its centre — the same cos² shape as w(H), and
-    asymmetric for the same reason: it reaches out to 150 on the green side."""
+    asymmetric for the same reason: it reaches further on the green side."""
     delta = (H - S_UI_HUE_V7 + 180.0) % 360.0 - 180.0
     span = S_UI_LOBE_UP_V7 if delta >= 0.0 else S_UI_LOBE_DN_V7
     d = abs(delta) / span
@@ -1110,7 +1110,7 @@ def build_v7(v5):
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
             "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
             "S_ui": "UI: S(t) = 100 \u2212 106\u00b7g(H)\u00b7u/(1 + u), u = (1.6t)\u00b3",
-            "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7d), d = |H\u221232| / (118 up, 50 down)",
+            "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7d), d = |H\u221232| / (68 up, 50 down)",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
         "curves": {
