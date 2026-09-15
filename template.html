@@ -310,7 +310,8 @@ S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every
 H(t) = ${V('H₀')}
 
 ${K('// UI families — Pulse · Flash · Pink')}
-g(H) = ${V('1 − 0.4·cos²(½π·|H−32|/50)')}   ${K('full on green, 0.6 on orange')}
+dₛ(H) = ${V('|H − 32| / (118 up, 50 down)')}
+g(H) = ${V('1 − 0.4·cos²(½π·dₛ)')} if dₛ<1 else 1   ${K('0.6 on orange, gone by 150')}
 u(t) = ${V('(1.6t)³')}                      ${K('1 at the knee · t = 5/8')}
 S(t) = ${V('100 − 106·g·u/(1 + u)')}        ${K('the same switch, three numbers')}
 
@@ -480,7 +481,8 @@ function Qplay(t, H, F, corr){
 }
 /* how much of the UI drop a hue takes — 1 away from the lobe, 0.2 at its centre */
 function sGain(H, F){
-  const d = Math.abs(((H-F.S_ui_hue+180)%360+360)%360-180)/F.S_ui_lobe;
+  const delta = ((H-F.S_ui_hue+180)%360+360)%360-180;
+  const d = Math.abs(delta)/(delta>=0 ? F.S_ui_lobe_up : F.S_ui_lobe_dn);
   if(d>=1) return 1;
   const c=Math.cos(Math.PI/2*d);
   return 1 - F.S_ui_cut*c*c;
