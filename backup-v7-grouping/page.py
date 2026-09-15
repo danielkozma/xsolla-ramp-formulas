@@ -1,0 +1,23 @@
+import json
+
+D = json.load(open('data/generated.json'))
+
+# The page ships v7 only; build.py still computes every version into generated.json.
+payload = {"v7": D["v7"]}
+
+body = open('template.html', encoding='utf-8').read()
+body = body.replace('/*__DATA__*/', json.dumps(payload, separators=(',', ':')))
+
+doc = ('<!DOCTYPE html>\n<html lang="en">\n<head>\n'
+       '<meta charset="utf-8">\n'
+       '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+       '<title>Xsolla Colour Formulas</title>\n'
+       '<meta name="robots" content="noindex, nofollow">\n'
+       '<meta name="description" content="Reverse-engineered HSL formulas for the Xsolla colour palette, '
+       'with every Figma ramp shown edge-to-edge against the formula output.">\n'
+       + body.split('</style>')[0] + '</style>\n</head>\n<body>\n'
+       + '</style>'.join(body.split('</style>')[1:]).lstrip('\n')
+       + '\n</body>\n</html>\n')
+
+open('index.html', 'w', encoding='utf-8').write(doc)
+print("index.html", len(doc), "bytes · v7 only")

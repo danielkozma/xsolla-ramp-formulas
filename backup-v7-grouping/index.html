@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xsolla Colour Formulas</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Reverse-engineered HSL formulas for the Xsolla colour palette, with every Figma ramp shown edge-to-edge against the formula output.">
+<title>Xsolla Ramp Formulas</title>
+<link rel="stylesheet" href="https://use.typekit.net/mwa4gcw.css">
+<style>
+/* Pilat — the display face, served locally */
+@font-face{font-family:'Pilat';src:url('fonts/pilat/pilat_regular.woff2') format('woff2'),
+  url('fonts/pilat/pilat_regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+
+/* ------------------------------------------------------------------
+   Tokens — Xsolla Digital Language dashboard
+   (Figma DjKP20nZbMAfwXwddlCOSt, frame 2789:7057)
+   A committed light theme: the reference is a light admin surface with
+   a black application bar, so the page paints one world explicitly
+   rather than carrying a second palette it would never use.
+   ------------------------------------------------------------------ */
+:root{
+  --ground:#F3F3F2;              /* background/secondary */
+  --panel:#FFFFFF;               /* background/primary   */
+  --sunk:rgba(0,0,0,.05);        /* overlay/mono         */
+  --input:rgba(0,0,0,.08);       /* control/input/bg     */
+
+  --ink:#000000;                 /* content/primary      */
+  --ink-2:rgba(0,0,0,.80);
+  --ink-3:rgba(0,0,0,.60);       /* content/tertiary     */
+
+  --rule:rgba(0,0,0,.10);        /* border/secondary     */
+  --rule-2:#C1C2BC;              /* control/mono/secondary/border */
+  --faint:#DADBD7;               /* control/mono/secondary/bg     */
+
+  --brand:#80EAFF;               /* control/brand/primary/bg      */
+  --brand-edge:#31CAE8;          /* control/brand/primary/border  */
+  --brand-soft:#B2F2FF;          /* background/brand-secondary    */
+  --brand-ink:#135D6C;
+
+  --ok:#95FF80;                  /* background/success-primary    */
+  --slight:#F6DB55;
+  --warn:#F6AB55;
+  --bad:#F67055;                 /* background/alert-primary      */
+
+  --body:aktiv-grotesk,"Helvetica Neue",Arial,sans-serif;
+  --display:"Pilat",var(--body);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --r-xs:2px;                    /* tag/sm  */
+  --r-sm:4px;                    /* radius/50 */
+  --r-md:6px;                    /* radius/75 */
+  --r-lg:8px;                    /* radius/100 */
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:400 14px/18px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
+
+/* ---- curve diagram ---- */
+/* Diagram cards ride in the same track as the palette cards, so every card on
+   the page is one column wide. */
+.curves__legend{display:flex;flex-wrap:wrap;gap:14px;margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-2)}
+.curves__legend span{display:inline-flex;align-items:center;gap:7px}
+.curves__legend i{display:block;width:18px;height:3px;border-radius:1px}
+.curves__legend i.L{background:#E24B4A}
+.curves__legend i.S{background:#2F6FED}
+.curves__svg{display:block;width:100%;height:auto;max-height:280px}
+.curves__svg .axis{stroke:var(--rule-2);stroke-width:1;fill:none}
+.curves__svg .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.curves__svg .label{fill:var(--ink-3);font:400 11px var(--body)}
+.curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
+.curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.Lpeak{fill:none;stroke:#C45A2A;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:5 4;opacity:.85}
+.curves__legend i.Lpeak{background:#C45A2A;opacity:.7}
+.curves__svg path.Shi{fill:none;stroke:#2F6FED;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+                      stroke-dasharray:5 4;opacity:.45}
+.curves__legend i.Shi{background:#2F6FED;opacity:.4}
+.curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
+
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
+
+/* ---- page head ---- */
+.mast{padding:36px 0 26px}
+.eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:22ch}
+.mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
+
+/* ---- formula panel ---- */
+/* Two equal panes, square-edged and borderless, separated by a 4px seam. */
+.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+       background:transparent;border:0;border-radius:0;margin-bottom:40px}
+.panel>div{padding:22px 24px;min-width:0;background:var(--panel);border:0;border-radius:0}
+.panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
+          color:var(--ink-3);margin-bottom:14px}
+pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
+      font-variant-numeric:tabular-nums}
+pre.f .k{color:var(--ink-3)}
+pre.f .v{color:var(--brand-ink);font-weight:600}
+.note{margin:18px 0 0;max-width:58ch;font-size:13px;line-height:19px;color:var(--ink-2)}
+.note code{padding:1px 5px;background:var(--sunk);border-radius:var(--r-xs);
+           font:500 12px var(--mono)}
+
+table.ladder{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.ladder th,table.ladder td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--rule)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left;color:var(--ink-3)}
+table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
+table.ladder tbody tr:last-child td{border-bottom:0}
+
+/* ---- section heads ---- */
+.sect{margin:0 0 12px}
+.sect h2{font-size:22px;line-height:1.1}
+.sect h2.sect-xl{font-size:40px}
+.sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
+        font-size:12px;line-height:16px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
+          border:1px solid var(--rule)}
+
+/* ---- family cards ----
+   Three colour columns (Current · Formula · Gradient) stay side-by-side
+   at every width — never stack. Step label + Δ stay narrow. */
+.grid{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
+.fam{background:var(--panel);overflow:clip}
+.fam header{display:flex;align-items:flex-start;gap:8px;padding:13px 14px 11px}
+.fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
+.fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
+            font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
+            letter-spacing:.06em}
+.fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+         column-gap:0;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         letter-spacing:.04em;text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
+.colhead span:last-child{text-align:right}
+
+.ramp-wrap{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+           column-gap:0;row-gap:0;padding:0 10px 13px;align-items:stretch}
+.ramp-steps{display:contents}
+.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;
+          font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* Current value and formula value share an edge — no gap, no radius, so the
+   seam only appears where the two actually differ. */
+.tile.empty{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:18px;
+  color:var(--ink-3)}
+.tile.empty::after{content:'—'}
+.grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
+          box-shadow:none;position:relative}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:4px}
+.dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
+.dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
+.dl em{font-style:normal;font-size:14px;line-height:18px;color:var(--ink)}
+
+/* ---- deviation table ---- */
+.dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+     overflow:hidden;margin-top:18px}
+.devrow{display:grid;grid-template-columns:120px 56px 1fr 1fr 62px;align-items:center;
+        border-bottom:1px solid var(--rule);font-size:12.5px;font-variant-numeric:tabular-nums}
+.devrow:last-child{border-bottom:0}
+.devrow>*{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devrow .nm{font-weight:500}
+.devrow .stp{text-align:right;color:var(--ink-3)}
+.devrow .sw{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px}
+.devrow .sw u{flex:0 0 auto;width:24px;height:24px;border-radius:var(--r-sm);
+              box-shadow:inset 0 0 0 1px var(--rule)}
+.devrow .de{text-align:right;color:var(--ink-3)}
+.devhead{background:var(--sunk);color:var(--ink-3);font-size:11px!important;
+         letter-spacing:.06em;text-transform:uppercase}
+
+footer{margin-top:44px;padding:22px 24px;max-width:none;background:var(--panel);
+       border:1px solid var(--rule);border-radius:var(--r-lg);
+       font-size:13px;line-height:20px;color:var(--ink-2)}
+footer p{margin:0 0 12px;max-width:80ch}
+footer p:last-child{margin-bottom:0}
+footer b{color:var(--ink);font-weight:500}
+
+@media (max-width:880px){
+  .panel{grid-template-columns:1fr}
+  .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+}
+@media (max-width:420px){
+  .tile{padding:0 2px;font-size:8.5px}
+  .colhead{font-size:8px;letter-spacing:.02em}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- hue playground ---- */
+.playground{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+            align-items:stretch;margin:0 0 44px}
+/* Probe cards read as the same bare plates as the family cards — no frame,
+   no radius, no rule under the head. */
+.play-card .play-head{display:flex;flex-direction:column;gap:10px;
+                      padding:13px 14px 12px}
+.play-head__top{display:flex;align-items:center;gap:8px;min-width:0}
+.play-card .play-head h3{margin:0;font-size:18px;line-height:1;flex:0 0 auto}
+.play-head__top .play-meta{margin-left:auto;text-align:right}
+.play-slider{display:grid;grid-template-columns:58px minmax(0,1fr) 46px;align-items:center;gap:8px}
+.play-slider label{font-size:12px;color:var(--ink-3)}
+.play-slider input[type=range]{width:100%;min-width:0;accent-color:var(--ink)}
+.play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.play-slider .play-meta{text-align:right}
+
+/* Playground ramps have no Figma reference, so they drop the Current column and
+   the drift gutter; the card itself stays one grid track wide like every other. */
+.play-card .colhead,
+.play-card .ramp-wrap{grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+.play-card .grad-col{grid-column:3}
+
+.play-curves .play-head{gap:9px}
+.play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
+/* The plot is taken out of flow and pinned to its box, so the card's height is
+   set by the row (i.e. by the ramp card beside it) and never by the drawing —
+   the SVG is then sized to whatever box that leaves. On its own row the card
+   falls back to the diagram's own 380 x 300 proportion. */
+.play-curves{display:flex;flex-direction:column}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;
+                   position:relative;aspect-ratio:380/300}
+.play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
+                          width:auto;height:auto;max-height:none}
+.play-curves__svg .step{fill:#E24B4A}
+.play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
+.grad-split{display:flex;gap:1px}
+.grad-split i{display:block;flex:1 1 0;min-width:0}
+.play-curves__svg path.Qdk{fill:none;stroke:#1E8A6A;stroke-width:1.4;opacity:.45;
+                           stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 3}
+.play-curves__svg path.Q{fill:none;stroke:#1E8A6A;stroke-width:1.6;stroke-linecap:round;
+                         stroke-linejoin:round;stroke-dasharray:5 3}
+.play-curves__svg .qbase{stroke:#1E8A6A;stroke-width:1;stroke-dasharray:1 4;opacity:.5}
+.curves__legend i.Q{background:#1E8A6A;opacity:.85}
+.curves__legend i.Qdk{background:#1E8A6A;opacity:.45}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow" id="eyebrow"></p>
+  <h1>Xsolla Colour Formulas</h1>
+  <p class="lead" id="mast-lead"></p>
+</header>
+
+
+<div class="panel">
+  <div>
+    <h2 id="f-heading">The formula</h2>
+    <pre class="f" id="f-body"></pre>
+  </div>
+  <div>
+    <h2 id="lad-heading">Step ladder</h2>
+    <table class="ladder"><thead id="lad-head"></thead><tbody id="lad"></tbody></table>
+  </div>
+</div>
+
+
+
+<div class="sect">
+  <h2 class="sect-xl">Chromatic</h2>
+</div>
+<div class="legend">
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6</span>
+</div>
+<div class="grid" id="g-chromatic"></div>
+
+
+<div id="playground" class="playground"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">Neutrals</h2>
+</div>
+
+<div class="grid" id="g-theme"></div>
+
+<div id="playground-neutral" class="playground"></div>
+
+
+
+<footer id="foot"></footer>
+</div>
+
+<script>
+const ALL = {"v7":{"id":"v7","label":"v7","families":[{"name":"Brand","kind":"chromatic","theme":"both","hue":190,"dip":0.0204,"rows":[{"step":"25","orig":"#EBFCFF","hsl":"#E7FBFF","missing":false,"hsl_hsl":[190,100,95],"orig_hsl":[189,100,96],"dE_hsl":0.59,"px_hsl":4,"t":0.025,"scale":2.5,"L":95.25,"S":100.0,"H":190,"e":0.826,"dE_v5":0.48},{"step":"50","orig":"#D6F8FF","hsl":"#D3F8FF","missing":false,"hsl_hsl":[190,100,91],"orig_hsl":[190,100,92],"dE_hsl":0.36,"px_hsl":3,"t":0.05,"scale":5.0,"L":91.46,"S":100.0,"H":190,"e":0.821,"dE_v5":0.37},{"step":"100","orig":"#B2F2FF","hsl":"#B2F2FF","missing":false,"hsl_hsl":[190,100,85],"orig_hsl":[190,100,85],"dE_hsl":0.0,"px_hsl":0,"t":0.1,"scale":10.0,"L":84.85,"S":99.98,"H":190,"e":0.82,"dE_v5":0.55},{"step":"200","orig":"#80EAFF","hsl":"#78E8FE","missing":false,"hsl_hsl":[190,99,73],"orig_hsl":[190,100,75],"dE_hsl":0.91,"px_hsl":8,"t":0.2,"scale":20.0,"L":73.39,"S":98.66,"H":190,"e":0.823,"dE_v5":1.39},{"step":"300","orig":"#55DCF6","hsl":"#4CD9F5","missing":false,"hsl_hsl":[190,89,63],"orig_hsl":[190,90,65],"dE_hsl":1.04,"px_hsl":9,"t":0.3,"scale":30.0,"L":62.99,"S":89.59,"H":190,"e":0.826,"dE_v5":1.16},{"step":"400","orig":"#31CAE8","hsl":"#2BC5E4","missing":false,"hsl_hsl":[190,77,53],"orig_hsl":[190,80,55],"dE_hsl":1.46,"px_hsl":6,"t":0.4,"scale":40.0,"L":53.16,"S":77.53,"H":190,"e":0.828,"dE_v5":0.03},{"step":"500","orig":"#22A8C3","hsl":"#1FA5C0","missing":false,"hsl_hsl":[190,72,44],"orig_hsl":[190,70,45],"dE_hsl":0.91,"px_hsl":3,"t":0.5,"scale":50.0,"L":43.73,"S":72.42,"H":190,"e":0.829,"dE_v5":0.29},{"step":"600","orig":"#1B8398","hsl":"#1A8297","missing":false,"hsl_hsl":[190,71,35],"orig_hsl":[190,70,35],"dE_hsl":0.32,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.58,"S":70.86,"H":190,"e":0.831,"dE_v5":0.16},{"step":"700","orig":"#135D6C","hsl":"#136070","missing":false,"hsl_hsl":[190,71,26],"orig_hsl":[190,70,25],"dE_hsl":1.03,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.67,"S":70.35,"H":190,"e":0.832,"dE_v5":0.36},{"step":"800","orig":"#0B3841","hsl":"#0D3F4A","missing":false,"hsl_hsl":[191,70,17],"orig_hsl":[190,71,15],"dE_hsl":2.59,"px_hsl":9,"t":0.8,"scale":80.0,"L":16.95,"S":70.16,"H":190,"e":0.833,"dE_v5":0.49},{"step":"850","orig":null,"hsl":"#0A2F37","missing":true,"hsl_hsl":[191,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.66,"S":70.11,"H":190,"e":0.833,"dE_v5":0.42},{"step":"900","orig":null,"hsl":"#061F24","missing":true,"hsl_hsl":[190,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.4,"S":70.08,"H":190,"e":0.833,"dE_v5":0.9}],"d5":0.55,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E6FBFF 2.56%, #D3F8FF 5.13%, #C1F5FF 7.69%, #B0F2FF 10.26%, #A0EFFF 12.82%, #91EDFF 15.38%, #83EAFF 17.95%, #76E7FE 20.51%, #69E4FD 23.08%, #5DE0FB 25.64%, #53DCF8 28.21%, #49D8F4 30.77%, #41D2F0 33.33%, #38CDEB 35.9%, #30C8E7 38.46%, #28C3E3 41.03%, #20BEDE 43.59%, #20B4D2 46.15%, #1FAAC6 48.72%, #1EA1BB 51.28%, #1D97B0 53.85%, #1C8EA5 56.41%, #1A859B 58.97%, #197D91 61.54%, #177486 64.1%, #166B7C 66.67%, #146372 69.23%, #125A69 71.79%, #11525F 74.36%, #0F4955 76.92%, #0D414B 79.49%, #0C3942 82.05%, #0A3138 84.62%, #08282F 87.18%, #072025 89.74%, #05181C 92.31%, #031013 94.87%, #020809 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Core","kind":"chromatic","theme":"both","hue":250,"dip":0.0,"rows":[{"step":"25","orig":"#EEEBFF","hsl":"#ECE8FF","missing":false,"hsl_hsl":[250,100,95],"orig_hsl":[249,100,96],"dE_hsl":0.85,"px_hsl":3,"t":0.025,"scale":2.5,"L":95.49,"S":100.0,"H":250,"e":0.84,"dE_v5":0.91},{"step":"50","orig":"#DDD6FF","hsl":"#DDD6FF","missing":false,"hsl_hsl":[250,100,92],"orig_hsl":[250,100,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.93,"S":100.0,"H":250,"e":0.84,"dE_v5":0.92},{"step":"100","orig":"#BFB2FF","hsl":"#C2B5FF","missing":false,"hsl_hsl":[251,100,85],"orig_hsl":[250,100,85],"dE_hsl":0.92,"px_hsl":3,"t":0.1,"scale":10.0,"L":85.55,"S":99.98,"H":250,"e":0.84,"dE_v5":0.46},{"step":"200","orig":"#9580FF","hsl":"#927CFE","missing":false,"hsl_hsl":[250,98,74],"orig_hsl":[250,100,75],"dE_hsl":1.09,"px_hsl":4,"t":0.2,"scale":20.0,"L":74.13,"S":98.66,"H":250,"e":0.84,"dE_v5":1.45},{"step":"300","orig":"#7055F6","hsl":"#6B4FF5","missing":false,"hsl_hsl":[250,89,64],"orig_hsl":[250,90,65],"dE_hsl":1.51,"px_hsl":6,"t":0.3,"scale":30.0,"L":63.63,"S":89.59,"H":250,"e":0.84,"dE_v5":1.25},{"step":"400","orig":"#5031E8","hsl":"#4C2DE4","missing":false,"hsl_hsl":[250,77,54],"orig_hsl":[250,80,55],"dE_hsl":1.16,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.68,"S":77.53,"H":250,"e":0.84,"dE_v5":0.27},{"step":"500","orig":"#3D22C3","hsl":"#3A1FC2","missing":false,"hsl_hsl":[250,72,44],"orig_hsl":[250,70,45],"dE_hsl":0.71,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":72.42,"H":250,"e":0.84,"dE_v5":0.12},{"step":"600","orig":"#301B98","hsl":"#2F1A98","missing":false,"hsl_hsl":[250,71,35],"orig_hsl":[250,70,35],"dE_hsl":0.25,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":70.86,"H":250,"e":0.84,"dE_v5":0.38},{"step":"700","orig":"#22136C","hsl":"#231470","missing":false,"hsl_hsl":[250,70,26],"orig_hsl":[250,70,25],"dE_hsl":0.79,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.89,"S":70.35,"H":250,"e":0.84,"dE_v5":0.7},{"step":"800","orig":"#140B41","hsl":"#170D4A","missing":false,"hsl_hsl":[250,70,17],"orig_hsl":[250,71,15],"dE_hsl":1.92,"px_hsl":9,"t":0.8,"scale":80.0,"L":17.09,"S":70.16,"H":250,"e":0.84,"dE_v5":0.95},{"step":"850","orig":null,"hsl":"#110A37","missing":true,"hsl_hsl":[249,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.76,"S":70.11,"H":250,"e":0.84,"dE_v5":1.06},{"step":"900","orig":null,"hsl":"#0C0625","missing":true,"hsl_hsl":[252,72,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.47,"S":70.08,"H":250,"e":0.84,"dE_v5":1.18}],"d5":0.8,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #EBE7FF 2.56%, #DCD5FF 5.13%, #CEC4FF 7.69%, #C0B4FF 10.26%, #B3A4FF 12.82%, #A795FF 15.38%, #9B87FF 17.95%, #8F79FE 20.51%, #846CFD 23.08%, #7A61FB 25.64%, #7156F8 28.21%, #684CF4 30.77%, #6044F0 33.33%, #583BEB 35.9%, #5133E7 38.46%, #492AE3 41.03%, #4121DF 43.59%, #3E20D4 46.15%, #3C1FC8 48.72%, #391FBC 51.28%, #361DB1 53.85%, #331CA7 56.41%, #301B9C 58.97%, #2D1992 61.54%, #2A1788 64.1%, #27167D 66.67%, #241473 69.23%, #21126A 71.79%, #1E1160 74.36%, #1B0F56 76.92%, #180D4C 79.49%, #150C42 82.05%, #120A39 84.62%, #0F082F 87.18%, #0C0726 89.74%, #09051C 92.31%, #060313 94.87%, #030209 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mindaro","kind":"chromatic","theme":"both","hue":75,"dip":0.2,"rows":[{"step":"25","orig":"#FAFFEB","hsl":"#F5FFD9","missing":false,"hsl_hsl":[76,100,93],"orig_hsl":[75,100,96],"dE_hsl":2.52,"px_hsl":18,"t":0.025,"scale":2.5,"L":92.55,"S":100.0,"H":75,"e":0.704,"dE_v5":0.19},{"step":"50","orig":"#F2FFCC","hsl":"#EDFFB8","missing":false,"hsl_hsl":[75,100,86],"orig_hsl":[75,100,90],"dE_hsl":2.66,"px_hsl":20,"t":0.05,"scale":5.0,"L":86.0,"S":100.0,"H":75,"e":0.656,"dE_v5":0.41},{"step":"100","orig":"#E6FF99","hsl":"#E2FF8A","missing":false,"hsl_hsl":[75,100,77],"orig_hsl":[75,100,80],"dE_hsl":1.76,"px_hsl":15,"t":0.1,"scale":10.0,"L":77.12,"S":99.98,"H":75,"e":0.641,"dE_v5":1.08},{"step":"200","orig":"#D9FF66","hsl":"#D3FE52","missing":false,"hsl_hsl":[75,99,66],"orig_hsl":[75,100,70],"dE_hsl":1.75,"px_hsl":20,"t":0.2,"scale":20.0,"L":65.92,"S":98.66,"H":75,"e":0.669,"dE_v5":2.74},{"step":"300","orig":"#C7F53D","hsl":"#C2F42E","missing":false,"hsl_hsl":[75,90,57],"orig_hsl":[75,90,60],"dE_hsl":1.02,"px_hsl":15,"t":0.3,"scale":30.0,"L":56.84,"S":89.59,"H":75,"e":0.698,"dE_v5":2.32},{"step":"400","orig":"#B2E51A","hsl":"#ABDB1C","missing":false,"hsl_hsl":[75,77,48],"orig_hsl":[75,80,50],"dE_hsl":2.88,"px_hsl":10,"t":0.4,"scale":40.0,"L":48.3,"S":77.53,"H":75,"e":0.72,"dE_v5":0.61},{"step":"500","orig":"#8AAD1F","hsl":"#8BB01C","missing":false,"hsl_hsl":[75,73,40],"orig_hsl":[75,70,40],"dE_hsl":0.89,"px_hsl":3,"t":0.5,"scale":50.0,"L":39.98,"S":72.42,"H":75,"e":0.737,"dE_v5":0.89},{"step":"600","orig":"#678217","hsl":"#6E8B18","missing":false,"hsl_hsl":[75,71,32],"orig_hsl":[75,70,30],"dE_hsl":2.87,"px_hsl":9,"t":0.6,"scale":60.0,"L":31.8,"S":70.86,"H":75,"e":0.749,"dE_v5":0.35},{"step":"700","orig":"#45570F","hsl":"#526712","missing":false,"hsl_hsl":[75,70,24],"orig_hsl":[75,71,20],"dE_hsl":5.46,"px_hsl":16,"t":0.7,"scale":70.0,"L":23.72,"S":70.35,"H":75,"e":0.759,"dE_v5":0.31},{"step":"800","orig":"#222B08","hsl":"#36440C","missing":false,"hsl_hsl":[75,70,16],"orig_hsl":[75,69,10],"dE_hsl":9.34,"px_hsl":25,"t":0.8,"scale":80.0,"L":15.74,"S":70.16,"H":75,"e":0.767,"dE_v5":0.56},{"step":"850","orig":null,"hsl":"#293309","missing":true,"hsl_hsl":[74,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.77,"S":70.11,"H":75,"e":0.771,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#1B2206","missing":true,"hsl_hsl":[75,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.83,"S":70.08,"H":75,"e":0.774,"dE_v5":0.87}],"d5":0.9,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F5FFD8 2.56%, #EDFFB6 5.13%, #E6FF9D 7.69%, #E1FF89 10.26%, #DDFF78 12.82%, #D9FF69 15.38%, #D6FE5C 17.95%, #D2FE50 20.51%, #CEFC45 23.08%, #CAFA3C 25.64%, #C6F633 28.21%, #C1F22C 30.77%, #BBED26 33.33%, #B6E920 35.9%, #B0E21B 38.46%, #A7D61C 41.03%, #9FCA1D 43.59%, #97BF1D 46.15%, #8FB51C 48.72%, #87AB1C 51.28%, #80A11B 53.85%, #789819 56.41%, #718E18 58.97%, #698517 61.54%, #627C15 64.1%, #5B7314 66.67%, #546A12 69.23%, #4D6111 71.79%, #46580F 74.36%, #3F4F0E 76.92%, #38460C 79.49%, #313D0B 82.05%, #2A3409 84.62%, #232C08 87.18%, #1C2306 89.74%, #151A05 92.31%, #0E1103 94.87%, #070902 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Pulse","kind":"chromatic","theme":"both","hue":110,"dip":0.1726,"rows":[{"step":"25","orig":"#EEFFEB","hsl":"#E1FFDC","missing":false,"hsl_hsl":[111,100,93],"orig_hsl":[111,100,96],"dE_hsl":2.72,"px_hsl":15,"t":0.025,"scale":2.5,"L":93.04,"S":100.0,"H":110,"e":0.723,"dE_v5":0.12},{"step":"50","orig":"#D5FFCC","hsl":"#C8FFBD","missing":false,"hsl_hsl":[110,100,87],"orig_hsl":[109,100,90],"dE_hsl":2.62,"px_hsl":15,"t":0.05,"scale":5.0,"L":87.02,"S":100.0,"H":110,"e":0.681,"dE_v5":0.35},{"step":"100","orig":"#BFFFB2","hsl":"#A4FF91","missing":false,"hsl_hsl":[110,100,78],"orig_hsl":[110,100,85],"dE_hsl":5.23,"px_hsl":33,"t":0.1,"scale":10.0,"L":78.52,"S":99.98,"H":110,"e":0.668,"dE_v5":1.4},{"step":"200","orig":"#95FF80","hsl":"#74FE59","missing":false,"hsl_hsl":[110,99,67],"orig_hsl":[110,100,75],"dE_hsl":4.93,"px_hsl":39,"t":0.2,"scale":20.0,"L":67.18,"S":98.66,"H":110,"e":0.692,"dE_v5":4.1},{"step":"300","orig":"#70F655","hsl":"#53F433","missing":false,"hsl_hsl":[110,90,58],"orig_hsl":[110,90,65],"dE_hsl":3.19,"px_hsl":34,"t":0.3,"scale":30.0,"L":57.84,"S":89.59,"H":110,"e":0.717,"dE_v5":5.33},{"step":"400","orig":"#50E831","hsl":"#3CDE1C","missing":false,"hsl_hsl":[110,78,49],"orig_hsl":[110,80,55],"dE_hsl":3.16,"px_hsl":21,"t":0.4,"scale":40.0,"L":49.08,"S":77.53,"H":110,"e":0.736,"dE_v5":4.08},{"step":"500","orig":"#3DC322","hsl":"#36B21D","missing":false,"hsl_hsl":[110,72,41],"orig_hsl":[110,70,45],"dE_hsl":4.93,"px_hsl":17,"t":0.5,"scale":50.0,"L":40.57,"S":72.42,"H":110,"e":0.751,"dE_v5":4.08},{"step":"600","orig":"#368F24","hsl":"#2B8C18","missing":false,"hsl_hsl":[110,71,32],"orig_hsl":[110,60,35],"dE_hsl":1.45,"px_hsl":12,"t":0.6,"scale":60.0,"L":32.23,"S":70.86,"H":110,"e":0.762,"dE_v5":4.76},{"step":"700","orig":"#2F5827","hsl":"#216812","missing":false,"hsl_hsl":[110,70,24],"orig_hsl":[110,39,25],"dE_hsl":6.03,"px_hsl":21,"t":0.7,"scale":70.0,"L":24.02,"S":70.35,"H":110,"e":0.77,"dE_v5":4.44},{"step":"800","orig":"#1F301C","hsl":"#16450C","missing":false,"hsl_hsl":[109,70,16],"orig_hsl":[111,26,15],"dE_hsl":8.12,"px_hsl":21,"t":0.8,"scale":80.0,"L":15.92,"S":70.16,"H":110,"e":0.777,"dE_v5":3.48},{"step":"850","orig":null,"hsl":"#103409","missing":true,"hsl_hsl":[110,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.91,"S":70.11,"H":110,"e":0.78,"dE_v5":2.87},{"step":"900","orig":null,"hsl":"#0B2206","missing":true,"hsl_hsl":[109,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.92,"S":70.08,"H":110,"e":0.783,"dE_v5":1.64}],"d5":3.05,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E1FFDB 2.56%, #C7FFBB 5.13%, #B2FFA3 7.69%, #A2FF90 10.26%, #94FF7F 12.82%, #88FF70 15.38%, #7DFE63 17.95%, #72FE56 20.51%, #69FC4B 23.08%, #60FA41 25.64%, #58F739 28.21%, #51F231 30.77%, #4BEE2A 33.33%, #44E924 35.9%, #3EE41D 38.46%, #3CD91D 41.03%, #3BCD1D 43.59%, #39C21D 46.15%, #37B81D 48.72%, #34AD1C 51.28%, #32A31B 53.85%, #2F9A1A 56.41%, #2C9019 58.97%, #2A8717 61.54%, #277D16 64.1%, #247414 66.67%, #216B13 69.23%, #1F6211 71.79%, #1C5910 74.36%, #19500E 76.92%, #16470C 79.49%, #133E0B 82.05%, #113509 84.62%, #0E2C08 87.18%, #0B2306 89.74%, #081A05 92.31%, #061203 94.87%, #030902 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Flash","kind":"chromatic","theme":"both","hue":32,"dip":0.107,"rows":[{"step":"25","orig":"#FFF5EB","hsl":"#FFF1E1","missing":false,"hsl_hsl":[32,100,94],"orig_hsl":[30,100,96],"dE_hsl":1.37,"px_hsl":10,"t":0.025,"scale":2.5,"L":94.1,"S":100.0,"H":32,"e":0.767,"dE_v5":0.24},{"step":"50","orig":"#FFE7CC","hsl":"#FFE5C8","missing":false,"hsl_hsl":[32,100,89],"orig_hsl":[32,100,90],"dE_hsl":0.59,"px_hsl":4,"t":0.05,"scale":5.0,"L":89.16,"S":100.0,"H":32,"e":0.742,"dE_v5":0.2},{"step":"100","orig":"#FFDBB2","hsl":"#FFD3A1","missing":false,"hsl_hsl":[32,100,82],"orig_hsl":[32,100,85],"dE_hsl":2.37,"px_hsl":17,"t":0.1,"scale":10.0,"L":81.52,"S":99.98,"H":32,"e":0.733,"dE_v5":0.6},{"step":"200","orig":"#FFC380","hsl":"#FEB867","missing":false,"hsl_hsl":[32,99,70],"orig_hsl":[32,100,75],"dE_hsl":3.11,"px_hsl":25,"t":0.2,"scale":20.0,"L":70.02,"S":98.66,"H":32,"e":0.748,"dE_v5":1.85},{"step":"300","orig":"#F6AB55","hsl":"#F49F3E","missing":false,"hsl_hsl":[32,89,60],"orig_hsl":[32,90,65],"dE_hsl":2.97,"px_hsl":23,"t":0.3,"scale":30.0,"L":60.14,"S":89.59,"H":32,"e":0.764,"dE_v5":2.09},{"step":"400","orig":"#E89331","hsl":"#E38821","missing":false,"hsl_hsl":[32,78,51],"orig_hsl":[32,80,55],"dE_hsl":2.77,"px_hsl":16,"t":0.4,"scale":40.0,"L":50.88,"S":77.53,"H":32,"e":0.776,"dE_v5":1.56},{"step":"500","orig":"#C37822","hsl":"#B8701E","missing":false,"hsl_hsl":[32,72,42],"orig_hsl":[32,70,45],"dE_hsl":2.93,"px_hsl":11,"t":0.5,"scale":50.0,"L":41.95,"S":72.42,"H":32,"e":0.785,"dE_v5":1.25},{"step":"600","orig":"#985D1B","hsl":"#915919","missing":false,"hsl_hsl":[32,71,33],"orig_hsl":[32,70,35],"dE_hsl":1.75,"px_hsl":7,"t":0.6,"scale":60.0,"L":33.26,"S":70.86,"H":32,"e":0.791,"dE_v5":1.55},{"step":"700","orig":"#6C4313","hsl":"#6B4213","missing":false,"hsl_hsl":[32,70,25],"orig_hsl":[32,70,25],"dE_hsl":0.36,"px_hsl":1,"t":0.7,"scale":70.0,"L":24.74,"S":70.35,"H":32,"e":0.797,"dE_v5":1.45},{"step":"800","orig":"#30271C","hsl":"#472C0C","missing":false,"hsl_hsl":[33,71,16],"orig_hsl":[33,26,15],"dE_hsl":5.46,"px_hsl":23,"t":0.8,"scale":80.0,"L":16.37,"S":70.16,"H":32,"e":0.801,"dE_v5":1.1},{"step":"850","orig":null,"hsl":"#352109","missing":true,"hsl_hsl":[33,71,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.23,"S":70.11,"H":32,"e":0.803,"dE_v5":0.92},{"step":"900","orig":null,"hsl":"#231606","missing":true,"hsl_hsl":[33,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.13,"S":70.08,"H":32,"e":0.805,"dE_v5":0.85}],"d5":1.14,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFF1E0 2.56%, #FFE5C7 5.13%, #FFDBB1 7.69%, #FFD29F 10.26%, #FFCB8F 12.82%, #FFC380 15.38%, #FEBD72 17.95%, #FEB665 20.51%, #FCB059 23.08%, #FAAA4E 25.64%, #F7A444 28.21%, #F39E3C 30.77%, #EF9834 33.33%, #EA922D 35.9%, #E58C25 38.46%, #E1861E 41.03%, #D5801E 43.59%, #C9791E 46.15%, #BE731E 48.72%, #B36D1D 51.28%, #A9671C 53.85%, #9F611B 56.41%, #955B19 58.97%, #8B5518 61.54%, #814F16 64.1%, #784A15 66.67%, #6E4413 69.23%, #653E12 71.79%, #5B3810 74.36%, #52330E 76.92%, #492D0D 79.49%, #40270B 82.05%, #36220A 84.62%, #2D1C08 87.18%, #241606 89.74%, #1B1105 92.31%, #120B03 94.87%, #090602 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Edge","kind":"chromatic","theme":"both","hue":10,"dip":0.0357,"rows":[{"step":"25","orig":"#FFEEEB","hsl":"#FFEAE6","missing":false,"hsl_hsl":[10,100,95],"orig_hsl":[9,100,96],"dE_hsl":1.01,"px_hsl":5,"t":0.025,"scale":2.5,"L":95.07,"S":100.0,"H":10,"e":0.816,"dE_v5":0.53},{"step":"50","orig":"#FFDDD6","hsl":"#FFD9D2","missing":false,"hsl_hsl":[9,100,91],"orig_hsl":[10,100,92],"dE_hsl":0.97,"px_hsl":4,"t":0.05,"scale":5.0,"L":91.09,"S":100.0,"H":10,"e":0.807,"dE_v5":0.53},{"step":"100","orig":"#FFBFB2","hsl":"#FFBCAF","missing":false,"hsl_hsl":[10,100,84],"orig_hsl":[10,100,85],"dE_hsl":0.72,"px_hsl":3,"t":0.1,"scale":10.0,"L":84.31,"S":99.98,"H":10,"e":0.804,"dE_v5":0.35},{"step":"200","orig":"#FF9580","hsl":"#FE8C75","missing":false,"hsl_hsl":[10,99,73],"orig_hsl":[10,100,75],"dE_hsl":2.07,"px_hsl":11,"t":0.2,"scale":20.0,"L":72.82,"S":98.66,"H":10,"e":0.809,"dE_v5":1.29},{"step":"300","orig":"#F67055","hsl":"#F5664A","missing":false,"hsl_hsl":[10,90,63],"orig_hsl":[10,90,65],"dE_hsl":1.98,"px_hsl":11,"t":0.3,"scale":30.0,"L":62.5,"S":89.59,"H":10,"e":0.815,"dE_v5":1.14},{"step":"400","orig":"#E84F30","hsl":"#E44829","missing":false,"hsl_hsl":[10,78,53],"orig_hsl":[10,80,55],"dE_hsl":1.51,"px_hsl":7,"t":0.4,"scale":40.0,"L":52.77,"S":77.53,"H":10,"e":0.819,"dE_v5":0.0},{"step":"500","orig":"#C33D22","hsl":"#BF391F","missing":false,"hsl_hsl":[10,72,44],"orig_hsl":[10,70,45],"dE_hsl":1.14,"px_hsl":4,"t":0.5,"scale":50.0,"L":43.42,"S":72.42,"H":10,"e":0.822,"dE_v5":0.21},{"step":"600","orig":"#98301B","hsl":"#962E1A","missing":false,"hsl_hsl":[10,70,35],"orig_hsl":[10,70,35],"dE_hsl":0.61,"px_hsl":2,"t":0.6,"scale":60.0,"L":34.35,"S":70.86,"H":10,"e":0.824,"dE_v5":0.35},{"step":"700","orig":"#6C2213","hsl":"#6F2313","missing":false,"hsl_hsl":[10,71,25],"orig_hsl":[10,70,25],"dE_hsl":0.73,"px_hsl":3,"t":0.7,"scale":70.0,"L":25.51,"S":70.35,"H":10,"e":0.826,"dE_v5":0.41},{"step":"800","orig":"#41140B","hsl":"#49170D","missing":false,"hsl_hsl":[10,70,17],"orig_hsl":[10,71,15],"dE_hsl":2.13,"px_hsl":8,"t":0.8,"scale":80.0,"L":16.85,"S":70.16,"H":10,"e":0.827,"dE_v5":0.68},{"step":"850","orig":null,"hsl":"#37110A","missing":true,"hsl_hsl":[9,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.59,"S":70.11,"H":10,"e":0.828,"dE_v5":0.74},{"step":"900","orig":null,"hsl":"#240B06","missing":true,"hsl_hsl":[10,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.36,"S":70.08,"H":10,"e":0.828,"dE_v5":1.09}],"d5":0.61,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFEAE5 2.56%, #FFD8D1 5.13%, #FFC9BE 7.69%, #FFBBAD 10.26%, #FFAE9E 12.82%, #FFA18F 15.38%, #FF9580 17.95%, #FE8A73 20.51%, #FD7F66 23.08%, #FB755B 25.64%, #F86C50 28.21%, #F46447 30.77%, #EF5C3F 33.33%, #EB5436 35.9%, #E64D2E 38.46%, #E24526 41.03%, #DC3F1F 43.59%, #D03D1F 46.15%, #C53B1F 48.72%, #B9381E 51.28%, #AF351D 53.85%, #A4321C 56.41%, #9A2F1A 58.97%, #902C19 61.54%, #862917 64.1%, #7C2615 66.67%, #722314 69.23%, #682012 71.79%, #5E1D10 74.36%, #551A0F 76.92%, #4B170D 79.49%, #41140B 82.05%, #38120A 84.62%, #2F0F08 87.18%, #250C07 89.74%, #1C0905 92.31%, #130603 94.87%, #090302 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Pink","kind":"chromatic","theme":"both","hue":350,"dip":0.0015,"rows":[{"step":"25","orig":"#FFEBEE","hsl":"#FFE8EC","missing":false,"hsl_hsl":[350,100,95],"orig_hsl":[351,100,96],"dE_hsl":0.72,"px_hsl":3,"t":0.025,"scale":2.5,"L":95.47,"S":100.0,"H":350,"e":0.839,"dE_v5":0.73},{"step":"50","orig":"#FFD6DD","hsl":"#FFD6DD","missing":false,"hsl_hsl":[350,100,92],"orig_hsl":[350,100,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.89,"S":100.0,"H":350,"e":0.839,"dE_v5":0.77},{"step":"100","orig":"#FFB2BF","hsl":"#FFB5C1","missing":false,"hsl_hsl":[350,100,85],"orig_hsl":[350,100,85],"dE_hsl":0.69,"px_hsl":3,"t":0.1,"scale":10.0,"L":85.5,"S":99.98,"H":350,"e":0.838,"dE_v5":0.47},{"step":"200","orig":"#FF8095","hsl":"#FE7C91","missing":false,"hsl_hsl":[350,98,74],"orig_hsl":[350,100,75],"dE_hsl":0.9,"px_hsl":4,"t":0.2,"scale":20.0,"L":74.07,"S":98.66,"H":350,"e":0.839,"dE_v5":2.17},{"step":"300","orig":"#F65570","hsl":"#F54F6B","missing":false,"hsl_hsl":[350,89,64],"orig_hsl":[350,90,65],"dE_hsl":1.05,"px_hsl":6,"t":0.3,"scale":30.0,"L":63.58,"S":89.59,"H":350,"e":0.839,"dE_v5":3.1},{"step":"400","orig":"#E8304F","hsl":"#E42D4C","missing":false,"hsl_hsl":[350,77,54],"orig_hsl":[350,80,55],"dE_hsl":0.97,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.65,"S":77.53,"H":350,"e":0.839,"dE_v5":2.82},{"step":"500","orig":"#C3223D","hsl":"#C21F3A","missing":false,"hsl_hsl":[350,72,44],"orig_hsl":[350,70,45],"dE_hsl":0.47,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.11,"S":72.42,"H":350,"e":0.839,"dE_v5":3.5},{"step":"600","orig":"#8F2436","hsl":"#981A2F","missing":false,"hsl_hsl":[350,71,35],"orig_hsl":[350,60,35],"dE_hsl":2.02,"px_hsl":10,"t":0.6,"scale":60.0,"L":34.87,"S":70.86,"H":350,"e":0.839,"dE_v5":3.61},{"step":"700","orig":"#58272F","hsl":"#701423","missing":false,"hsl_hsl":[350,70,26],"orig_hsl":[350,39,25],"dE_hsl":5.57,"px_hsl":24,"t":0.7,"scale":70.0,"L":25.87,"S":70.35,"H":350,"e":0.839,"dE_v5":3.52},{"step":"800","orig":"#311C1F","hsl":"#4A0D17","missing":false,"hsl_hsl":[350,70,17],"orig_hsl":[351,27,15],"dE_hsl":6.0,"px_hsl":25,"t":0.8,"scale":80.0,"L":17.08,"S":70.16,"H":350,"e":0.839,"dE_v5":2.88},{"step":"850","orig":null,"hsl":"#370A11","missing":true,"hsl_hsl":[351,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.75,"S":70.11,"H":350,"e":0.839,"dE_v5":2.49},{"step":"900","orig":null,"hsl":"#25060C","missing":true,"hsl_hsl":[348,72,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.47,"S":70.08,"H":350,"e":0.839,"dE_v5":2.31}],"d5":2.36,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFE7EB 2.56%, #FFD5DC 5.13%, #FFC4CE 7.69%, #FFB3C0 10.26%, #FFA4B3 12.82%, #FF95A7 15.38%, #FF879B 17.95%, #FE798F 20.51%, #FD6C84 23.08%, #FB607A 25.64%, #F85671 28.21%, #F44C68 30.77%, #F04360 33.33%, #EB3B58 35.9%, #E73250 38.46%, #E32A49 41.03%, #DF2140 43.59%, #D3203E 46.15%, #C81F3B 48.72%, #BC1F39 51.28%, #B11D36 53.85%, #A71C33 56.41%, #9C1B30 58.97%, #92192D 61.54%, #87172A 64.1%, #7D1627 66.67%, #731424 69.23%, #691221 71.79%, #60111E 74.36%, #560F1B 76.92%, #4C0D18 79.49%, #420C15 82.05%, #390A12 84.62%, #2F080F 87.18%, #26070C 89.74%, #1C0509 92.31%, #130306 94.87%, #090203 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Yellow","kind":"chromatic","theme":"both","hue":50,"dip":0.1643,"rows":[{"step":"25","orig":"#FFFCEB","hsl":"#FFF9DC","missing":false,"hsl_hsl":[50,100,93],"orig_hsl":[51,100,96],"dE_hsl":1.85,"px_hsl":15,"t":0.025,"scale":2.5,"L":93.19,"S":100.0,"H":50,"e":0.728,"dE_v5":0.13},{"step":"50","orig":"#FFF7CC","hsl":"#FFF4BE","missing":false,"hsl_hsl":[50,100,87],"orig_hsl":[51,100,90],"dE_hsl":1.66,"px_hsl":14,"t":0.05,"scale":5.0,"L":87.31,"S":100.0,"H":50,"e":0.689,"dE_v5":0.17},{"step":"100","orig":"#FFF2B2","hsl":"#FFED94","missing":false,"hsl_hsl":[50,100,79],"orig_hsl":[50,100,85],"dE_hsl":3.25,"px_hsl":30,"t":0.1,"scale":10.0,"L":78.92,"S":99.98,"H":50,"e":0.676,"dE_v5":0.76},{"step":"200","orig":"#FFEA80","hsl":"#FEE35B","missing":false,"hsl_hsl":[50,99,68],"orig_hsl":[50,100,75],"dE_hsl":3.21,"px_hsl":37,"t":0.2,"scale":20.0,"L":67.55,"S":98.66,"H":50,"e":0.699,"dE_v5":2.0},{"step":"300","orig":"#F6DB55","hsl":"#F4D435","missing":false,"hsl_hsl":[50,90,58],"orig_hsl":[50,90,65],"dE_hsl":2.3,"px_hsl":32,"t":0.3,"scale":30.0,"L":58.14,"S":89.59,"H":50,"e":0.723,"dE_v5":1.59},{"step":"400","orig":"#E8CA31","hsl":"#DFBF1C","missing":false,"hsl_hsl":[50,78,49],"orig_hsl":[50,80,55],"dE_hsl":3.19,"px_hsl":21,"t":0.4,"scale":40.0,"L":49.31,"S":77.53,"H":50,"e":0.741,"dE_v5":0.71},{"step":"500","orig":"#C3A822","hsl":"#B39A1D","missing":false,"hsl_hsl":[50,72,41],"orig_hsl":[50,70,45],"dE_hsl":4.63,"px_hsl":16,"t":0.5,"scale":50.0,"L":40.75,"S":72.42,"H":50,"e":0.755,"dE_v5":0.96},{"step":"600","orig":"#98831B","hsl":"#8D7A18","missing":false,"hsl_hsl":[50,71,32],"orig_hsl":[50,70,35],"dE_hsl":3.18,"px_hsl":11,"t":0.6,"scale":60.0,"L":32.36,"S":70.86,"H":50,"e":0.765,"dE_v5":0.46},{"step":"700","orig":"#6C5E13","hsl":"#695A12","missing":false,"hsl_hsl":[50,71,24],"orig_hsl":[51,70,25],"dE_hsl":1.31,"px_hsl":4,"t":0.7,"scale":70.0,"L":24.11,"S":70.35,"H":50,"e":0.774,"dE_v5":0.3},{"step":"800","orig":"#41380B","hsl":"#453C0C","missing":false,"hsl_hsl":[51,70,16],"orig_hsl":[50,71,15],"dE_hsl":1.52,"px_hsl":4,"t":0.8,"scale":80.0,"L":15.98,"S":70.16,"H":50,"e":0.78,"dE_v5":0.42},{"step":"850","orig":null,"hsl":"#342D09","missing":true,"hsl_hsl":[50,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.95,"S":70.11,"H":50,"e":0.783,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#221E06","missing":true,"hsl_hsl":[51,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.94,"S":70.08,"H":50,"e":0.786,"dE_v5":0.98}],"d5":0.74,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFF9DB 2.56%, #FFF4BD 5.13%, #FFF0A5 7.69%, #FFED92 10.26%, #FFEA81 12.82%, #FFE772 15.38%, #FEE565 17.95%, #FEE258 20.51%, #FCDF4D 23.08%, #FADC43 25.64%, #F7D73A 28.21%, #F3D332 30.77%, #EECD2B 33.33%, #E9C825 35.9%, #E4C31E 38.46%, #DABB1D 41.03%, #CEB11D 43.59%, #C3A71D 46.15%, #B89E1D 48.72%, #AE961C 51.28%, #A48D1B 53.85%, #9A851A 56.41%, #917D19 58.97%, #877517 61.54%, #7E6D16 64.1%, #756514 66.67%, #6C5D13 69.23%, #625511 71.79%, #594D10 74.36%, #50450E 76.92%, #473D0C 79.49%, #3E360B 82.05%, #352E09 84.62%, #2C2608 87.18%, #231E06 89.74%, #1A1705 92.31%, #120F03 94.87%, #090802 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mint","kind":"chromatic","theme":"both","hue":145,"dip":0.1054,"rows":[{"step":"25","orig":"#EBFFF3","hsl":"#E1FFEE","missing":false,"hsl_hsl":[146,100,94],"orig_hsl":[144,100,96],"dE_hsl":1.48,"px_hsl":10,"t":0.025,"scale":2.5,"L":94.12,"S":100.0,"H":145,"e":0.768,"dE_v5":0.19},{"step":"50","orig":"#CCFFE1","hsl":"#C8FFDF","missing":false,"hsl_hsl":[145,100,89],"orig_hsl":[145,100,90],"dE_hsl":0.56,"px_hsl":4,"t":0.05,"scale":5.0,"L":89.21,"S":100.0,"H":145,"e":0.743,"dE_v5":0.3},{"step":"100","orig":"#B2FFD2","hsl":"#A1FFC8","missing":false,"hsl_hsl":[145,100,82],"orig_hsl":[145,100,85],"dE_hsl":2.31,"px_hsl":17,"t":0.1,"scale":10.0,"L":81.59,"S":99.98,"H":145,"e":0.735,"dE_v5":0.54},{"step":"200","orig":"#80FFB5","hsl":"#67FEA6","missing":false,"hsl_hsl":[145,99,70],"orig_hsl":[145,100,75],"dE_hsl":2.81,"px_hsl":25,"t":0.2,"scale":20.0,"L":70.08,"S":98.66,"H":145,"e":0.75,"dE_v5":1.97},{"step":"300","orig":"#55F698","hsl":"#3FF48A","missing":false,"hsl_hsl":[145,89,60],"orig_hsl":[145,90,65],"dE_hsl":2.14,"px_hsl":22,"t":0.3,"scale":30.0,"L":60.2,"S":89.59,"H":145,"e":0.765,"dE_v5":1.75},{"step":"400","orig":"#31E87E","hsl":"#21E372","missing":false,"hsl_hsl":[145,78,51],"orig_hsl":[145,80,55],"dE_hsl":1.87,"px_hsl":16,"t":0.4,"scale":40.0,"L":50.92,"S":77.53,"H":145,"e":0.777,"dE_v5":0.02},{"step":"500","orig":"#22C365","hsl":"#1EB95E","missing":false,"hsl_hsl":[145,72,42],"orig_hsl":[145,70,45],"dE_hsl":2.86,"px_hsl":10,"t":0.5,"scale":50.0,"L":41.98,"S":72.42,"H":145,"e":0.785,"dE_v5":0.56},{"step":"600","orig":"#1B984F","hsl":"#19914B","missing":false,"hsl_hsl":[145,71,33],"orig_hsl":[145,70,35],"dE_hsl":2.09,"px_hsl":7,"t":0.6,"scale":60.0,"L":33.28,"S":70.86,"H":145,"e":0.792,"dE_v5":0.33},{"step":"700","orig":"#136C38","hsl":"#136C38","missing":false,"hsl_hsl":[145,70,25],"orig_hsl":[145,70,25],"dE_hsl":0.0,"px_hsl":0,"t":0.7,"scale":70.0,"L":24.76,"S":70.35,"H":145,"e":0.797,"dE_v5":0.5},{"step":"800","orig":"#0B4122","hsl":"#0C4725","missing":false,"hsl_hsl":[145,71,16],"orig_hsl":[146,71,15],"dE_hsl":2.05,"px_hsl":6,"t":0.8,"scale":80.0,"L":16.38,"S":70.16,"H":145,"e":0.802,"dE_v5":0.51},{"step":"850","orig":null,"hsl":"#09351C","missing":true,"hsl_hsl":[146,71,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.24,"S":70.11,"H":145,"e":0.803,"dE_v5":0.51},{"step":"900","orig":null,"hsl":"#062312","missing":true,"hsl_hsl":[145,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.13,"S":70.08,"H":145,"e":0.805,"dE_v5":0.93}],"d5":0.68,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E0FFED 2.56%, #C7FFDE 5.13%, #B2FFD2 7.69%, #9FFFC7 10.26%, #8FFFBE 12.82%, #80FFB5 15.38%, #72FEAD 17.95%, #65FEA5 20.51%, #59FC9D 23.08%, #4EFA96 25.64%, #45F78F 28.21%, #3CF388 30.77%, #34EF82 33.33%, #2DEA7C 35.9%, #25E575 38.46%, #1EE16F 41.03%, #1ED56A 43.59%, #1EC966 46.15%, #1EBE61 48.72%, #1DB35C 51.28%, #1CA957 53.85%, #1B9F52 56.41%, #19954D 58.97%, #188B48 61.54%, #168143 64.1%, #15783E 66.67%, #136E39 69.23%, #126534 71.79%, #105C2F 74.36%, #0E522B 76.92%, #0D4926 79.49%, #0B4021 82.05%, #0A361C 84.62%, #082D18 87.18%, #062413 89.74%, #051B0E 92.31%, #031209 94.87%, #020905 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"light","hue":75,"dip":0.0,"rows":[{"step":"25","orig":"#F5F6F4","hsl":"#F4F5F2","missing":false,"hsl_hsl":[80,13,95],"orig_hsl":[90,10,96],"dE_hsl":0.35,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.49,"S":10.25,"H":75,"e":0.84,"dE_v5":0.52},{"step":"50","orig":"#ECEDE9","hsl":"#EBECE8","missing":false,"hsl_hsl":[75,10,92],"orig_hsl":[75,10,92],"dE_hsl":0.3,"px_hsl":1,"t":0.05,"scale":5.0,"L":91.93,"S":9.89,"H":75,"e":0.84,"dE_v5":0.3},{"step":"100","orig":"#DDDFD8","hsl":"#DCDED7","missing":false,"hsl_hsl":[77,10,86],"orig_hsl":[77,10,86],"dE_hsl":0.31,"px_hsl":1,"t":0.1,"scale":10.0,"L":85.55,"S":9.25,"H":75,"e":0.84,"dE_v5":0.61},{"step":"200","orig":"#C2C4BA","hsl":"#C0C2B8","missing":false,"hsl_hsl":[72,8,74],"orig_hsl":[72,8,75],"dE_hsl":0.63,"px_hsl":2,"t":0.2,"scale":20.0,"L":74.13,"S":8.11,"H":75,"e":0.84,"dE_v5":0.41},{"step":"300","orig":"#A9ACA0","hsl":"#A6A99C","missing":false,"hsl_hsl":[74,7,64],"orig_hsl":[75,7,65],"dE_hsl":1.0,"px_hsl":4,"t":0.3,"scale":30.0,"L":63.63,"S":7.06,"H":75,"e":0.84,"dE_v5":0.63},{"step":"400","orig":"#909385","hsl":"#8C9082","missing":false,"hsl_hsl":[77,6,54],"orig_hsl":[73,6,55],"dE_hsl":1.08,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.68,"S":6.07,"H":75,"e":0.84,"dE_v5":0.34},{"step":"500","orig":"#76786D","hsl":"#73766B","missing":false,"hsl_hsl":[76,5,44],"orig_hsl":[71,5,45],"dE_hsl":0.78,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":5.11,"H":75,"e":0.84,"dE_v5":0.3},{"step":"600","orig":"#5B5D56","hsl":"#5B5D55","missing":false,"hsl_hsl":[75,4,35],"orig_hsl":[77,4,35],"dE_hsl":0.16,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":4.19,"H":75,"e":0.84,"dE_v5":0.39},{"step":"700","orig":"#41423E","hsl":"#434440","missing":false,"hsl_hsl":[75,3,26],"orig_hsl":[75,3,25],"dE_hsl":0.76,"px_hsl":2,"t":0.7,"scale":70.0,"L":25.89,"S":3.29,"H":75,"e":0.84,"dE_v5":0.38},{"step":"800","orig":"#272725","hsl":"#2C2D2B","missing":false,"hsl_hsl":[90,2,17],"orig_hsl":[60,3,15],"dE_hsl":2.35,"px_hsl":6,"t":0.8,"scale":80.0,"L":17.09,"S":2.41,"H":75,"e":0.84,"dE_v5":0.4},{"step":"850","orig":null,"hsl":"#212120","missing":true,"hsl_hsl":[60,2,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.76,"S":1.98,"H":75,"e":0.84,"dE_v5":0.75},{"step":"900","orig":"#1A1A19","hsl":"#161615","missing":false,"hsl_hsl":[60,2,8],"orig_hsl":[60,2,10],"dE_hsl":1.76,"px_hsl":4,"t":0.9,"scale":90.0,"L":8.47,"S":1.55,"H":75,"e":0.84,"dE_v5":0.88}],"d5":0.49,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F4F4F2 2.56%, #EBECE8 5.13%, #E3E4DF 7.69%, #DBDDD6 10.26%, #D4D6CE 12.82%, #CCCFC6 15.38%, #C5C8BE 17.95%, #BEC1B6 20.51%, #B7BAAF 23.08%, #B1B4A8 25.64%, #AAADA1 28.21%, #A4A79A 30.77%, #9DA093 33.33%, #979A8C 35.9%, #909486 38.46%, #8A8E7F 41.03%, #848779 43.59%, #7D8073 46.15%, #777A6E 48.72%, #707368 51.28%, #6A6C62 53.85%, #64665D 56.41%, #5D5F57 58.97%, #575952 61.54%, #51534C 64.1%, #4B4C47 66.67%, #454641 69.23%, #3F403C 71.79%, #393A37 74.36%, #333431 76.92%, #2D2E2C 79.49%, #272826 82.05%, #222221 84.62%, #1C1C1B 87.18%, #161716 89.74%, #111110 92.31%, #0B0B0B 94.87%, #060605 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"dark","hue":190,"dip":0.0,"rows":[{"step":"25","orig":"#F4F5F6","hsl":"#F2F4F5","missing":false,"hsl_hsl":[200,13,95],"orig_hsl":[210,10,96],"dE_hsl":0.39,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.49,"S":11.39,"H":190,"e":0.84,"dE_v5":0.44},{"step":"50","orig":"#E8ECED","hsl":"#E8ECED","missing":false,"hsl_hsl":[192,12,92],"orig_hsl":[192,12,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.93,"S":11.79,"H":190,"e":0.84,"dE_v5":0.44},{"step":"100","orig":"#D7DEE0","hsl":"#D6DDDF","missing":false,"hsl_hsl":[193,12,86],"orig_hsl":[193,13,86],"dE_hsl":0.31,"px_hsl":1,"t":0.1,"scale":10.0,"L":85.55,"S":12.49,"H":190,"e":0.84,"dE_v5":0.45},{"step":"200","orig":"#B7C5C8","hsl":"#B4C3C6","missing":false,"hsl_hsl":[190,14,74],"orig_hsl":[191,13,75],"dE_hsl":0.71,"px_hsl":3,"t":0.2,"scale":20.0,"L":74.13,"S":13.76,"H":190,"e":0.84,"dE_v5":0.4},{"step":"300","orig":"#99AEB2","hsl":"#94ABB0","missing":false,"hsl_hsl":[191,15,64],"orig_hsl":[190,14,65],"dE_hsl":1.11,"px_hsl":5,"t":0.3,"scale":30.0,"L":63.63,"S":14.93,"H":190,"e":0.84,"dE_v5":0.21},{"step":"400","orig":"#7B989D","hsl":"#76969C","missing":false,"hsl_hsl":[189,16,54],"orig_hsl":[189,15,55],"dE_hsl":0.9,"px_hsl":5,"t":0.4,"scale":40.0,"L":53.68,"S":16.04,"H":190,"e":0.84,"dE_v5":0.33},{"step":"500","orig":"#607F85","hsl":"#5D7D84","missing":false,"hsl_hsl":[191,17,44],"orig_hsl":[190,16,45],"dE_hsl":0.73,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":17.1,"H":190,"e":0.84,"dE_v5":0.0},{"step":"600","orig":"#4A6368","hsl":"#496469","missing":false,"hsl_hsl":[189,18,35],"orig_hsl":[190,17,35],"dE_hsl":0.31,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":18.12,"H":190,"e":0.84,"dE_v5":0.16},{"step":"700","orig":"#34474B","hsl":"#354A4F","missing":false,"hsl_hsl":[192,20,26],"orig_hsl":[190,18,25],"dE_hsl":1.05,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.89,"S":19.12,"H":190,"e":0.84,"dE_v5":0.37},{"step":"800","orig":"#233134","hsl":"#233134","missing":false,"hsl_hsl":[191,20,17],"orig_hsl":[191,20,17],"dE_hsl":0.0,"px_hsl":0,"t":0.8,"scale":80.0,"L":17.09,"S":20.1,"H":190,"e":0.84,"dE_v5":0.73},{"step":"850","orig":"#1B2628","hsl":"#1A2527","missing":false,"hsl_hsl":[189,20,13],"orig_hsl":[189,19,13],"dE_hsl":0.41,"px_hsl":1,"t":0.85,"scale":85.0,"L":12.76,"S":20.58,"H":190,"e":0.84,"dE_v5":0.76},{"step":"900","orig":"#141D1F","hsl":"#11191A","missing":false,"hsl_hsl":[187,21,8],"orig_hsl":[191,22,10],"dE_hsl":1.71,"px_hsl":5,"t":0.9,"scale":90.0,"L":8.47,"S":21.06,"H":190,"e":0.84,"dE_v5":0.94}],"d5":0.44,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F2F4F5 2.56%, #E7ECEC 5.13%, #DEE4E5 7.69%, #D5DCDE 10.26%, #CCD5D7 12.82%, #C3CFD1 15.38%, #BBC8CB 17.95%, #B2C2C5 20.51%, #AABCBF 23.08%, #A2B6B9 25.64%, #9AB0B4 28.21%, #92AAAE 30.77%, #8AA4A9 33.33%, #829EA4 35.9%, #7B999F 38.46%, #73939A 41.03%, #6B8E95 43.59%, #65878E 46.15%, #608187 48.72%, #5B7A80 51.28%, #557379 53.85%, #506D73 56.41%, #4B666C 58.97%, #466065 61.54%, #41595E 64.1%, #3C5357 66.67%, #374C51 69.23%, #32464A 71.79%, #2D4043 74.36%, #28393C 76.92%, #243336 79.49%, #1F2C2F 82.05%, #1B2628 84.62%, #162022 87.18%, #11191B 89.74%, #0D1314 92.31%, #090D0D 94.87%, #040607 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]}],"hues":{"Edge":10,"Flash":32,"Yellow":50,"Mindaro":75,"Pulse":110,"Mint":145,"Brand":190,"Core":250,"Pink":350},"formula":{"L0":100.0,"L_range":100.0,"p_base":0.84,"dip":0.2,"dip_c":0.09,"L_peak_hue":75.0,"lobe_up":145.0,"lobe_dn":90.0,"S_drop":30.0,"S_knee":0.333333,"S_order":6.0,"steps":[25,50,100,200,300,400,500,600,700,800,850,900]},"meta":{"b":"b(t) = 4c\u00b7t/(t+c)\u00b2 with c = 0.09  \u2014 a log-t bell, no ln","e":"e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)","L":"L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves","S":"S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue","w":"w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down"},"curves":{"chromatic":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.784,94.179,91.801,89.578,87.468,85.445,83.493,81.597,79.748,77.94,76.166,74.422,72.705,71.011,69.339,67.686,66.05,64.431,62.827,61.237,59.66,58.095,56.542,55.0,53.467,51.945,50.432,48.927,47.431,45.943,44.463,42.99,41.525,40.066,38.614,37.168,35.729,34.295,32.868,31.446,30.029,28.618,27.212,25.811,24.415,23.023,21.637,20.254,18.877,17.503,16.134,14.769,13.408,12.05,10.697,9.347,8.002,6.659,5.321,3.985,2.654,1.325,0.0],"S":[100.0,100.0,100.0,100.0,99.999,99.995,99.984,99.959,99.909,99.815,99.654,99.393,98.991,98.402,97.579,96.483,95.092,93.411,91.481,89.373,87.18,85.0,82.92,81.005,79.293,77.799,76.519,75.438,74.533,73.781,73.158,72.644,72.219,71.868,71.578,71.337,71.137,70.97,70.831,70.714,70.615,70.532,70.462,70.402,70.35,70.307,70.269,70.237,70.209,70.185,70.164,70.146,70.13,70.116,70.103,70.093,70.083,70.075,70.067,70.061,70.055,70.05,70.045,70.041]},"chromatic_L_peak":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,95.301,90.614,86.551,83.15,80.281,77.804,75.612,73.625,71.788,70.063,68.42,66.84,65.309,63.816,62.354,60.915,59.497,58.095,56.706,55.329,53.962,52.604,51.253,49.909,48.57,47.237,45.909,44.586,43.266,41.951,40.639,39.33,38.025,36.723,35.424,34.127,32.834,31.543,30.255,28.969,27.686,26.405,25.127,23.851,22.577,21.305,20.036,18.769,17.504,16.241,14.98,13.721,12.464,11.209,9.956,8.705,7.456,6.208,4.963,3.72,2.478,1.238,0.0],"S":[100.0,100.0,100.0,100.0,99.999,99.995,99.984,99.959,99.909,99.815,99.654,99.393,98.991,98.402,97.579,96.483,95.092,93.411,91.481,89.373,87.18,85.0,82.92,81.005,79.293,77.799,76.519,75.438,74.533,73.781,73.158,72.644,72.219,71.868,71.578,71.337,71.137,70.97,70.831,70.714,70.615,70.532,70.462,70.402,70.35,70.307,70.269,70.237,70.209,70.185,70.164,70.146,70.13,70.116,70.103,70.093,70.083,70.075,70.067,70.061,70.055,70.05,70.045,70.041]},"neutral_light":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.92,94.487,92.249,90.131,88.096,86.126,84.208,82.334,80.496,78.691,76.915,75.165,73.438,71.732,70.045,68.376,66.724,65.087,63.465,61.857,60.261,58.677,57.105,55.544,53.993,52.452,50.921,49.398,47.884,46.379,44.881,43.392,41.909,40.434,38.966,37.505,36.05,34.601,33.158,31.721,30.29,28.865,27.445,26.03,24.621,23.216,21.816,20.421,19.031,17.645,16.264,14.887,13.514,12.145,10.781,9.42,8.063,6.71,5.361,4.016,2.674,1.335,0.0],"S":[10.7,10.392,10.149,9.925,9.713,9.51,9.313,9.121,8.933,8.75,8.569,8.392,8.216,8.044,7.873,7.704,7.538,7.372,7.209,7.047,6.886,6.726,6.568,6.411,6.254,6.099,5.945,5.792,5.64,5.488,5.338,5.188,5.039,4.891,4.743,4.597,4.45,4.305,4.16,4.016,3.872,3.729,3.586,3.444,3.303,3.162,3.022,2.882,2.742,2.603,2.465,2.326,2.189,2.051,1.915,1.778,1.642,1.506,1.371,1.236,1.102,0.967,0.834,0.7]},"neutral_dark":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.92,94.487,92.249,90.131,88.096,86.126,84.208,82.334,80.496,78.691,76.915,75.165,73.438,71.732,70.045,68.376,66.724,65.087,63.465,61.857,60.261,58.677,57.105,55.544,53.993,52.452,50.921,49.398,47.884,46.379,44.881,43.392,41.909,40.434,38.966,37.505,36.05,34.601,33.158,31.721,30.29,28.865,27.445,26.03,24.621,23.216,21.816,20.421,19.031,17.645,16.264,14.887,13.514,12.145,10.781,9.42,8.063,6.71,5.361,4.016,2.674,1.335,0.0],"S":[10.889,11.231,11.501,11.75,11.985,12.212,12.43,12.644,12.852,13.056,13.257,13.454,13.648,13.84,14.03,14.217,14.403,14.586,14.768,14.948,15.127,15.304,15.48,15.655,15.828,16.001,16.172,16.342,16.511,16.68,16.847,17.013,17.179,17.343,17.507,17.67,17.833,17.994,18.155,18.316,18.475,18.634,18.793,18.951,19.108,19.264,19.42,19.576,19.731,19.885,20.039,20.193,20.346,20.498,20.651,20.802,20.953,21.104,21.254,21.404,21.554,21.703,21.852,22.0]}},"vs_v5":{"mean":1.07,"max":5.33},"vs_current":{"mean":1.84,"max":9.34}}};
+
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+const fx=(n,d=0)=> Number(n).toFixed(d);
+
+/* ---------- page copy ---------- */
+const COPY = {
+  eyebrow: "",
+  lead: "Every ramp in the palette regenerates from one hue per family and two shared curves. Each card "
+      + "puts the current Figma values next to the formula output, so any drift is visible without reading a number.",
+  fHead: "The formula",
+  ladHead: "Brand, step by step",
+  foot: ''
+};
+
+/* ---------- formula + ladder ---------- */
+function renderFormula(){
+  const VD=ALL.v7, F=ALL.v7.formula;
+  document.getElementById('f-body').innerHTML =
+`${K('// hue weight — 1 at hue 75, 0 past the lobe')}
+d(H) = ${V('|H − 75| / (145 up, 90 down)')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0
+
+${K('// lightness')}
+b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
+e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}
+L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
+
+${K('// saturation and hue')}
+r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
+S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}
+H(t) = ${V('H₀')}
+
+${K('// neutrals')}
+neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
+neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 850 → 85')}
+t     = scale / 100`;
+
+
+  const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
+  document.getElementById('lad-head').innerHTML =
+    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE</th></tr>`;
+  document.getElementById('lad').innerHTML = brand7.rows.map(r=>
+    `<tr><td>${r.step}</td>`+
+    `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+    `<td>${fx(r.e,3)}</td><td>${r.dE_hsl==null?'—':fx(r.dE_hsl,2)}</td></tr>`
+  ).join('');
+}
+
+/* ---------- swatch text contrast ---------- */
+function ink(hex){
+  const n=parseInt(hex.slice(1),16), r=n>>16&255, g=n>>8&255, b=n&255;
+  const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
+}
+const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- perceptual lift ---------- */
+/* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
+   OKLab L, which is invisible in a swatch but reads as noise on a plotted curve. */
+function hsl2rgbf(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(Math.min(k-3,9-k,1),-1); };
+  return [f(0), f(8), f(4)];
+}
+/* OKLab L, 0–100 — the perceptual axis the palette's ΔE is measured on */
+function okLrgb(r,g,b){
+  const lin=c=>{c=Math.max(0,Math.min(1,c)); return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
+  const R=lin(r), G=lin(g), B=lin(b);
+  const cb=x=> x>0 ? Math.cbrt(x) : 0;
+  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
+  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
+  const q=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
+  return 100*(0.2104542553*l + 0.7936177850*m - 0.0040720468*q);
+}
+/* How much lighter a tinted step reads than a pure grey of the same nominal L.
+   This is the quantity the chromatic bend exists to cancel — so the palette cards
+   and the playgrounds both quote it, from this one function, off the same H/S/L. */
+function perceptualLift(H, S, L){
+  return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
+}
+function liftStr(v){ return (v<0?'−':'+')+Math.abs(v).toFixed(2); }
+/* the step that reads furthest from its nominal grey — signed, not absolute */
+function peakLift(rows){
+  return rows.reduce((a,r)=>{
+    const v=perceptualLift(r.H, r.S, r.L);
+    return Math.abs(v)>Math.abs(a) ? v : a;
+  }, 0);
+}
+
+/* ---------- render ---------- */
+function famCard(f){
+  /* Lift is quoted on the neutrals only — there it is the evidence that they need
+     no correction. On a chromatic ramp the dip already answers for it. */
+  const showLift = f.kind==='neutral';
+  const param = f.kind==='grey' ? 'achromatic'
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`
+      + (showLift ? ` · peak lift ${liftStr(peakLift(f.rows))}` : '');
+  const grad = f.gradient;
+  const n = f.rows.length;
+
+  const body = f.rows.map((r,i)=>{
+    const missing = !!(r.missing || r.orig==null);
+    const d=r.dE_hsl, b=band(d);
+    const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
+    const tLift = showLift ? ` · lift ${liftStr(perceptualLift(r.H, r.S, r.L))}` : '';
+    const tip = missing
+      ? `${r.step} · no current swatch → formula ${r.hsl}${tPos}${tLift}`
+      : `${r.step} · current ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}${tLift}`;
+    const figmaTile = missing
+      ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}"></span>`;
+    const deCell = missing
+      ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No current value">—</span>`
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}"><i class="${b}"></i></span>`;
+    return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+      figmaTile+
+      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}"></span>`+
+      deCell;
+  }).join('');
+
+  const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
+  return `<article class="fam">
+    <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
+    <div class="colhead"><span></span><span>Current</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
+    <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
+      ${body}
+      <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
+    </div></article>`;
+}
+
+function render(){
+  const D = ALL.v7;
+  const put=(id,list)=>{
+    document.getElementById(id).innerHTML = list.length ? list.map(famCard).join('')
+      : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
+  };
+  put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
+  put('g-theme',     D.families.filter(f=>f.kind==='neutral'));
+
+}
+
+
+/* ---------- hue playground ---------- */
+const playF   = ()=> ALL.v7.formula;
+const basePow = F => F.p_base;
+/* the dip: a bell in log t, written without ln or exp */
+const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
+let playHue  = 75;
+const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
+let playBuilt = false;
+
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function hsl2hex(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{
+    const k=(n+h/30)%12;
+    const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);
+    return Math.round(255*clamp01(c));
+  };
+  const hex=n=>n.toString(16).padStart(2,'0').toUpperCase();
+  return '#'+hex(f(0))+hex(f(8))+hex(f(4));
+}
+
+/* How much a hue needs the correction: 1 at the perceptual-peak hue, easing to 0
+   at the edge of the lobe — wider on the green side, since greens stay
+   perceptually light much further round the wheel than the warm hues do. */
+function hueWeight(H, F){
+  if(H==null) return 0;
+  const LOBE_UP = F.lobe_up, LOBE_DN = F.lobe_dn;
+  const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
+  const d=Math.abs(delta)/(delta>=0 ? LOBE_UP : LOBE_DN);
+  if(d>=1) return 0;
+  const c=Math.cos(Math.PI/2*d);
+  return c*c;
+}
+function Lplay(t, H, F, corr){
+  if(t<=0) return F.L0;
+  /* the exponent goes straight into the power law */
+  return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
+}
+/* local exponent of the ramp at t — the curve the dip actually reshapes */
+function Qplay(t, H, F, corr){
+  return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
+}
+function Splay(t,F){
+  /* Hill switch: flat on 100 below the knee, flat on the floor above it */
+  const r = Math.pow(t/F.S_knee, F.S_order);
+  return 100 - F.S_drop*r/(1 + r);
+}
+
+/* The diagram card is stretched to the height of the ramp card beside it, so the
+   plot is drawn to whatever height that leaves instead of being letterboxed in it.
+   viewBox width stays 380, so one user unit is the same size as before and the
+   labels keep their type size — only the plot gets taller. */
+function fitSvg(svg){
+  const body=svg.parentElement, r=body.getBoundingClientRect(), cs=getComputedStyle(body);
+  const w=r.width  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const h=r.height - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+  const vh = (w>0 && h>0) ? Math.max(240, Math.min(900, Math.round(380*h/w))) : 300;
+  svg.setAttribute('viewBox', `0 0 380 ${vh}`);
+  return vh;
+}
+
+/* ---- live diagram, same geometry and classes as the big one above ---- */
+function playCurvesSvg(F, corr, H=300){
+  const W=380, padL=34, padR=32, padT=14, padB=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+  const yQ =q=> yOf(50*q);            /* right-hand axis: q 0–2 on the same gridlines */
+
+  const N=160, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const qLabels = [0,1,2].map(q=>
+    `<text class="label" x="${W-padR+6}" y="${yQ(q)+4}">${q}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+
+  /* the steps the bend reshapes, so the gaps it opens up are visible */
+  const marks = F.steps.filter(st=>st/1000<=0.35).map(st=>{
+    const t=st/1000, L=Lplay(t,playHue,F,corr);
+    return `<line class="stepline" x1="${xOf(t).toFixed(2)}" y1="${yOf(L).toFixed(2)}" `+
+           `x2="${xOf(t).toFixed(2)}" y2="${H-padB}"/>`+
+           `<circle class="step" cx="${xOf(t).toFixed(2)}" cy="${yOf(L).toFixed(2)}" r="2.6"/>`;
+  }).join('');
+
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${qLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">L</text>
+    <text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">q</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
+    <path class="Q" d="${path(t=>Qplay(t,playHue,F,corr), yQ)}"/>
+    <path class="Lpeak" d="${path(t=>Lplay(t,playHue,F,0))}"/>
+    <path class="S" d="${path(t=>Splay(t,F))}"/>
+    <path class="L" d="${path(t=>Lplay(t,playHue,F,corr))}"/>
+    ${marks}`;
+}
+
+/* Repaint only what the sliders change — the inputs themselves are never replaced,
+   so a drag keeps its grab and updates continuously. */
+function updatePlayground(){
+  const F=playF();
+  const corr=PLAY_CORR;
+  const w=hueWeight(playHue,F);
+
+  const rows=F.steps.map(step=>{
+    const t=step/1000;
+    const L=Lplay(t, playHue, F, corr);
+    const S=Splay(t, F);
+    return {step, L, S, hex:hsl2hex(playHue, S, L)};
+  });
+  const gradStops=[];
+  for(let i=0;i<48;i++){
+    const t=i/47;
+    gradStops.push(`${hsl2hex(playHue, Splay(t,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${r.step} · ${r.hex} · H ${playHue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
+  ).join('');
+
+  document.getElementById('play-ramp').innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${gradStops.join(', ')})" `+
+    `title="Playground continuous scale"></div>`;
+  document.getElementById('play-hue-val').textContent  = playHue+'°';
+  document.getElementById('play-stats').textContent =
+    `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
+
+  const psvg=document.getElementById('play-svg');
+  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg));
+  document.getElementById('play-curve-meta').textContent =
+    `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
+
+}
+
+function renderPlayground(){
+  const host=document.getElementById('playground');
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const F=playF();
+
+  if(!playBuilt){
+    host.innerHTML =
+      `<article class="fam play-card">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Playground</h3>
+            <span class="play-meta" id="play-stats"></span>
+          </div>
+          <div class="play-slider">
+            <label for="play-hue">Hue</label>
+            <input id="play-hue" type="range" min="0" max="359" step="1" value="${playHue}">
+            <span class="play-meta" id="play-hue-val"></span>
+          </div>
+        </div>
+        <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+        <div class="ramp-wrap" id="play-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
+      </article>
+      <article class="fam play-card play-curves">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Correction curve</h3>
+            <span class="play-meta" id="play-curve-meta"></span>
+          </div>
+          <div class="curves__legend">
+            <span><i class="L"></i>L corrected</span>
+            <span><i class="Lpeak"></i>L base</span>
+            <span><i class="S"></i>S</span>
+            <span><i class="Q"></i>q (exponent)</span>
+          </div>
+        </div>
+        <div class="play-curves__body">
+          <svg class="curves__svg play-curves__svg" id="play-svg" viewBox="0 0 380 300"
+               role="img" aria-label="Lightness with and without the light-end correction"></svg>
+        </div>
+      </article>`;
+    const hue=document.getElementById('play-hue');
+    hue.addEventListener('input', ()=>{ playHue = Number(hue.value); updatePlayground(); });
+    playBuilt = true;
+  }
+  updatePlayground();
+}
+
+
+/* ---------- neutrals: functions and playgrounds ---------- */
+function neutralS(theme, L){
+  /* the light ramp keeps a floor of tint — it never reaches neutral grey */
+  return theme==='light' ? L/10 + 0.7 : 22 - L/9;
+}
+
+/* one neutral diagram — same grid, pads and classes as the chromatic one */
+function neutralSvg(F, hue, theme, H=300){
+  const W=380, padT=14, padB=32;
+  const padL=34, padR=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+  /* right axis: −6…+6 OKLab points, zero on the middle gridline. Tinted neutrals
+     span −5.6…+6.0 across every hue and step, so nothing clips. */
+  const yLift=v=> yOf(50 + v*(100/12));
+
+  const N=140, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+  const Lb=t=> Lplay(t, null, F, 0);         /* neutrals ride the unbent power law */
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+  const liftAxis =
+      `<line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>`+
+      [-6,-3,0,3,6].map(v=>`<text class="label" x="${W-padR+6}" y="${yLift(v)+4}">${v}</text>`).join('')+
+      `<line class="qbase" x1="${padL}" y1="${yLift(0)}" x2="${W-padR}" y2="${yLift(0)}"/>`+
+      `<text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">lift</text>`+
+      `<path class="Q" d="${path(t=>perceptualLift(hue, neutralS(theme,Lb(t)), Lb(t)), yLift)}"/>`;
+
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">value</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    ${liftAxis}
+    <path class="S" d="${path(t=>neutralS(theme, Lb(t)))}"/>
+    <path class="L" d="${path(Lb)}"/>`;
+}
+
+/* ---- neutral playgrounds: one pair of cards per theme ---- */
+const N_HUE = {light:75, dark:190};      /* the hues the palette actually ships */
+let nPlayBuilt = false;
+
+function updateNeutralTheme(theme){
+  const F=playF();
+  const hue=N_HUE[theme];
+  const steps=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
+  const rows=steps.map(step=>{
+    const t=Number(step)/1000;
+    const L=Lplay(t, null, F, 0);
+    const S=neutralS(theme, L);
+    return {step, L, S, hex:hsl2hex(hue,S,L), lift:perceptualLift(hue,S,L)};
+  });
+  const stops=[];
+  for(let i=0;i<40;i++){
+    const t=i/39, L=Lplay(t,null,F,0);
+    stops.push(`${hsl2hex(hue, neutralS(theme,L), L)} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${liftStr(r.lift)}"></span>`
+  ).join('');
+
+  document.getElementById(`nplay-${theme}-ramp`).innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${stops.join(', ')})" `+
+    `title="${theme} continuous scale"></div>`;
+  document.getElementById(`nplay-${theme}-hue-val`).textContent = hue+'°';
+
+  const at=rows.reduce((a,b)=> Math.abs(b.lift)>Math.abs(a.lift) ? b : a);
+  document.getElementById(`nplay-${theme}-stats`).textContent =
+    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${liftStr(at.lift)}`;
+  const nsvg=document.getElementById(`nplay-${theme}-svg`);
+  nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
+  document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
+}
+
+function neutralCardPair(theme, n){
+  const label = theme==='light' ? 'Neutrals · light' : 'Neutrals · dark';
+  return `<article class="fam play-card">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>${label}</h3>
+          <span class="play-meta" id="nplay-${theme}-stats"></span>
+        </div>
+        <div class="play-slider">
+          <label for="nplay-${theme}-hue">Tint hue</label>
+          <input id="nplay-${theme}-hue" type="range" min="0" max="359" step="1" value="${N_HUE[theme]}">
+          <span class="play-meta" id="nplay-${theme}-hue-val"></span>
+        </div>
+      </div>
+      <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+      <div class="ramp-wrap" id="nplay-${theme}-ramp" style="grid-template-rows:repeat(${n},32px)"></div>
+    </article>
+    <article class="fam play-card play-curves">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>${theme==='light' ? 'Light curve' : 'Dark curve'}</h3>
+          <span class="play-meta" id="nplay-${theme}-meta"></span>
+        </div>
+        <div class="curves__legend">
+          <span><i class="L"></i>L</span>
+          <span><i class="S"></i>S ${theme}</span>
+          <span><i class="Q"></i>lift</span>
+        </div>
+      </div>
+      <div class="play-curves__body">
+        <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
+             role="img" aria-label="Neutral ${theme} lightness, saturation and perceptual lift"></svg>
+      </div>
+    </article>`;
+}
+
+function renderNeutralPlayground(){
+  const host=document.getElementById('playground-neutral');
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const n=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
+
+  if(!nPlayBuilt){
+    host.innerHTML = neutralCardPair('light', n) + neutralCardPair('dark', n);
+    ['light','dark'].forEach(theme=>{
+      const sl=document.getElementById(`nplay-${theme}-hue`);
+      sl.addEventListener('input', ()=>{ N_HUE[theme]=Number(sl.value); updateNeutralTheme(theme); });
+    });
+    nPlayBuilt = true;
+  }
+  updateNeutralTheme('light');
+  updateNeutralTheme('dark');
+}
+
+
+/* the plots are sized from the box they land in, so a resize has to redraw them */
+let fitRaf=0;
+addEventListener('resize', ()=>{
+  cancelAnimationFrame(fitRaf);
+  fitRaf=requestAnimationFrame(()=>{
+    if(playBuilt) updatePlayground();
+    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
+  });
+});
+
+function renderPage(){
+  const c = COPY;
+  /* the page runs without most of the prose — each element is filled when
+     there is copy for it and hidden when there is not */
+  const put=(id, text, html)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const has = !!(text && String(text).trim());
+    el[html ? 'innerHTML' : 'textContent'] = has ? text : '';
+    el.style.display = has ? '' : 'none';
+  };
+  put('mast-lead',   c.lead);
+  put('eyebrow',     c.eyebrow);
+  put('foot',        c.foot, true);
+  document.getElementById('f-heading').textContent = c.fHead;
+  document.getElementById('lad-heading').textContent = c.ladHead;
+  renderFormula();
+  render();
+  renderPlayground();
+  renderNeutralPlayground();
+}
+
+renderPage();
+</script>
+
+</body>
+</html>

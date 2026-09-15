@@ -1,0 +1,811 @@
+<title>Xsolla Ramp Formulas</title>
+<link rel="stylesheet" href="https://use.typekit.net/mwa4gcw.css">
+<style>
+/* Pilat — the display face, served locally */
+@font-face{font-family:'Pilat';src:url('fonts/pilat/pilat_regular.woff2') format('woff2'),
+  url('fonts/pilat/pilat_regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+
+/* ------------------------------------------------------------------
+   Tokens — Xsolla Digital Language dashboard
+   (Figma DjKP20nZbMAfwXwddlCOSt, frame 2789:7057)
+   A committed light theme: the reference is a light admin surface with
+   a black application bar, so the page paints one world explicitly
+   rather than carrying a second palette it would never use.
+   ------------------------------------------------------------------ */
+:root{
+  --ground:#F3F3F2;              /* background/secondary */
+  --panel:#FFFFFF;               /* background/primary   */
+  --sunk:rgba(0,0,0,.05);        /* overlay/mono         */
+  --input:rgba(0,0,0,.08);       /* control/input/bg     */
+
+  --ink:#000000;                 /* content/primary      */
+  --ink-2:rgba(0,0,0,.80);
+  --ink-3:rgba(0,0,0,.60);       /* content/tertiary     */
+
+  --rule:rgba(0,0,0,.10);        /* border/secondary     */
+  --rule-2:#C1C2BC;              /* control/mono/secondary/border */
+  --faint:#DADBD7;               /* control/mono/secondary/bg     */
+
+  --brand:#80EAFF;               /* control/brand/primary/bg      */
+  --brand-edge:#31CAE8;          /* control/brand/primary/border  */
+  --brand-soft:#B2F2FF;          /* background/brand-secondary    */
+  --brand-ink:#135D6C;
+
+  --ok:#95FF80;                  /* background/success-primary    */
+  --slight:#F6DB55;
+  --warn:#F6AB55;
+  --bad:#F67055;                 /* background/alert-primary      */
+
+  --body:aktiv-grotesk,"Helvetica Neue",Arial,sans-serif;
+  --display:"Pilat",var(--body);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --r-xs:2px;                    /* tag/sm  */
+  --r-sm:4px;                    /* radius/50 */
+  --r-md:6px;                    /* radius/75 */
+  --r-lg:8px;                    /* radius/100 */
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:400 14px/18px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
+
+/* ---- curve diagram ---- */
+/* Diagram cards ride in the same track as the palette cards, so every card on
+   the page is one column wide. */
+.curves__legend{display:flex;flex-wrap:wrap;gap:14px;margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-2)}
+.curves__legend span{display:inline-flex;align-items:center;gap:7px}
+.curves__legend i{display:block;width:18px;height:3px;border-radius:1px}
+.curves__legend i.L{background:#E24B4A}
+.curves__legend i.S{background:#2F6FED}
+.curves__svg{display:block;width:100%;height:auto;max-height:280px}
+.curves__svg .axis{stroke:var(--rule-2);stroke-width:1;fill:none}
+.curves__svg .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.curves__svg .label{fill:var(--ink-3);font:400 11px var(--body)}
+.curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
+.curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.Lpeak{fill:none;stroke:#C45A2A;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:5 4;opacity:.85}
+.curves__legend i.Lpeak{background:#C45A2A;opacity:.7}
+.curves__svg path.Shi{fill:none;stroke:#2F6FED;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+                      stroke-dasharray:5 4;opacity:.45}
+.curves__legend i.Shi{background:#2F6FED;opacity:.4}
+.curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
+
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 80px}
+
+/* ---- page head ---- */
+.mast{padding:36px 0 26px}
+.eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:22ch}
+.mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
+
+/* ---- formula panel ---- */
+/* Two equal panes, square-edged and borderless, separated by a 4px seam. */
+.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+       background:transparent;border:0;border-radius:0;margin-bottom:40px}
+.panel>div{padding:22px 24px;min-width:0;background:var(--panel);border:0;border-radius:0}
+.panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
+          color:var(--ink-3);margin-bottom:14px}
+pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
+      font-variant-numeric:tabular-nums}
+pre.f .k{color:var(--ink-3)}
+pre.f .v{color:var(--brand-ink);font-weight:600}
+.note{margin:18px 0 0;max-width:58ch;font-size:13px;line-height:19px;color:var(--ink-2)}
+.note code{padding:1px 5px;background:var(--sunk);border-radius:var(--r-xs);
+           font:500 12px var(--mono)}
+
+table.ladder{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.ladder th,table.ladder td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--rule)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left;color:var(--ink-3)}
+table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
+table.ladder tbody tr:last-child td{border-bottom:0}
+
+/* ---- section heads ---- */
+.sect{margin:0 0 12px}
+.sect h2{font-size:22px;line-height:1.1}
+.sect h2.sect-xl{font-size:40px}
+.sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0 22px;
+        font-size:12px;line-height:16px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
+          border:1px solid var(--rule)}
+
+/* ---- family cards ----
+   Three colour columns (Current · Formula · Gradient) stay side-by-side
+   at every width — never stack. Step label + Δ stay narrow. */
+.grid{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin:0 0 44px}
+.fam{background:var(--panel);overflow:clip}
+.fam header{display:flex;align-items:flex-start;gap:8px;padding:13px 14px 11px}
+.fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
+.fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
+            font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
+            letter-spacing:.06em}
+.fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+         column-gap:0;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         letter-spacing:.04em;text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
+.colhead span:last-child{text-align:right}
+
+.ramp-wrap{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+           column-gap:0;row-gap:0;padding:0 10px 13px;align-items:stretch}
+.ramp-steps{display:contents}
+.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;
+          font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* Current value and formula value share an edge — no gap, no radius, so the
+   seam only appears where the two actually differ. */
+.tile.empty{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:18px;
+  color:var(--ink-3)}
+.tile.empty::after{content:'—'}
+.grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
+          box-shadow:none;position:relative}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:4px}
+.dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
+.dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
+.dl em{font-style:normal;font-size:14px;line-height:18px;color:var(--ink)}
+
+/* ---- deviation table ---- */
+.dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+     overflow:hidden;margin-top:18px}
+.devrow{display:grid;grid-template-columns:120px 56px 1fr 1fr 62px;align-items:center;
+        border-bottom:1px solid var(--rule);font-size:12.5px;font-variant-numeric:tabular-nums}
+.devrow:last-child{border-bottom:0}
+.devrow>*{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devrow .nm{font-weight:500}
+.devrow .stp{text-align:right;color:var(--ink-3)}
+.devrow .sw{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px}
+.devrow .sw u{flex:0 0 auto;width:24px;height:24px;border-radius:var(--r-sm);
+              box-shadow:inset 0 0 0 1px var(--rule)}
+.devrow .de{text-align:right;color:var(--ink-3)}
+.devhead{background:var(--sunk);color:var(--ink-3);font-size:11px!important;
+         letter-spacing:.06em;text-transform:uppercase}
+
+footer{margin-top:44px;padding:22px 24px;max-width:none;background:var(--panel);
+       border:1px solid var(--rule);border-radius:var(--r-lg);
+       font-size:13px;line-height:20px;color:var(--ink-2)}
+footer p{margin:0 0 12px;max-width:80ch}
+footer p:last-child{margin-bottom:0}
+footer b{color:var(--ink);font-weight:500}
+
+@media (max-width:880px){
+  .panel{grid-template-columns:1fr}
+  .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+}
+@media (max-width:420px){
+  .tile{padding:0 2px;font-size:8.5px}
+  .colhead{font-size:8px;letter-spacing:.02em}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- hue playground ---- */
+.playground{display:grid;gap:4px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+            align-items:stretch;margin:0 0 44px}
+/* Probe cards read as the same bare plates as the family cards — no frame,
+   no radius, no rule under the head. */
+.play-card .play-head{display:flex;flex-direction:column;gap:10px;
+                      padding:13px 14px 12px}
+.play-head__top{display:flex;align-items:center;gap:8px;min-width:0}
+.play-card .play-head h3{margin:0;font-size:18px;line-height:1;flex:0 0 auto}
+.play-head__top .play-meta{margin-left:auto;text-align:right}
+.play-slider{display:grid;grid-template-columns:58px minmax(0,1fr) 46px;align-items:center;gap:8px}
+.play-slider label{font-size:12px;color:var(--ink-3)}
+.play-slider input[type=range]{width:100%;min-width:0;accent-color:var(--ink)}
+.play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.play-slider .play-meta{text-align:right}
+
+/* Playground ramps have no Figma reference, so they drop the Current column and
+   the drift gutter; the card itself stays one grid track wide like every other. */
+.play-card .colhead,
+.play-card .ramp-wrap{grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+.play-card .grad-col{grid-column:3}
+
+.play-curves .play-head{gap:9px}
+.play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
+/* The plot is taken out of flow and pinned to its box, so the card's height is
+   set by the row (i.e. by the ramp card beside it) and never by the drawing —
+   the SVG is then sized to whatever box that leaves. On its own row the card
+   falls back to the diagram's own 380 x 300 proportion. */
+.play-curves{display:flex;flex-direction:column}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:0;
+                   position:relative;aspect-ratio:380/300}
+.play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
+                          width:auto;height:auto;max-height:none}
+.play-curves__svg .step{fill:#E24B4A}
+.play-curves__svg .stepline{stroke:#E24B4A;stroke-width:1;stroke-dasharray:2 3;opacity:.35}
+.grad-split{display:flex;gap:1px}
+.grad-split i{display:block;flex:1 1 0;min-width:0}
+.play-curves__svg path.Qdk{fill:none;stroke:#1E8A6A;stroke-width:1.4;opacity:.45;
+                           stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 3}
+.play-curves__svg path.Q{fill:none;stroke:#1E8A6A;stroke-width:1.6;stroke-linecap:round;
+                         stroke-linejoin:round;stroke-dasharray:5 3}
+.play-curves__svg .qbase{stroke:#1E8A6A;stroke-width:1;stroke-dasharray:1 4;opacity:.5}
+.curves__legend i.Q{background:#1E8A6A;opacity:.85}
+.curves__legend i.Qdk{background:#1E8A6A;opacity:.45}
+
+</style>
+
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow" id="eyebrow"></p>
+  <h1>Xsolla Colour Formulas</h1>
+  <p class="lead" id="mast-lead"></p>
+</header>
+
+
+<div class="panel">
+  <div>
+    <h2 id="f-heading">The formula</h2>
+    <pre class="f" id="f-body"></pre>
+  </div>
+  <div>
+    <h2 id="lad-heading">Step ladder</h2>
+    <table class="ladder"><thead id="lad-head"></thead><tbody id="lad"></tbody></table>
+  </div>
+</div>
+
+
+
+<div class="sect">
+  <h2 class="sect-xl">Chromatic</h2>
+</div>
+<div class="legend">
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6</span>
+</div>
+<div class="grid" id="g-chromatic"></div>
+
+
+<div id="playground" class="playground"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">Neutrals</h2>
+</div>
+
+<div class="grid" id="g-theme"></div>
+
+<div id="playground-neutral" class="playground"></div>
+
+
+
+<footer id="foot"></footer>
+</div>
+
+<script>
+const ALL = /*__DATA__*/;
+
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+const fx=(n,d=0)=> Number(n).toFixed(d);
+
+/* ---------- page copy ---------- */
+const COPY = {
+  eyebrow: "",
+  lead: "Every ramp in the palette regenerates from one hue per family and two shared curves. Each card "
+      + "puts the current Figma values next to the formula output, so any drift is visible without reading a number.",
+  fHead: "The formula",
+  ladHead: "Brand, step by step",
+  foot: ''
+};
+
+/* ---------- formula + ladder ---------- */
+function renderFormula(){
+  const VD=ALL.v7, F=ALL.v7.formula;
+  document.getElementById('f-body').innerHTML =
+`${K('// hue weight — 1 at hue 75, 0 past the lobe')}
+d(H) = ${V('|H − 75| / (145 up, 90 down)')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0
+
+${K('// lightness')}
+b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
+e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}
+L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
+
+${K('// saturation and hue')}
+r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
+S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}
+H(t) = ${V('H₀')}
+
+${K('// neutrals')}
+neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
+neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 850 → 85')}
+t     = scale / 100`;
+
+
+  const brand7 = ALL.v7.families.find(f=>f.name==='Brand');
+  document.getElementById('lad-head').innerHTML =
+    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE</th></tr>`;
+  document.getElementById('lad').innerHTML = brand7.rows.map(r=>
+    `<tr><td>${r.step}</td>`+
+    `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+    `<td>${fx(r.e,3)}</td><td>${r.dE_hsl==null?'—':fx(r.dE_hsl,2)}</td></tr>`
+  ).join('');
+}
+
+/* ---------- swatch text contrast ---------- */
+function ink(hex){
+  const n=parseInt(hex.slice(1),16), r=n>>16&255, g=n>>8&255, b=n&255;
+  const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
+}
+const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- perceptual lift ---------- */
+/* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
+   OKLab L, which is invisible in a swatch but reads as noise on a plotted curve. */
+function hsl2rgbf(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(Math.min(k-3,9-k,1),-1); };
+  return [f(0), f(8), f(4)];
+}
+/* OKLab L, 0–100 — the perceptual axis the palette's ΔE is measured on */
+function okLrgb(r,g,b){
+  const lin=c=>{c=Math.max(0,Math.min(1,c)); return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
+  const R=lin(r), G=lin(g), B=lin(b);
+  const cb=x=> x>0 ? Math.cbrt(x) : 0;
+  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
+  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
+  const q=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
+  return 100*(0.2104542553*l + 0.7936177850*m - 0.0040720468*q);
+}
+/* How much lighter a tinted step reads than a pure grey of the same nominal L.
+   This is the quantity the chromatic bend exists to cancel — so the palette cards
+   and the playgrounds both quote it, from this one function, off the same H/S/L. */
+function perceptualLift(H, S, L){
+  return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
+}
+function liftStr(v){ return (v<0?'−':'+')+Math.abs(v).toFixed(2); }
+/* the step that reads furthest from its nominal grey — signed, not absolute */
+function peakLift(rows){
+  return rows.reduce((a,r)=>{
+    const v=perceptualLift(r.H, r.S, r.L);
+    return Math.abs(v)>Math.abs(a) ? v : a;
+  }, 0);
+}
+
+/* ---------- render ---------- */
+function famCard(f){
+  /* Lift is quoted on the neutrals only — there it is the evidence that they need
+     no correction. On a chromatic ramp the dip already answers for it. */
+  const showLift = f.kind==='neutral';
+  const param = f.kind==='grey' ? 'achromatic'
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`
+      + (showLift ? ` · peak lift ${liftStr(peakLift(f.rows))}` : '');
+  const grad = f.gradient;
+  const n = f.rows.length;
+
+  const body = f.rows.map((r,i)=>{
+    const missing = !!(r.missing || r.orig==null);
+    const d=r.dE_hsl, b=band(d);
+    const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
+    const tLift = showLift ? ` · lift ${liftStr(perceptualLift(r.H, r.S, r.L))}` : '';
+    const tip = missing
+      ? `${r.step} · no current swatch → formula ${r.hsl}${tPos}${tLift}`
+      : `${r.step} · current ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}${tLift}`;
+    const figmaTile = missing
+      ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}"></span>`;
+    const deCell = missing
+      ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No current value">—</span>`
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}"><i class="${b}"></i></span>`;
+    return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+      figmaTile+
+      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}"></span>`+
+      deCell;
+  }).join('');
+
+  const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
+  return `<article class="fam">
+    <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
+    <div class="colhead"><span></span><span>Current</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
+    <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
+      ${body}
+      <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
+    </div></article>`;
+}
+
+function render(){
+  const D = ALL.v7;
+  const put=(id,list)=>{
+    document.getElementById(id).innerHTML = list.length ? list.map(famCard).join('')
+      : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
+  };
+  put('g-chromatic', D.families.filter(f=>f.kind==='chromatic'));
+  put('g-theme',     D.families.filter(f=>f.kind==='neutral'));
+
+}
+
+
+/* ---------- hue playground ---------- */
+const playF   = ()=> ALL.v7.formula;
+const basePow = F => F.p_base;
+/* the dip: a bell in log t, written without ln or exp */
+const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
+let playHue  = 75;
+const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
+let playBuilt = false;
+
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function hsl2hex(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{
+    const k=(n+h/30)%12;
+    const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);
+    return Math.round(255*clamp01(c));
+  };
+  const hex=n=>n.toString(16).padStart(2,'0').toUpperCase();
+  return '#'+hex(f(0))+hex(f(8))+hex(f(4));
+}
+
+/* How much a hue needs the correction: 1 at the perceptual-peak hue, easing to 0
+   at the edge of the lobe — wider on the green side, since greens stay
+   perceptually light much further round the wheel than the warm hues do. */
+function hueWeight(H, F){
+  if(H==null) return 0;
+  const LOBE_UP = F.lobe_up, LOBE_DN = F.lobe_dn;
+  const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
+  const d=Math.abs(delta)/(delta>=0 ? LOBE_UP : LOBE_DN);
+  if(d>=1) return 0;
+  const c=Math.cos(Math.PI/2*d);
+  return c*c;
+}
+function Lplay(t, H, F, corr){
+  if(t<=0) return F.L0;
+  /* the exponent goes straight into the power law */
+  return F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr));
+}
+/* local exponent of the ramp at t — the curve the dip actually reshapes */
+function Qplay(t, H, F, corr){
+  return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
+}
+function Splay(t,F){
+  /* Hill switch: flat on 100 below the knee, flat on the floor above it */
+  const r = Math.pow(t/F.S_knee, F.S_order);
+  return 100 - F.S_drop*r/(1 + r);
+}
+
+/* The diagram card is stretched to the height of the ramp card beside it, so the
+   plot is drawn to whatever height that leaves instead of being letterboxed in it.
+   viewBox width stays 380, so one user unit is the same size as before and the
+   labels keep their type size — only the plot gets taller. */
+function fitSvg(svg){
+  const body=svg.parentElement, r=body.getBoundingClientRect(), cs=getComputedStyle(body);
+  const w=r.width  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const h=r.height - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+  const vh = (w>0 && h>0) ? Math.max(240, Math.min(900, Math.round(380*h/w))) : 300;
+  svg.setAttribute('viewBox', `0 0 380 ${vh}`);
+  return vh;
+}
+
+/* ---- live diagram, same geometry and classes as the big one above ---- */
+function playCurvesSvg(F, corr, H=300){
+  const W=380, padL=34, padR=32, padT=14, padB=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+  const yQ =q=> yOf(50*q);            /* right-hand axis: q 0–2 on the same gridlines */
+
+  const N=160, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const qLabels = [0,1,2].map(q=>
+    `<text class="label" x="${W-padR+6}" y="${yQ(q)+4}">${q}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+
+  /* the steps the bend reshapes, so the gaps it opens up are visible */
+  const marks = F.steps.filter(st=>st/1000<=0.35).map(st=>{
+    const t=st/1000, L=Lplay(t,playHue,F,corr);
+    return `<line class="stepline" x1="${xOf(t).toFixed(2)}" y1="${yOf(L).toFixed(2)}" `+
+           `x2="${xOf(t).toFixed(2)}" y2="${H-padB}"/>`+
+           `<circle class="step" cx="${xOf(t).toFixed(2)}" cy="${yOf(L).toFixed(2)}" r="2.6"/>`;
+  }).join('');
+
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${qLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">L</text>
+    <text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">q</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
+    <path class="Q" d="${path(t=>Qplay(t,playHue,F,corr), yQ)}"/>
+    <path class="Lpeak" d="${path(t=>Lplay(t,playHue,F,0))}"/>
+    <path class="S" d="${path(t=>Splay(t,F))}"/>
+    <path class="L" d="${path(t=>Lplay(t,playHue,F,corr))}"/>
+    ${marks}`;
+}
+
+/* Repaint only what the sliders change — the inputs themselves are never replaced,
+   so a drag keeps its grab and updates continuously. */
+function updatePlayground(){
+  const F=playF();
+  const corr=PLAY_CORR;
+  const w=hueWeight(playHue,F);
+
+  const rows=F.steps.map(step=>{
+    const t=step/1000;
+    const L=Lplay(t, playHue, F, corr);
+    const S=Splay(t, F);
+    return {step, L, S, hex:hsl2hex(playHue, S, L)};
+  });
+  const gradStops=[];
+  for(let i=0;i<48;i++){
+    const t=i/47;
+    gradStops.push(`${hsl2hex(playHue, Splay(t,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${r.step} · ${r.hex} · H ${playHue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
+  ).join('');
+
+  document.getElementById('play-ramp').innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${gradStops.join(', ')})" `+
+    `title="Playground continuous scale"></div>`;
+  document.getElementById('play-hue-val').textContent  = playHue+'°';
+  document.getElementById('play-stats').textContent =
+    `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
+
+  const psvg=document.getElementById('play-svg');
+  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg));
+  document.getElementById('play-curve-meta').textContent =
+    `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
+
+}
+
+function renderPlayground(){
+  const host=document.getElementById('playground');
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const F=playF();
+
+  if(!playBuilt){
+    host.innerHTML =
+      `<article class="fam play-card">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Playground</h3>
+            <span class="play-meta" id="play-stats"></span>
+          </div>
+          <div class="play-slider">
+            <label for="play-hue">Hue</label>
+            <input id="play-hue" type="range" min="0" max="359" step="1" value="${playHue}">
+            <span class="play-meta" id="play-hue-val"></span>
+          </div>
+        </div>
+        <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+        <div class="ramp-wrap" id="play-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
+      </article>
+      <article class="fam play-card play-curves">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Correction curve</h3>
+            <span class="play-meta" id="play-curve-meta"></span>
+          </div>
+          <div class="curves__legend">
+            <span><i class="L"></i>L corrected</span>
+            <span><i class="Lpeak"></i>L base</span>
+            <span><i class="S"></i>S</span>
+            <span><i class="Q"></i>q (exponent)</span>
+          </div>
+        </div>
+        <div class="play-curves__body">
+          <svg class="curves__svg play-curves__svg" id="play-svg" viewBox="0 0 380 300"
+               role="img" aria-label="Lightness with and without the light-end correction"></svg>
+        </div>
+      </article>`;
+    const hue=document.getElementById('play-hue');
+    hue.addEventListener('input', ()=>{ playHue = Number(hue.value); updatePlayground(); });
+    playBuilt = true;
+  }
+  updatePlayground();
+}
+
+
+/* ---------- neutrals: functions and playgrounds ---------- */
+function neutralS(theme, L){
+  /* the light ramp keeps a floor of tint — it never reaches neutral grey */
+  return theme==='light' ? L/10 + 0.7 : 22 - L/9;
+}
+
+/* one neutral diagram — same grid, pads and classes as the chromatic one */
+function neutralSvg(F, hue, theme, H=300){
+  const W=380, padT=14, padB=32;
+  const padL=34, padR=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+  /* right axis: −6…+6 OKLab points, zero on the middle gridline. Tinted neutrals
+     span −5.6…+6.0 across every hue and step, so nothing clips. */
+  const yLift=v=> yOf(50 + v*(100/12));
+
+  const N=140, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+  const Lb=t=> Lplay(t, null, F, 0);         /* neutrals ride the unbent power law */
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+  const liftAxis =
+      `<line class="axis" x1="${W-padR}" y1="${padT}" x2="${W-padR}" y2="${H-padB}"/>`+
+      [-6,-3,0,3,6].map(v=>`<text class="label" x="${W-padR+6}" y="${yLift(v)+4}">${v}</text>`).join('')+
+      `<line class="qbase" x1="${padL}" y1="${yLift(0)}" x2="${W-padR}" y2="${yLift(0)}"/>`+
+      `<text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">lift</text>`+
+      `<path class="Q" d="${path(t=>perceptualLift(hue, neutralS(theme,Lb(t)), Lb(t)), yLift)}"/>`;
+
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">value</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    ${liftAxis}
+    <path class="S" d="${path(t=>neutralS(theme, Lb(t)))}"/>
+    <path class="L" d="${path(Lb)}"/>`;
+}
+
+/* ---- neutral playgrounds: one pair of cards per theme ---- */
+const N_HUE = {light:75, dark:190};      /* the hues the palette actually ships */
+let nPlayBuilt = false;
+
+function updateNeutralTheme(theme){
+  const F=playF();
+  const hue=N_HUE[theme];
+  const steps=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
+  const rows=steps.map(step=>{
+    const t=Number(step)/1000;
+    const L=Lplay(t, null, F, 0);
+    const S=neutralS(theme, L);
+    return {step, L, S, hex:hsl2hex(hue,S,L), lift:perceptualLift(hue,S,L)};
+  });
+  const stops=[];
+  for(let i=0;i<40;i++){
+    const t=i/39, L=Lplay(t,null,F,0);
+    stops.push(`${hsl2hex(hue, neutralS(theme,L), L)} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${liftStr(r.lift)}"></span>`
+  ).join('');
+
+  document.getElementById(`nplay-${theme}-ramp`).innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${stops.join(', ')})" `+
+    `title="${theme} continuous scale"></div>`;
+  document.getElementById(`nplay-${theme}-hue-val`).textContent = hue+'°';
+
+  const at=rows.reduce((a,b)=> Math.abs(b.lift)>Math.abs(a.lift) ? b : a);
+  document.getElementById(`nplay-${theme}-stats`).textContent =
+    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${liftStr(at.lift)}`;
+  const nsvg=document.getElementById(`nplay-${theme}-svg`);
+  nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
+  document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
+}
+
+function neutralCardPair(theme, n){
+  const label = theme==='light' ? 'Neutrals · light' : 'Neutrals · dark';
+  return `<article class="fam play-card">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>${label}</h3>
+          <span class="play-meta" id="nplay-${theme}-stats"></span>
+        </div>
+        <div class="play-slider">
+          <label for="nplay-${theme}-hue">Tint hue</label>
+          <input id="nplay-${theme}-hue" type="range" min="0" max="359" step="1" value="${N_HUE[theme]}">
+          <span class="play-meta" id="nplay-${theme}-hue-val"></span>
+        </div>
+      </div>
+      <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+      <div class="ramp-wrap" id="nplay-${theme}-ramp" style="grid-template-rows:repeat(${n},32px)"></div>
+    </article>
+    <article class="fam play-card play-curves">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>${theme==='light' ? 'Light curve' : 'Dark curve'}</h3>
+          <span class="play-meta" id="nplay-${theme}-meta"></span>
+        </div>
+        <div class="curves__legend">
+          <span><i class="L"></i>L</span>
+          <span><i class="S"></i>S ${theme}</span>
+          <span><i class="Q"></i>lift</span>
+        </div>
+      </div>
+      <div class="play-curves__body">
+        <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
+             role="img" aria-label="Neutral ${theme} lightness, saturation and perceptual lift"></svg>
+      </div>
+    </article>`;
+}
+
+function renderNeutralPlayground(){
+  const host=document.getElementById('playground-neutral');
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const n=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
+
+  if(!nPlayBuilt){
+    host.innerHTML = neutralCardPair('light', n) + neutralCardPair('dark', n);
+    ['light','dark'].forEach(theme=>{
+      const sl=document.getElementById(`nplay-${theme}-hue`);
+      sl.addEventListener('input', ()=>{ N_HUE[theme]=Number(sl.value); updateNeutralTheme(theme); });
+    });
+    nPlayBuilt = true;
+  }
+  updateNeutralTheme('light');
+  updateNeutralTheme('dark');
+}
+
+
+/* the plots are sized from the box they land in, so a resize has to redraw them */
+let fitRaf=0;
+addEventListener('resize', ()=>{
+  cancelAnimationFrame(fitRaf);
+  fitRaf=requestAnimationFrame(()=>{
+    if(playBuilt) updatePlayground();
+    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
+  });
+});
+
+function renderPage(){
+  const c = COPY;
+  /* the page runs without most of the prose — each element is filled when
+     there is copy for it and hidden when there is not */
+  const put=(id, text, html)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const has = !!(text && String(text).trim());
+    el[html ? 'innerHTML' : 'textContent'] = has ? text : '';
+    el.style.display = has ? '' : 'none';
+  };
+  put('mast-lead',   c.lead);
+  put('eyebrow',     c.eyebrow);
+  put('foot',        c.foot, true);
+  document.getElementById('f-heading').textContent = c.fHead;
+  document.getElementById('lad-heading').textContent = c.ladHead;
+  renderFormula();
+  render();
+  renderPlayground();
+  renderNeutralPlayground();
+}
+
+renderPage();
+</script>
