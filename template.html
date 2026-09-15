@@ -106,7 +106,7 @@ table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
 table.ladder tbody tr:last-child td{border-bottom:0}
 
 /* ---- section heads ---- */
-.sect{margin:0 0 12px}
+.sect{margin:0 0 24px}
 .sect h2{font-size:22px;line-height:1.1}
 .sect h2.sect-xl{font-size:40px}
 .sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
@@ -265,14 +265,13 @@ footer b{color:var(--ink);font-weight:500}
   <h2 class="sect-xl">Brand &amp; Labels</h2>
 </div>
 <div class="grid" id="g-brand"></div>
+<div id="playground" class="playground"></div>
 
 <div class="sect">
   <h2 class="sect-xl">UI (Semantic)</h2>
 </div>
 <div class="grid" id="g-semantic"></div>
-
-
-<div id="playground" class="playground"></div>
+<div id="playground-ui" class="playground"></div>
 
 <div class="sect">
   <h2 class="sect-xl">Neutrals</h2>
@@ -322,8 +321,9 @@ S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every
 H(t) = ${V('H₀')}
 
 ${K('// UI families — Pulse · Flash · Pink')}
+g(H) = ${V('1 − 0.8·cos²(½π·|H−32|/60)')}   ${K('full on green, a fifth on orange')}
 s(t) = ${V('(1.5t)¹²')}                     ${K('the same knee, at t = 2/3')}
-S(t) = ${V('S(t) − 50·s/(1 + s)')}          ${K('70 → 20, dark end only')}
+S(t) = ${V('S(t) − 4·r/(1+r) − 46·g·s/(1+s)')}
 
 ${K('// neutrals')}
 neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
@@ -445,9 +445,14 @@ const playF   = ()=> ALL.v7.formula;
 const basePow = F => F.p_base;
 /* the dip: a bell in log t, written without ln or exp */
 const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
-let playHue  = 75;
 const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
-let playBuilt = false;
+/* One playground per chromatic group: the brand one probes the shared curves,
+   the UI one probes the same curves with the semantic saturation on top — so its
+   hue slider moves the lobe weight as well as the hue. */
+const PLAYS = {
+  brand: {host:'playground',    id:'play',    hue:75,  ui:false, built:false},
+  ui:    {host:'playground-ui', id:'play-ui', hue:110, ui:true,  built:false},
+};
 
 
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
@@ -484,10 +489,23 @@ function Lplay(t, H, F, corr){
 function Qplay(t, H, F, corr){
   return F.p_base - F.dip*hueWeight(H,F)*dipShape(t,F)*(corr==null ? 1 : corr);
 }
-function Splay(t,F){
+/* how much of the UI drop a hue takes — 1 away from the lobe, 0.2 at its centre */
+function sGain(H, F){
+  const d = Math.abs(((H-F.S_sem_hue+180)%360+360)%360-180)/F.S_sem_lobe;
+  if(d>=1) return 1;
+  const c=Math.cos(Math.PI/2*d);
+  return 1 - F.S_sem_cut*c*c;
+}
+function Splay(t,F,uiHue){
   /* Hill switch: flat on 100 below the knee, flat on the floor above it */
   const r = Math.pow(t/F.S_knee, F.S_order);
-  return 100 - F.S_drop*r/(1 + r);
+  let S = 100 - F.S_drop*r/(1 + r);
+  if(uiHue!=null){
+    const u = Math.pow(t/F.S_sem_knee, F.S_sem_order);
+    S -= F.S_sem_mid*r/(1 + r);
+    S -= F.S_sem_drop*sGain(uiHue,F)*u/(1 + u);
+  }
+  return Math.max(0, Math.min(100, S));
 }
 
 /* The diagram card is stretched to the height of the ramp card beside it, so the
@@ -504,7 +522,7 @@ function fitSvg(svg){
 }
 
 /* ---- live diagram, same geometry and classes as the big one above ---- */
-function playCurvesSvg(F, corr, H=300){
+function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null){
   const W=380, padL=34, padR=32, padT=14, padB=32;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xOf=t=> padL + t*plotW;
@@ -530,7 +548,7 @@ function playCurvesSvg(F, corr, H=300){
 
   /* the steps the bend reshapes, so the gaps it opens up are visible */
   const marks = F.steps.filter(st=>st/1000<=0.35).map(st=>{
-    const t=st/1000, L=Lplay(t,playHue,F,corr);
+    const t=st/1000, L=Lplay(t,hue,F,corr);
     return `<line class="stepline" x1="${xOf(t).toFixed(2)}" y1="${yOf(L).toFixed(2)}" `+
            `x2="${xOf(t).toFixed(2)}" y2="${H-padB}"/>`+
            `<circle class="step" cx="${xOf(t).toFixed(2)}" cy="${yOf(L).toFixed(2)}" r="2.6"/>`;
@@ -545,81 +563,83 @@ function playCurvesSvg(F, corr, H=300){
     <text class="title" x="${W-padR}" y="${padT-3}" text-anchor="end">q</text>
     <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
     <line class="qbase" x1="${padL}" y1="${yQ(basePow(F))}" x2="${W-padR}" y2="${yQ(basePow(F))}"/>
-    <path class="Q" d="${path(t=>Qplay(t,playHue,F,corr), yQ)}"/>
-    <path class="Lpeak" d="${path(t=>Lplay(t,playHue,F,0))}"/>
-    <path class="S" d="${path(t=>Splay(t,F))}"/>
-    <path class="L" d="${path(t=>Lplay(t,playHue,F,corr))}"/>
+    <path class="Q" d="${path(t=>Qplay(t,hue,F,corr), yQ)}"/>
+    <path class="Lpeak" d="${path(t=>Lplay(t,hue,F,0))}"/>
+    <path class="S" d="${path(t=>Splay(t,F,uiHue))}"/>
+    <path class="L" d="${path(t=>Lplay(t,hue,F,corr))}"/>
     ${marks}`;
 }
 
 /* Repaint only what the sliders change — the inputs themselves are never replaced,
    so a drag keeps its grab and updates continuously. */
-function updatePlayground(){
-  const F=playF();
+function updatePlayground(key){
+  const P=PLAYS[key], F=playF(), id=P.id;
   const corr=PLAY_CORR;
-  const w=hueWeight(playHue,F);
+  const hue=P.hue, uiHue = P.ui ? P.hue : null;
+  const w=hueWeight(hue,F);
 
   const rows=F.steps.map(step=>{
     const t=step/1000;
-    const L=Lplay(t, playHue, F, corr);
-    const S=Splay(t, F);
-    return {step, L, S, hex:hsl2hex(playHue, S, L)};
+    const L=Lplay(t, hue, F, corr);
+    const S=Splay(t, F, uiHue);
+    return {step, L, S, hex:hsl2hex(hue, S, L)};
   });
   const gradStops=[];
   for(let i=0;i<48;i++){
     const t=i/47;
-    gradStops.push(`${hsl2hex(playHue, Splay(t,F), Lplay(t,playHue,F,corr))} ${(100*t).toFixed(2)}%`);
+    gradStops.push(`${hsl2hex(hue, Splay(t,F,uiHue), Lplay(t,hue,F,corr))} ${(100*t).toFixed(2)}%`);
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
     `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
-      `title="${r.step} · ${r.hex} · H ${playHue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
+      `title="${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
   ).join('');
 
-  document.getElementById('play-ramp').innerHTML = body +
+  document.getElementById(id+'-ramp').innerHTML = body +
     `<div class="grad-col" style="background:linear-gradient(to bottom, ${gradStops.join(', ')})" `+
     `title="Playground continuous scale"></div>`;
-  document.getElementById('play-hue-val').textContent  = playHue+'°';
-  document.getElementById('play-stats').textContent =
-    `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`;
+  document.getElementById(id+'-hue-val').textContent  = hue+'°';
+  document.getElementById(id+'-stats').textContent =
+    `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`+
+    (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
 
-  const psvg=document.getElementById('play-svg');
-  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg));
-  document.getElementById('play-curve-meta').textContent =
-    `H ${playHue}° · e ${basePow(F)} → ${Qplay(F.dip_c,playHue,F,corr).toFixed(3)}`;
-
+  const psvg=document.getElementById(id+'-svg');
+  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg), hue, uiHue);
+  document.getElementById(id+'-curve-meta').textContent =
+    `H ${hue}° · e ${basePow(F)} → ${Qplay(F.dip_c,hue,F,corr).toFixed(3)}`;
 }
 
-function renderPlayground(){
-  const host=document.getElementById('playground');
+function renderPlayground(key){
+  const P=PLAYS[key];
+  const host=document.getElementById(P.host);
   if(!host) return;
   const show = !!playF();
   host.style.display = show ? '' : 'none';
   if(!show) return;
-  const F=playF();
+  const F=playF(), id=P.id;
 
-  if(!playBuilt){
+  if(!P.built){
     host.innerHTML =
       `<article class="fam play-card">
         <div class="play-head">
           <div class="play-head__top">
             <h3>Playground</h3>
-            <span class="play-meta" id="play-stats"></span>
+            <span class="play-meta" id="${id}-stats"></span>
           </div>
           <div class="play-slider">
-            <label for="play-hue">Hue</label>
-            <input id="play-hue" type="range" min="0" max="359" step="1" value="${playHue}">
-            <span class="play-meta" id="play-hue-val"></span>
+            <label for="${id}-hue">Hue</label>
+            <input id="${id}-hue" type="range" min="0" max="359" step="1" value="${P.hue}">
+            <span class="play-meta" id="${id}-hue-val"></span>
           </div>
         </div>
         <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
-        <div class="ramp-wrap" id="play-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
+        <div class="ramp-wrap" id="${id}-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
       </article>
       <article class="fam play-card play-curves">
         <div class="play-head">
           <div class="play-head__top">
             <h3>Correction curve</h3>
-            <span class="play-meta" id="play-curve-meta"></span>
+            <span class="play-meta" id="${id}-curve-meta"></span>
           </div>
           <div class="curves__legend">
             <span><i class="L"></i>L corrected</span>
@@ -629,15 +649,15 @@ function renderPlayground(){
           </div>
         </div>
         <div class="play-curves__body">
-          <svg class="curves__svg play-curves__svg" id="play-svg" viewBox="0 0 380 300"
+          <svg class="curves__svg play-curves__svg" id="${id}-svg" viewBox="0 0 380 300"
                role="img" aria-label="Lightness with and without the light-end correction"></svg>
         </div>
       </article>`;
-    const hue=document.getElementById('play-hue');
-    hue.addEventListener('input', ()=>{ playHue = Number(hue.value); updatePlayground(); });
-    playBuilt = true;
+    const sl=document.getElementById(id+'-hue');
+    sl.addEventListener('input', ()=>{ P.hue = Number(sl.value); updatePlayground(key); });
+    P.built = true;
   }
-  updatePlayground();
+  updatePlayground(key);
 }
 
 
@@ -791,7 +811,7 @@ let fitRaf=0;
 addEventListener('resize', ()=>{
   cancelAnimationFrame(fitRaf);
   fitRaf=requestAnimationFrame(()=>{
-    if(playBuilt) updatePlayground();
+    for(const k in PLAYS) if(PLAYS[k].built) updatePlayground(k);
     if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
   });
 });
@@ -814,7 +834,8 @@ function renderPage(){
   document.getElementById('lad-heading').textContent = c.ladHead;
   renderFormula();
   render();
-  renderPlayground();
+  renderPlayground('brand');
+  renderPlayground('ui');
   renderNeutralPlayground();
 }
 

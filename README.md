@@ -138,21 +138,34 @@ same Hill switch a second time, with its knee at 2/3 of the scale instead of 1/3
 and twice the order:
 
 ```
+g(H) = 1 − 0.8·cos²(½π·|H − 32|/60)   # 1 away from the lobe, 0.2 at its centre
 s(t) = (1.5t)¹²
-S(t) = S(t) − 50·s/(1 + s)      # UI families only
+S(t) = S(t) − 4·r/(1 + r) − 46·g(H)·s/(1 + s)      # UI families only
 ```
 
-Below step 500 `s` is numerically zero, so the base formula is untouched for
-every family at every light and mid step — the correction only exists in the
-dark tail. It takes the three UI ramps from mean ΔE 2.81 to **2.22** (Pink
-1.84 → 0.83, Pulse 4.24 → 3.29) and the whole palette from 1.84 to **1.69**.
-Flash is the one that pays: its 600 and 700 hold at S 70 where Pulse and Pink
-have already dropped, so it trades 5.46 at step 800 for 4.44 at 700. Hue stays
-the only per-family parameter; the group is the only other one.
+**The dark drop is weighted by hue**, on the same cos² lobe the lightness bend
+uses, because the three ramps do not peel off together: the palette keeps
+Flash's 600 and 700 up on S 70 while Pulse and Pink have already fallen to 60
+and 39. The lobe sits on Flash's own hue and cuts the drop to a fifth there, so
+green takes all of it (g 1.00), red-pink most (0.84) and orange almost none
+(0.20). Ungained, the one drop had to average the two behaviours: it pulled
+Flash's 700 down to S 38 against the palette's 70, and left Pulse heavier at the
+bottom than it should read.
+
+**The mids give up four points**, on the base switch's own `r` — no third shape,
+and zero below step 200. This one is a judgement call, not a fit: the palette
+itself holds S 80 / 70 at steps 400 / 500, so the term moves those two steps
+*away* from Figma (Pulse 500 is the worst swatch in the set at ΔE 6.4). It is
+there because the UI mids read too chromatic beside the rest of the palette.
+Drop `S_SEM_MID_V7` to 0 in `build.py` to take it back out.
+
+Hue stays the only per-family parameter; the group is the only other one. The
+three UI ramps go from mean ΔE 2.81 uncorrected to **2.37**, and the whole
+palette from 1.84 to **1.72**.
 
 No integration is needed because the ends pin themselves whatever the
 exponent does — what v5 proves, v7 gets for free. It fits the current palette
-better than v5 does (mean ΔE **1.69** against 2.11); the drift from v5's own
+better than v5 does (mean ΔE **1.72** against 2.11); the drift from v5's own
 output is 1.06, almost all of it the saturation change in the mids. The
 fan-out survives: Mindaro 6.5 / 8.9 / 11.2 L against v5's 6.5 / 8.9 / 11.0,
 where v6's flat cut gives 4.5 / 7.5.
@@ -204,7 +217,7 @@ v7 keeps a localised correction and drops everything else.
 
 | | |
 |---|---|
-| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals |
+| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals, a playground under each |
 | `template.html` | source (`/*__DATA__*/`, `/*__MEANV5__*/`) |
 | `build.py` | applies v1–v7 → `data/generated.json` |
 | `page.py` | injects v7 into the template |
