@@ -321,9 +321,9 @@ S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every
 H(t) = ${V('H₀')}
 
 ${K('// UI families — Pulse · Flash · Pink')}
-g(H) = ${V('1 − 0.8·cos²(½π·|H−32|/60)')}   ${K('full on green, a fifth on orange')}
-s(t) = ${V('(1.5t)¹²')}                     ${K('the same knee, at t = 2/3')}
-S(t) = ${V('S(t) − 4·r/(1+r) − 46·g·s/(1+s)')}
+g(H) = ${V('1 − 0.4·cos²(½π·|H−32|/50)')}   ${K('full on green, 0.6 on orange')}
+u(t) = ${V('(1.25t)³')}                     ${K('1 at the knee · t = 0.8')}
+S(t) = ${V('100 − 140·g·u/(1 + u)')}        ${K('the same switch, three numbers')}
 
 ${K('// neutrals')}
 neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
@@ -491,21 +491,21 @@ function Qplay(t, H, F, corr){
 }
 /* how much of the UI drop a hue takes — 1 away from the lobe, 0.2 at its centre */
 function sGain(H, F){
-  const d = Math.abs(((H-F.S_sem_hue+180)%360+360)%360-180)/F.S_sem_lobe;
+  const d = Math.abs(((H-F.S_ui_hue+180)%360+360)%360-180)/F.S_ui_lobe;
   if(d>=1) return 1;
   const c=Math.cos(Math.PI/2*d);
-  return 1 - F.S_sem_cut*c*c;
+  return 1 - F.S_ui_cut*c*c;
 }
 function Splay(t,F,uiHue){
-  /* Hill switch: flat on 100 below the knee, flat on the floor above it */
-  const r = Math.pow(t/F.S_knee, F.S_order);
-  let S = 100 - F.S_drop*r/(1 + r);
-  if(uiHue!=null){
-    const u = Math.pow(t/F.S_sem_knee, F.S_sem_order);
-    S -= F.S_sem_mid*r/(1 + r);
-    S -= F.S_sem_drop*sGain(uiHue,F)*u/(1 + u);
+  /* Hill switch: flat on 100 below the knee, flat on the floor above it.
+     The UI ramp is the same switch with a deeper, hue-weighted drop and a later,
+     gentler knee — one slope, not a staircase. */
+  if(uiHue==null){
+    const r = Math.pow(t/F.S_knee, F.S_order);
+    return Math.max(0, Math.min(100, 100 - F.S_drop*r/(1 + r)));
   }
-  return Math.max(0, Math.min(100, S));
+  const u = Math.pow(t/F.S_ui_knee, F.S_ui_order);
+  return Math.max(0, Math.min(100, 100 - F.S_ui_drop*sGain(uiHue,F)*u/(1 + u)));
 }
 
 /* The diagram card is stretched to the height of the ramp card beside it, so the

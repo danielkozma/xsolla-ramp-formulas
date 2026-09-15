@@ -948,41 +948,51 @@ S_ORDER_V7 = 6.0       # how abruptly the hold gives way to the floor
 
 # The UI families (Pulse, Flash, Pink) keep falling where the rest hold their
 # floor: the palette runs them 70 → 60 → 39 → 26 across 500–800 while every other
-# ramp sits flat on 70. That is a second switch, not a different curve — so they
-# get the same Hill term again, with its knee at 2/3 of the scale instead of 1/3
-# and twice the order.
+# ramp sits flat on 70. They get the same one-line switch as everything else —
+# same Hill, three different numbers. The drop is deep enough to run past the
+# floor, the knee sits late (t = 0.8 instead of 1/3) and the order is gentle, so
+# it is one smooth fall rather than a hold and a second step down.
 #
-# Two things ride on top of that. The dark-end drop is weighted by hue, the same
-# cos² lobe the lightness bend already uses, because the three ramps do not peel
-# off together: the palette keeps Flash's 600 and 700 up on S 70 while Pulse and
-# Pink have already fallen to 60 and 39. The lobe sits on Flash's own hue and cuts
-# the drop to a fifth there, so green takes the full correction, red-pink most of
-# it, orange almost none.
+# The drop is weighted by hue, on the same cos² lobe shape the lightness bend
+# uses, because the three ramps do not peel off together: the palette keeps
+# Flash's 600 and 700 up on S 70 while Pulse and Pink have already fallen to 60
+# and 39. The lobe sits on Flash's own hue and takes 40% off the drop there.
 #
-# And all three shed a few points across the mids, which is the base switch's own
-# r reused with a small coefficient — no third shape. It is worth saying that the
-# palette itself holds S 80 / 70 at steps 400 / 500, so this term moves those two
-# steps away from Figma; it is here because the mids read too chromatic against
-# the rest of the set, not because the numbers asked for it.
+# One curve cannot both hold the palette's mids and reach its dark tail — the
+# palette turns twice (once near step 250, once near 550) and a Hill turns once.
+# This one follows the tail, so steps 300–500 come out a few points more
+# saturated than Figma has them; the alternative was the two-term version, which
+# fitted those steps and drew a visibly two-stage curve.
 SEMANTIC_V7 = ("Pulse", "Flash", "Pink")
 GROUPS_V7 = [
     ("Brand & Labels", ["Brand", "Core", "Mindaro", "Mint", "Yellow", "Edge"]),
     ("UI (Semantic)",  list(SEMANTIC_V7)),
 ]
-S_SEM_MID_V7 = 4.0       # what the mids give up, on the base switch's own knee
-S_SEM_DROP_V7 = 46.0     # the dark-end drop at full hue weight
-S_SEM_KNEE_V7 = 2.0/3.0
-S_SEM_ORDER_V7 = 12.0
-S_SEM_HUE_V7 = 32.0      # centre of the lobe — Flash's hue, where the drop is cut
-S_SEM_LOBE_V7 = 60.0     # half-width of the lobe, in degrees
-S_SEM_CUT_V7 = 0.8       # how much of the drop the lobe takes away at its centre
+S_UI_DROP_V7 = 140.0     # deep enough that the ramp runs past the shared floor
+S_UI_KNEE_V7 = 0.8       # late knee — the fall lands on 500–800
+S_UI_ORDER_V7 = 3.0      # gentle, so it is one slope and not a staircase
+S_UI_HUE_V7 = 32.0       # centre of the lobe — Flash's hue, where the drop is cut
+S_UI_LOBE_V7 = 50.0      # half-width of the lobe, in degrees
+S_UI_CUT_V7 = 0.4        # how much of the drop the lobe takes away at its centre
 
 def S_hue_gain_v7(H):
-    """1 away from the lobe, 0.2 at its centre — the same cos² shape as w(H)."""
-    d = abs(((H - S_SEM_HUE_V7 + 180) % 360) - 180) / S_SEM_LOBE_V7
+    """1 away from the lobe, 0.6 at its centre — the same cos² shape as w(H)."""
+    d = abs(((H - S_UI_HUE_V7 + 180) % 360) - 180) / S_UI_LOBE_V7
     if d >= 1.0:
         return 1.0
-    return 1.0 - S_SEM_CUT_V7 * math.cos(math.pi / 2 * d) ** 2
+    return 1.0 - S_UI_CUT_V7 * math.cos(math.pi / 2 * d) ** 2
+
+def S_v7(t, ui_hue=None):
+    """Full chroma until the knee, then one swing down to the floor.
+
+    Pass a hue for the UI ramp: same switch, a deeper hue-weighted drop and a
+    later, gentler knee, so it keeps going where the shared one levels off."""
+    if ui_hue is None:
+        r = (t / S_KNEE_V7) ** S_ORDER_V7
+        return clamp(100.0 - S_DROP_V7 * r / (1.0 + r), 0.0, 100.0)
+    u = (t / S_UI_KNEE_V7) ** S_UI_ORDER_V7
+    return clamp(100.0 - S_UI_DROP_V7 * S_hue_gain_v7(ui_hue) * u / (1.0 + u),
+                 0.0, 100.0)
 
 def dip_shape_v7(t):
     """A bell in log t with no ln in sight: 0 at t=0, 1 at t=c, fat tail after."""
@@ -996,20 +1006,6 @@ def L_exponent_v7(t, H=None):
 
 def L_v7(t, H=None):
     return 100.0 if t <= 0.0 else 100.0 - 100.0 * (t ** L_exponent_v7(t, H))
-
-def S_v7(t, ui_hue=None):
-    """Full chroma until the knee, then one swing down to the floor.
-
-    Pass a hue to get the UI-family ramp: the mids give up a few points on the
-    base switch, and the dark end takes the same swing a second time — later,
-    sharper, and weighted by how far the hue sits from the lobe."""
-    r = (t / S_KNEE_V7) ** S_ORDER_V7
-    S = 100.0 - S_DROP_V7 * r / (1.0 + r)
-    if ui_hue is not None:
-        s = (t / S_SEM_KNEE_V7) ** S_SEM_ORDER_V7
-        S -= S_SEM_MID_V7 * r / (1.0 + r)
-        S -= S_SEM_DROP_V7 * S_hue_gain_v7(ui_hue) * s / (1.0 + s)
-    return clamp(S, 0.0, 100.0)
 
 # The light ramp never reaches neutral grey: the palette holds ~2 points of tint
 # at its darkest step, where L/10 alone has already fallen to 0.85. The slope was
@@ -1092,11 +1088,10 @@ def build_v7(v5):
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
             "S_order": S_ORDER_V7,
-            "S_sem_mid": S_SEM_MID_V7,
-            "S_sem_drop": S_SEM_DROP_V7, "S_sem_knee": round(S_SEM_KNEE_V7, 6),
-            "S_sem_order": S_SEM_ORDER_V7, "semantic": list(SEMANTIC_V7),
-            "S_sem_hue": S_SEM_HUE_V7, "S_sem_lobe": S_SEM_LOBE_V7,
-            "S_sem_cut": S_SEM_CUT_V7,
+            "S_ui_drop": S_UI_DROP_V7, "S_ui_knee": S_UI_KNEE_V7,
+            "S_ui_order": S_UI_ORDER_V7, "semantic": list(SEMANTIC_V7),
+            "S_ui_hue": S_UI_HUE_V7, "S_ui_lobe": S_UI_LOBE_V7,
+            "S_ui_cut": S_UI_CUT_V7,
             "groups": [{"name": g, "families": f} for g, f in GROUPS_V7],
             "steps": CHROMATIC_STEPS_V5,
         },
@@ -1105,8 +1100,8 @@ def build_v7(v5):
             "e": "e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)",
             "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
             "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
-            "S_sem": "UI families: \u2212 4\u00b7r/(1+r) \u2212 46\u00b7g(H)\u00b7s/(1+s), s = (1.5t)\u00b9\u00b2",
-            "S_g": "g(H) = 1 \u2212 0.8\u00b7cos\u00b2(\u00bd\u03c0\u00b7|H\u221232|/60)",
+            "S_ui": "UI: S(t) = 100 \u2212 140\u00b7g(H)\u00b7u/(1 + u), u = (1.25t)\u00b3",
+            "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7|H\u221232|/50)",
             "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down",
         },
         "curves": {
