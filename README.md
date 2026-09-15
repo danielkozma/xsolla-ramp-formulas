@@ -197,16 +197,14 @@ offset takes the light ramp from mean ΔE 0.92 to **0.86** (300: 1.29 → 1.00,
 there. The dark ramp was already sitting slightly above the palette's chroma,
 so `22 − L/9` is unchanged.
 
-**Neutral lift is quoted on the palette cards, not just the playground.** The
-tinted neutrals still get measured against the grey of the same nominal L: the
-light ramp peaks at **+1.66** OKLab points (step 400), the dark at **+2.17**
-(step 500), against 24.3 for Mindaro at the same step. That is the evidence for
-giving neutrals no correction — and it survives the floor, which buys 0.19 of
-lift against an order of magnitude of headroom. The two neutral cards carry the
-number in their header (`peak lift`) and in every swatch tooltip, off the same
-`perceptualLift()` the neutral playground quotes — the card and the playground
-cannot disagree. The chromatic cards do not quote it; there the dip already
-answers for it.
+**Neutral lift is quoted in the swatch tooltips.** The tinted neutrals are
+measured against the grey of the same nominal L: the light ramp peaks at
+**+1.66** OKLab points (step 400), the dark at **+2.17** (step 500), against
+24.3 for Mindaro at the same step. That is the evidence for giving neutrals no
+correction — and it survives the floor, which buys 0.19 of lift against an order
+of magnitude of headroom. The number rides in every neutral swatch tooltip, off
+the same `perceptualLift()` the playground uses. Neither the card headers nor
+the plots carry it: there is one scale on a plot, 0–100, and two lines on it.
 
 Measured cost of each simplification on its own, against v5's output:
 

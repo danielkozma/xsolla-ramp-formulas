@@ -190,9 +190,12 @@ footer b{color:var(--ink);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---- hue playground ---- */
-.playground{display:grid;gap:4px;grid-template-columns:repeat(2,minmax(0,1fr));
-            align-items:stretch;margin:0 0 44px}
-@media (max-width:760px){ .playground{grid-template-columns:1fr} }
+/* Probe cards ride the family grid's tracks, so they are always exactly as wide
+   as a palette card — two of the three columns, third left empty. */
+.playground{display:grid;gap:4px;align-items:stretch;margin:0 0 44px;
+            grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
+/* …and where the cards come in pairs, each pair starts its own row. */
+.playground--pairs > :nth-child(odd){grid-column:1}
 /* Probe cards read as the same bare plates as the family cards — no frame,
    no radius, no rule under the head. */
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
@@ -223,7 +226,7 @@ footer b{color:var(--ink);font-weight:500}
 /* Beside its ramp the plot takes whatever height the ramp card sets, so the two
    cards end level. Only when the playground stacks does it fall back to its own
    380 x 300 proportion. */
-@media (max-width:760px){ .play-curves__body{aspect-ratio:380/300} }
+@media (max-width:635px){ .play-curves__body{aspect-ratio:380/300} }
 .play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
                           width:auto;height:auto;max-height:none}
 .grad-split{display:flex;gap:1px}
@@ -278,7 +281,7 @@ footer b{color:var(--ink);font-weight:500}
 
 <div class="grid" id="g-theme"></div>
 
-<div id="playground-neutral" class="playground"></div>
+<div id="playground-neutral" class="playground playground--pairs"></div>
 
 
 
@@ -378,22 +381,15 @@ function perceptualLift(H, S, L){
   return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
 }
 function liftStr(v){ return (v<0?'−':'+')+Math.abs(v).toFixed(2); }
-/* the step that reads furthest from its nominal grey — signed, not absolute */
-function peakLift(rows){
-  return rows.reduce((a,r)=>{
-    const v=perceptualLift(r.H, r.S, r.L);
-    return Math.abs(v)>Math.abs(a) ? v : a;
-  }, 0);
-}
 
 /* ---------- render ---------- */
 function famCard(f){
-  /* Lift is quoted on the neutrals only — there it is the evidence that they need
-     no correction. On a chromatic ramp the dip already answers for it. */
+  /* Lift is quoted on the neutrals only, and only in the swatch tooltips — there
+     it is the evidence that they need no correction. On a chromatic ramp the dip
+     already answers for it. */
   const showLift = f.kind==='neutral';
   const param = f.kind==='grey' ? 'achromatic'
-    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`
-      + (showLift ? ` · peak lift ${liftStr(peakLift(f.rows))}` : '');
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
   const grad = f.gradient;
   const n = f.rows.length;
 
@@ -712,9 +708,8 @@ function updateNeutralTheme(theme){
     `title="${theme} continuous scale"></div>`;
   document.getElementById(`nplay-${theme}-hue-val`).textContent = hue+'°';
 
-  const at=rows.reduce((a,b)=> Math.abs(b.lift)>Math.abs(a.lift) ? b : a);
   document.getElementById(`nplay-${theme}-stats`).textContent =
-    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)} · peak lift ${liftStr(at.lift)}`;
+    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)}`;
   const nsvg=document.getElementById(`nplay-${theme}-svg`);
   nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
