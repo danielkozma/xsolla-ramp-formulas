@@ -137,7 +137,7 @@ desaturated the light and mid steps, which were already exact. The UI families
 get the same one-line switch as everything else, with three numbers changed:
 
 ```
-dₛ(H) = |H − 32| / (68 up, 50 down)     # 1 outside the lobe, 0.6 at its centre
+dₛ(H) = |H − 32| / (28 up, 50 down)     # 1 outside the lobe, 0.6 at its centre
 g(H) = 1 − 0.4·cos²(½π·dₛ)  if dₛ<1 else 1
 u(t) = (1.6t)³
 S(t) = 100 − 106·g(H)·u/(1 + u)         # UI families

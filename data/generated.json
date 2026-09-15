@@ -25317,7 +25317,7 @@
     "Pink"
    ],
    "S_ui_hue": 32.0,
-   "S_ui_lobe_up": 68.0,
+   "S_ui_lobe_up": 28.0,
    "S_ui_lobe_dn": 50.0,
    "S_ui_cut": 0.4,
    "groups": [
@@ -25362,7 +25362,7 @@
    "L": "L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves",
    "S": "S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue",
    "S_ui": "UI: S(t) = 100 \u2212 106\u00b7g(H)\u00b7u/(1 + u), u = (1.6t)\u00b3",
-   "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7d), d = |H\u221232| / (68 up, 50 down)",
+   "S_g": "g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7d), d = |H\u221232| / (28 up, 50 down)",
    "w": "w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down"
   },
   "curves": {
