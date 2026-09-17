@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xsolla Colour Formulas</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Reverse-engineered HSL formulas for the Xsolla colour palette, with every Figma ramp shown edge-to-edge against the formula output.">
+<title>Xsolla Ramp Formulas</title>
+<link rel="stylesheet" href="https://use.typekit.net/mwa4gcw.css">
+<style>
+/* Pilat — the display face, served locally */
+@font-face{font-family:'Pilat';src:url('fonts/pilat/pilat_regular.woff2') format('woff2'),
+  url('fonts/pilat/pilat_regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+
+/* ------------------------------------------------------------------
+   Tokens — Xsolla Digital Language dashboard
+   (Figma DjKP20nZbMAfwXwddlCOSt, frame 2789:7057)
+   A committed light theme: the reference is a light admin surface with
+   a black application bar, so the page paints one world explicitly
+   rather than carrying a second palette it would never use.
+   ------------------------------------------------------------------ */
+:root{
+  --ground:#F3F3F2;              /* background/secondary */
+  --panel:#FFFFFF;               /* background/primary   */
+  --sunk:rgba(0,0,0,.05);        /* overlay/mono         */
+  --input:rgba(0,0,0,.08);       /* control/input/bg     */
+
+  --ink:#000000;                 /* content/primary      */
+  --ink-2:rgba(0,0,0,.80);
+  --ink-3:rgba(0,0,0,.60);       /* content/tertiary     */
+
+  --rule:rgba(0,0,0,.10);        /* border/secondary     */
+  --rule-2:#C1C2BC;              /* control/mono/secondary/border */
+  --faint:#DADBD7;               /* control/mono/secondary/bg     */
+
+  --brand:#80EAFF;               /* control/brand/primary/bg      */
+  --brand-edge:#31CAE8;          /* control/brand/primary/border  */
+  --brand-soft:#B2F2FF;          /* background/brand-secondary    */
+  --brand-ink:#135D6C;
+
+  --ok:#95FF80;                  /* background/success-primary    */
+  --slight:#F6DB55;
+  --warn:#F6AB55;
+  --bad:#F67055;                 /* background/alert-primary      */
+  --bad-ink:#8E2C11;             /* the same alert, dark enough to set type in */
+
+  --body:aktiv-grotesk,"Helvetica Neue",Arial,sans-serif;
+  --display:"Pilat",var(--body);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --r-xs:2px;                    /* tag/sm  */
+  --r-sm:4px;                    /* radius/50 */
+  --r-md:6px;                    /* radius/75 */
+  --r-lg:8px;                    /* radius/100 */
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:400 14px/18px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand-edge);outline-offset:2px;border-radius:var(--r-xs)}
+/* The mode switch hides whole blocks, several of which carry a display of their
+   own (grids, flex rows), so the attribute has to win outright. */
+[hidden]{display:none!important}
+
+/* ---- application bar ---- */
+/* Pinned to the top of the viewport while the page scrolls. Sticky rather
+   than fixed so it keeps its 48px in the flow and nothing slides under it. */
+.appbar{position:sticky;top:0;z-index:100;
+        display:flex;align-items:center;gap:12px;
+        height:48px;padding:0 16px;background:var(--panel);color:var(--ink);
+        border-bottom:1px solid var(--rule)}
+.appbar__ctx{font-size:14px;line-height:18px;font-weight:500;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.appbar__spacer{margin-left:auto}
+
+/* ---- mode switch ---- */
+/* Both destinations are on screen at once, so switching is one click and the
+   alternative is always legible — a dropdown would hide half the question. */
+.seg{display:inline-flex;flex:0 0 auto;gap:2px;padding:2px;
+     background:var(--input);border-radius:var(--r-sm)}
+.seg__opt{appearance:none;margin:0;border:0;background:transparent;cursor:pointer;
+          height:24px;padding:0 10px;border-radius:var(--r-xs);color:var(--ink-3);
+          font:500 12.5px/16px var(--body);white-space:nowrap}
+.seg__opt:hover{color:var(--ink)}
+.seg__opt[aria-pressed="true"]{background:var(--panel);color:var(--ink);
+          box-shadow:0 1px 2px rgba(0,0,0,.10)}
+
+/* ---- curve diagram ---- */
+/* Diagram cards ride in the same track as the palette cards, so every card on
+   the page is one column wide. */
+.curves__legend{display:flex;flex-wrap:wrap;gap:14px;margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-2)}
+.curves__legend span{display:inline-flex;align-items:center;gap:7px}
+.curves__legend i{display:block;width:18px;height:3px;border-radius:1px}
+.curves__legend i.L{background:#E24B4A}
+.curves__legend i.S{background:#2F6FED}
+.curves__svg{display:block;width:100%;height:auto;max-height:280px}
+.curves__svg .axis{stroke:var(--rule-2);stroke-width:1;fill:none}
+.curves__svg .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.curves__svg .label{fill:var(--ink-3);font:400 11px var(--body)}
+.curves__svg .title{fill:var(--ink-2);font:500 11px var(--body)}
+.curves__svg path.L{fill:none;stroke:#E24B4A;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg path.S{fill:none;stroke:#2F6FED;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+.curves__svg .tick{stroke:var(--rule-2);stroke-width:1}
+
+.wrap{margin:0 auto;padding:0 16px 80px}
+
+/* ---- page head ---- */
+.mast{padding:36px 0 26px}
+.eyebrow{margin:0 0 10px;font-size:13px;line-height:18px;color:var(--ink-3)}
+.mast h1{font-size:clamp(34px,4.6vw,56px);line-height:1.0;max-width:22ch}
+.mast p.lead{max-width:70ch;margin:16px 0 0;font-size:15px;line-height:22px;color:var(--ink-2)}
+
+/* ---- formula panel ---- */
+/* Two equal panes, square-edged and borderless, separated by a 4px seam. */
+.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;
+       background:transparent;border:0;border-radius:0;margin-bottom:14px}
+.panel>div{padding:22px 24px;min-width:0;background:var(--panel);border:0;border-radius:0}
+.panel h2{font-family:var(--body);font-weight:500;font-size:14px;line-height:18px;
+          color:var(--ink-3);margin-bottom:14px}
+pre.f{margin:0;font:400 12.5px/1.8 var(--mono);white-space:pre;overflow-x:auto;
+      font-variant-numeric:tabular-nums}
+pre.f .k{color:var(--ink-3)}
+pre.f .v{color:var(--brand-ink);font-weight:600}
+.note{margin:18px 0 0;max-width:58ch;font-size:13px;line-height:19px;color:var(--ink-2)}
+.note code{padding:1px 5px;background:var(--sunk);border-radius:var(--r-xs);
+           font:500 12px var(--mono)}
+
+table.ladder{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.ladder th,table.ladder td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--rule)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left;color:var(--ink-3)}
+table.ladder thead th{font-weight:500;font-size:11px;color:var(--ink-3)}
+table.ladder tbody tr:last-child td{border-bottom:0}
+
+/* ---- section heads ---- */
+.sect{margin:0 0 24px}
+.sect h2{font-size:22px;line-height:1.1}
+.sect h2.sect-xl{font-size:40px}
+.sect p{margin:6px 0 0;max-width:74ch;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:0 0 30px;
+        font-size:12px;line-height:16px;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:block;width:10px;height:10px;border-radius:var(--r-xs);
+          border:1px solid var(--rule)}
+
+/* ---- family cards ----
+   Three colour columns (Current · Formula · Gradient) stay side-by-side
+   at every width — never stack. Step label + Δ stay narrow. */
+.grid{display:grid;gap:4px;margin:0 0 44px;
+      grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
+.fam{background:var(--panel);overflow:clip}
+.fam header{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;padding:13px 14px 11px}
+.fam header h3{font-size:18px;line-height:1;flex:0 0 auto}
+.fam .theme{padding:2px 6px;border:1px solid var(--rule);border-radius:var(--r-xs);
+            font-size:10px;line-height:14px;color:var(--ink-3);text-transform:uppercase;
+            letter-spacing:.06em}
+.fam .param{margin-left:auto;font-size:12px;line-height:16px;color:var(--ink-3);
+            font-variant-numeric:tabular-nums;text-align:right}
+
+.colhead{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+         column-gap:0;padding:9px 10px 5px;font-size:9px;line-height:12px;color:var(--ink-3);
+         letter-spacing:.04em;text-transform:uppercase}
+.colhead span:nth-child(2),.colhead span:nth-child(3),.colhead span:nth-child(4){padding-left:3px;min-width:0}
+.colhead span:last-child{text-align:right}
+
+.ramp-wrap{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;
+           column-gap:0;row-gap:0;padding:0 10px 13px;align-items:stretch}
+.ramp-steps{display:contents}
+.ramp .st,.ramp-wrap .st{display:flex;align-items:center;justify-content:flex-end;padding-right:6px;
+          font-size:9.5px;line-height:1;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* Current value and formula value share an edge — no gap, no radius, so the
+   seam only appears where the two actually differ. */
+.tile.empty{display:flex;align-items:center;justify-content:center;font-size:14px;line-height:18px;
+  color:var(--ink-3)}
+.tile.empty::after{content:'—'}
+.grad-col{grid-row:1 / -1;grid-column:4;min-width:0;border:0;border-radius:0;
+          box-shadow:none;position:relative}
+.dl{display:flex;align-items:center;justify-content:flex-end;padding-left:4px}
+.dl i{display:block;width:4px;height:14px;border-radius:1px;background:var(--rule-2)}
+.dl i.s{background:var(--slight)} .dl i.v{background:var(--warn)} .dl i.b{background:var(--bad)}
+.dl em{font-style:normal;font-size:14px;line-height:18px;color:var(--ink)}
+
+/* ---- deviation table ---- */
+.dev{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r-lg);
+     overflow:hidden;margin-top:18px}
+.devrow{display:grid;grid-template-columns:120px 56px 1fr 1fr 62px;align-items:center;
+        border-bottom:1px solid var(--rule);font-size:12.5px;font-variant-numeric:tabular-nums}
+.devrow:last-child{border-bottom:0}
+.devrow>*{padding:9px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devrow .nm{font-weight:500}
+.devrow .stp{text-align:right;color:var(--ink-3)}
+.devrow .sw{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px}
+.devrow .sw u{flex:0 0 auto;width:24px;height:24px;border-radius:var(--r-sm);
+              box-shadow:inset 0 0 0 1px var(--rule)}
+.devrow .de{text-align:right;color:var(--ink-3)}
+.devhead{background:var(--sunk);color:var(--ink-3);font-size:11px!important;
+         letter-spacing:.06em;text-transform:uppercase}
+
+footer{margin-top:44px;padding:22px 24px;max-width:none;background:var(--panel);
+       border:1px solid var(--rule);border-radius:var(--r-lg);
+       font-size:13px;line-height:20px;color:var(--ink-2)}
+footer p{margin:0 0 12px;max-width:80ch}
+footer p:last-child{margin-bottom:0}
+footer b{color:var(--ink);font-weight:500}
+
+@media (max-width:880px){
+  .panel{grid-template-columns:1fr}
+  .devrow{grid-template-columns:100px 46px 1fr 1fr 54px;font-size:11.5px}
+}
+@media (max-width:420px){
+  .tile{padding:0 2px;font-size:8.5px}
+  .colhead{font-size:8px;letter-spacing:.02em}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- hue playground ---- */
+/* Probe cards ride the family grid's tracks, so they are always exactly as wide
+   as a palette card — two of the three columns, third left empty. */
+.playground{display:grid;gap:4px;align-items:stretch;margin:0 0 44px;
+            grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
+/* …and where the cards come in pairs, each pair starts its own row. */
+.playground--pairs > :nth-child(odd){grid-column:1}
+/* Probe cards read as the same bare plates as the family cards — no frame,
+   no radius, no rule under the head. */
+.play-card .play-head{display:flex;flex-direction:column;gap:10px;
+                      padding:13px 14px 12px}
+.play-head__top{display:flex;align-items:center;gap:8px;min-width:0}
+.play-card .play-head h3{margin:0;font-size:18px;line-height:1;flex:0 0 auto}
+.play-head__top .play-meta{margin-left:auto;text-align:right}
+.play-slider{display:grid;grid-template-columns:58px minmax(0,1fr) 46px;align-items:center;gap:8px}
+.play-slider label{font-size:12px;color:var(--ink-3)}
+.play-slider input[type=range]{width:100%;min-width:0;accent-color:var(--ink)}
+.play-meta{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.play-slider .play-meta{text-align:right}
+
+/* Playground ramps have no Figma reference, so they drop the Current column and
+   the drift gutter; the card itself stays one grid track wide like every other. */
+.play-card .colhead,
+.play-card .ramp-wrap{grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+.play-card .grad-col{grid-column:3}
+
+.play-curves .play-head{gap:9px}
+.play-curves .curves__legend{margin-left:0;gap:8px 12px;font-size:11.5px;line-height:15px}
+/* The plot is taken out of flow and pinned to its box, so the card's height is
+   set by the row (i.e. by the ramp card beside it) and never by the drawing —
+   the SVG is then sized to whatever box that leaves. On its own row the card
+   falls back to the diagram's own 380 x 300 proportion. */
+.play-curves{display:flex;flex-direction:column}
+.play-curves__body{padding:10px 12px 13px;flex:1 1 auto;min-height:260px;position:relative}
+/* Beside its ramp the plot takes whatever height the ramp card sets, so the two
+   cards end level. Only when the playground stacks does it fall back to its own
+   380 x 300 proportion. */
+@media (max-width:635px){ .play-curves__body{aspect-ratio:380/300} }
+.play-curves .curves__svg{position:absolute;top:10px;left:12px;right:12px;bottom:13px;
+                          width:auto;height:auto;max-height:none}
+.play-curves .curves__svg .marker{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:2 3}
+.play-curves .curves__svg .dot{stroke:var(--panel);stroke-width:1.5}
+.play-curves .curves__svg .dot.L{fill:#E24B4A}
+.play-curves .curves__svg .dot.S{fill:#2F6FED}
+.grad-split{display:flex;gap:1px}
+.grad-split i{display:block;flex:1 1 0;min-width:0}
+
+/* ---- partner customisation ---- */
+/* A fixed two-pane view: hue controls on the left, the checkout on a black
+   canvas on the right. The document is exactly one viewport tall here, so the
+   static app bar has nothing to scroll away from. */
+@font-face{font-family:'Pilat Wide';src:url('fonts/pilat/pilat_wide_bold.woff2') format('woff2');
+  font-weight:700;font-style:normal;font-display:swap}
+body.partner-on{overflow:hidden}
+/* the pen editors want room, so this tab widens the sidebar */
+body.h245-on .side{flex-basis:380px}
+body.h245-on #corr-switch{visibility:hidden}
+.pen{margin-top:18px}
+.pen__head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.pen__head h3{margin:0;font-size:15px;line-height:1.2;font-family:var(--body);font-weight:500}
+.pen__head .play-meta{margin-left:auto}
+.pen svg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.pen .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.pen .gridline.strong{stroke:var(--rule-2);stroke-dasharray:none}
+.pen .label{fill:var(--ink-3);font:10px var(--body);font-variant-numeric:tabular-nums}
+.pen .curve{fill:none;stroke-width:2}
+.pen .curve.L{stroke:#E24B4A}
+.pen .curve.S{stroke:#2F6FED}
+.pen .ref{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.pen .leader{stroke:var(--ink-2);stroke-width:1}
+.pen .anchor{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+.pen .handle{fill:var(--ink);stroke:var(--panel);stroke-width:1.5;cursor:grab}
+.pen .handle:hover,.pen .handle.drag{fill:var(--brand-edge,#2F6FED)}
+.pen .handle.drag{cursor:grabbing}
+.pen .hit{fill:transparent;cursor:grab}
+.pen .hit.ns{cursor:ns-resize}
+.pen .anchor.movable{fill:var(--ink);stroke:var(--panel)}
+.pen .anchor.movable.drag{fill:var(--brand-edge,#2F6FED)}
+.pen .stepdot{fill:var(--panel);stroke-width:1.2}
+.pen .stepdot.L{stroke:#E24B4A}
+.pen .stepdot.S{stroke:#2F6FED}
+.h245 .adj__btns{margin-top:14px}
+.h245__card{margin-top:22px}
+.h245__card .fam{margin:0}
+/* One sidebar for both tabs. It sticks under the app bar while the palettes
+   scroll past it; on
+   Partner Customisation the page is one viewport tall and nothing scrolls. */
+.shell{display:flex;align-items:flex-start}
+.shell__main{flex:1 1 0;min-width:0}
+.side{flex:0 0 300px;min-width:0;position:sticky;top:48px;height:calc(100dvh - 48px);overflow-y:auto;
+      padding:24px 20px 32px;background:var(--panel);border-right:1px solid var(--rule)}
+.side h2{font-size:22px;line-height:1.1}
+.side p{margin:8px 0 0;font-size:13px;line-height:19px;color:var(--ink-2)}
+.partner{display:flex;align-items:stretch;height:calc(100dvh - 48px)}
+@media (max-width:760px){
+  .shell{flex-direction:column;align-items:stretch}
+  .side{position:static;height:auto;flex:none;border-right:0;border-bottom:1px solid var(--rule)}
+}
+
+/* ---- adjusted correction inputs ---- */
+.link-ctl{display:flex;align-items:center;gap:8px;margin-top:18px;font-size:13px;line-height:18px;cursor:pointer}
+.link-ctl input{width:15px;height:15px;margin:0;accent-color:var(--ink);cursor:pointer}
+.adj{margin-top:0}
+.side > [data-only]:not([hidden]) + .adj{margin-top:32px;padding-top:24px;border-top:1px solid var(--rule)}
+.adj__form{margin:16px 0 0;padding:0;border:0;min-width:0}
+.adj__form:disabled{opacity:.45}
+.adj__off{font-weight:500}
+.adj__row{display:grid;grid-template-columns:minmax(0,1fr) 72px 80px;gap:8px;align-items:center;margin-top:6px}
+.adj__row label,.adj__row span{font-size:12.5px;color:var(--ink-2)}
+.adj__row--head{margin-top:0}
+.adj__row--head span{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em}
+.adj__row--lift{margin-top:14px}
+.adj__row input{width:100%;min-width:0;height:28px;padding:0 8px;margin:0;border:1px solid transparent;
+  border-radius:var(--r-sm);background:var(--input);color:var(--ink);
+  font:500 13px/16px var(--body);font-variant-numeric:tabular-nums;text-align:right}
+.adj__row input:focus{outline:none;border-color:var(--ink-3);background:var(--panel)}
+.adj__row input[aria-invalid="true"]{border-color:var(--bad)}
+.adj__err{margin:10px 0 0!important;color:var(--bad)!important;font-size:12px!important}
+.adj__btns{display:flex;gap:8px;margin-top:18px}
+.side .btn{margin-top:26px}
+.adj__btns .btn{margin-top:0}
+.hue-ctl{margin-top:26px}
+.hue-ctl__top{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.hue-ctl__top label{font-weight:500}
+.hue-ctl__top .play-meta{margin-left:auto}
+/* The track is the wheel itself, so the thumb sits on the hue it picks. */
+.hue-ctl input[type=range]{display:block;width:100%;height:18px;margin:0;appearance:none;
+  background:transparent;cursor:pointer}
+.hue-ctl input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:var(--r-xs);
+  background:var(--wheel)}
+.hue-ctl input[type=range]::-moz-range-track{height:8px;border-radius:var(--r-xs);background:var(--wheel)}
+.hue-ctl input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:18px;margin-top:-5px;
+  border-radius:var(--r-xs);background:var(--thumb,#fff);border:2px solid var(--ink);
+  box-shadow:0 0 0 1px var(--panel)}
+.hue-ctl input[type=range]::-moz-range-thumb{width:10px;height:14px;border-radius:var(--r-xs);
+  background:var(--thumb,#fff);border:2px solid var(--ink)}
+/* The live ramp under each slider; the steps the screen paints with are marked. */
+.strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;margin-top:10px}
+.strip span{height:34px;position:relative}
+.strip span.use::after{content:'';position:absolute;left:50%;bottom:4px;width:4px;height:4px;
+  margin-left:-2px;border-radius:50%;background:var(--dot)}
+.strip-lab{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin-top:4px;
+  font-size:9px;line-height:12px;color:var(--ink-3);text-align:center;font-variant-numeric:tabular-nums}
+.btn{appearance:none;height:28px;padding:0 10px;margin:0;border:1px solid var(--rule-2);
+     background:var(--panel);border-radius:var(--r-sm);color:var(--ink);
+     font:500 12.5px/16px var(--body);cursor:pointer}
+.btn:hover{background:var(--sunk)}
+
+.partner__canvas{flex:1 1 0;min-width:0;position:relative;overflow:hidden;background:#000}
+/* Not responsive: the screen is always laid out at its Figma size and only
+   scaled down, as one picture, when the canvas is smaller than it. */
+.xs-stage{position:absolute;left:50%;top:50%;width:1004px;height:837px;
+          transform:translate(-50%,-50%) scale(var(--xs-scale,1));transform-origin:50% 50%}
+
+/* ---- the checkout ---- */
+/* Every colour from the dark neutral and brand ramps is a variable set from the
+   formulas; anything else in the Figma frame stays the hex it was drawn in. */
+.xs{width:1004px;height:837px;padding:0 32px;overflow:hidden;background:var(--n900);color:var(--ink);
+    font:400 14px/18px var(--body);letter-spacing:0;text-align:left;-webkit-font-smoothing:antialiased}
+.xs *{box-sizing:border-box}
+.xs p{margin:0}
+.xs .disp{font-family:'Pilat Wide',var(--display);font-weight:700}
+.xs .ico{display:block;flex:0 0 auto;background:currentColor;
+         -webkit-mask:var(--m) center/100% 100% no-repeat;mask:var(--m) center/100% 100% no-repeat}
+.xs img{display:block}
+.xs .t3{color:var(--ink-3)}
+.xs .lnk{color:var(--b300)}
+
+.xs-head{display:flex;align-items:center;height:56px}
+.xs-menu{display:flex;align-items:center;gap:56px;height:100%}
+.xs-back{display:flex;align-items:center;gap:12px}
+.xs-back img{width:80px;height:40px;object-fit:contain}
+.xs-nav{display:flex;gap:32px;font-size:16px;line-height:20px}
+.xs-nav b{font-weight:700}
+.xs-nav span{color:var(--ink-3)}
+.xs-right{margin-left:auto;display:flex;align-items:center;gap:24px}
+.xs-loc{display:flex;align-items:center;font-weight:500;color:var(--ink-3);white-space:pre}
+.xs-loc img{width:16px;height:12px;margin:0 9px 0 1px}
+.xs-bp{display:flex;align-items:center;gap:16px;font-weight:500}
+.xs-cur{display:flex;align-items:center;gap:4px}
+.xs-avatar{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+           background:var(--wash);border:2px solid var(--n700)}
+
+.xs-body{display:flex;gap:80px;margin-top:24px}
+.xs-cart{flex:0 0 349px;height:757px;display:flex;flex-direction:column;padding-bottom:20px}
+.xs-cart__top{flex:1 1 auto;display:flex;flex-direction:column;gap:24px}
+.xs-card{background:var(--n850);padding:24px;display:flex;flex-direction:column;gap:8px}
+.xs-item{display:flex;flex-direction:column;gap:12px}
+.xs-item img{width:150px;height:150px;object-fit:cover}
+.xs-row{display:flex;gap:16px;align-items:flex-start}
+.xs-row>:first-child{flex:1 1 auto;min-width:0}
+.xs-item .xs-row>div{display:flex;flex-direction:column;gap:2px}
+.xs-row .m{font-weight:500}
+.xs-total{display:flex;align-items:baseline;justify-content:space-between;font-size:20px;line-height:20px}
+.xs-widgets{display:flex;flex-direction:column;gap:4px}
+.xs-widget{display:flex}
+.xs-widget__ico{flex:0 0 52px;height:52px;display:flex;align-items:center;justify-content:center;
+                background:var(--n800)}   /* drawn #253536 — N800 is the nearest step */
+/* Figma strokes sit inside the frame, so the padding gives up the border's pixel */
+.xs-widget__main{flex:1 1 auto;display:flex;align-items:center;gap:12px;padding:7px 11px;
+                 background:var(--n850);border:1px solid var(--n850)}
+.xs-widget__main>div{flex:1 1 auto}
+.xs-widget__main .m{font-weight:500}
+.xs-widget__main .sub{color:var(--n400)}
+.xs-switch{flex:0 0 40px;height:24px;padding:4px;display:flex;background:var(--n700)}
+.xs-switch i{width:16px;height:16px;background:var(--n400)}
+.xs-switch.on{justify-content:flex-end;background:var(--b700)}
+.xs-switch.on i{background:var(--b300)}
+.xs-foot{display:flex;flex-direction:column;gap:20px;padding-top:24px}
+.xs-chat{width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+         background:var(--wash);border:1px solid var(--line)}
+.xs-legal{display:flex;flex-direction:column;gap:4px;color:var(--ink-3)}
+.xs-legal__logo{display:flex;align-items:center;gap:2px}
+
+.xs-pay{flex:0 0 511px}
+.xs-apple{height:48px;display:flex;align-items:center;justify-content:center;background:#fff}
+.xs-methods{display:flex;gap:4px;height:86px;margin-top:56px}
+.xs-tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;padding:16px;
+        background:var(--n800);border:2px solid transparent;font-weight:500}
+.xs-tab.sel{background:var(--n700);border-color:var(--b300)}
+.xs-tab__icon{position:relative;height:24px}
+.xs-tab__icon>div{width:24px;height:24px;position:relative;overflow:hidden}
+.xs-tab__title{height:30px;display:flex;align-items:flex-end;white-space:nowrap;overflow:hidden}
+.xs-tab--more{flex:0 0 46px;padding:8px 12px;align-items:center;justify-content:center}
+.xs-form{margin-top:32px;display:flex;flex-direction:column}
+.xs-h{font-size:24px;line-height:24px;color:var(--n100);padding-bottom:4px}
+.xs-field{height:48px;display:flex;align-items:center;gap:8px;padding:11px;
+          background:var(--n850);border:2px solid var(--n700);
+          font-size:16px;line-height:18px;letter-spacing:.48px;color:var(--n400)}
+.xs-field>span{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xs-cards{display:flex;gap:4px}
+.xs-cards>div{width:24px;height:18px;position:relative;overflow:hidden}
+.xs-cards>div img{position:absolute}
+.xs-pair{display:flex}
+.xs-pair>.xs-field{flex:1 1 0}
+.xs-pair>.xs-field:first-child{margin-right:-2px}
+.xs-check{display:flex;gap:8px;margin-top:16px;font-size:16px;line-height:18px;color:#fff}
+.xs-check__box{flex:0 0 18px;height:18px;display:flex;align-items:center;justify-content:center;
+               background:var(--b700);border:1px solid var(--b500);color:var(--b200)}
+.xs-phone{display:flex;margin-top:16px}
+.xs-phone>.xs-field:first-child{margin-right:-2px}
+.xs-phone>.xs-field:last-child{flex:1 1 auto}
+.xs-bill{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.xs-bill__t{font-size:18px;line-height:24px;font-weight:500}
+.xs-bill .xs-field{gap:10px}
+.xs-paybtn{position:relative;height:56px;margin-top:20px;display:flex;align-items:center;
+           padding:0 74px 0 18px;overflow:hidden;background:var(--b200);border:2px solid var(--b400);
+           color:#000;font-size:18px;line-height:20px;letter-spacing:.4px;font-weight:500}
+.xs-paybtn .ico{position:absolute;right:12px;top:50%;margin-top:-14px}
+.xs .xs-terms{margin-top:12px;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="seg" id="mode-switch" role="group" aria-label="Formula mode">
+    <button type="button" class="seg__opt" data-mode="math" aria-pressed="true">Xsolla Palettes</button>
+    <button type="button" class="seg__opt" data-mode="partner" aria-pressed="false">Partner Customisation</button>
+    <button type="button" class="seg__opt" data-mode="h245" aria-pressed="false">Hue 245</button>
+  </div>
+  <span class="appbar__ctx">Xsolla Colour Formulas</span>
+  <span class="appbar__spacer"></span>
+  <div class="seg" id="corr-switch" role="group" aria-label="Brand hue correction">
+    <button type="button" class="seg__opt" data-corr="current" aria-pressed="false">Current</button>
+    <button type="button" class="seg__opt" data-corr="adjusted" aria-pressed="true">Adjusted</button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="side" id="side">
+  <div data-only="partner" hidden>
+    <h2>Partner Customisation</h2>
+    <p>A checkout painted from the formulas. Everything drawn from the dark
+       neutral and brand palettes regenerates from its hue; every other colour
+       stays as drawn.</p>
+    <div class="hue-ctl">
+      <div class="hue-ctl__top">
+        <label for="pc-brand">Brand hue</label>
+        <span class="play-meta" id="pc-brand-val"></span>
+      </div>
+      <input id="pc-brand" type="range" min="0" max="359" step="1">
+      <div class="strip" id="pc-brand-strip"></div>
+      <div class="strip-lab" id="pc-brand-lab"></div>
+    </div>
+    <div class="hue-ctl">
+      <div class="hue-ctl__top">
+        <label for="pc-neutral">Neutral hue</label>
+        <span class="play-meta" id="pc-neutral-val"></span>
+      </div>
+      <input id="pc-neutral" type="range" min="0" max="359" step="1">
+      <div class="strip" id="pc-neutral-strip"></div>
+      <div class="strip-lab" id="pc-neutral-lab"></div>
+    </div>
+    <label class="link-ctl"><input type="checkbox" id="pc-link" checked> Move both hues together</label>
+    <button type="button" class="btn" id="pc-reset">Reset to Xsolla</button>
+  </div>
+  <!-- Hue 245: its own brand curves, drawn with the pen. Nothing here touches
+       the other tabs, and nothing on them touches this. -->
+  <div class="h245" data-only="h245" hidden>
+    <h2>Hue 245</h2>
+    <p>Brand and neutral at 245°. Drag the square handles to reshape the brand
+       ramp. The saturation end points also slide up and down; the lightness
+       ones stay put. Edits stay on this tab.</p>
+    <div class="pen" id="h245-pen-L"></div>
+    <div class="pen" id="h245-pen-S"></div>
+    <div class="adj__btns">
+      <button type="button" class="btn" id="h245-reset">Reset to formula</button>
+      <button type="button" class="btn" id="h245-copy">Copy values</button>
+    </div>
+    <div class="h245__card" id="h245-card"></div>
+  </div>
+  <!-- The neutral curve editor, hidden now the values are settled. Remove
+       `hidden` to bring it back; while hidden, saved edits are ignored. -->
+  <section class="adj" id="adj" hidden>
+    <h2>Neutral correction</h2>
+    <p>The adjusted hue curve for the neutrals: a smooth wave through five
+       points. Positive weight darkens the light end, negative lifts the dark
+       end. The brand colours keep their own built curve.</p>
+    <p class="adj__off" id="adj-off">Switch the app bar to <b>Adjusted</b> to edit.</p>
+    <fieldset class="adj__form" id="adj-form">
+      <div class="adj__row adj__row--head"><span></span><span>Hue °</span><span>Weight</span></div>
+      <div id="adj-points"></div>
+      <div class="adj__row adj__row--lift">
+        <label for="adj-lift">Lift strength</label><span></span>
+        <input id="adj-lift" type="number" min="0" max="5" step="0.05" inputmode="decimal">
+      </div>
+      <div class="adj__row">
+        <label for="adj-neutral">Strength</label><span></span>
+        <input id="adj-neutral" type="number" min="0" max="2" step="0.05" inputmode="decimal">
+      </div>
+      <p class="adj__err" id="adj-err" hidden></p>
+      <div class="adj__btns">
+        <button type="button" class="btn" id="adj-reset">Reset</button>
+        <button type="button" class="btn" id="adj-copy">Copy values</button>
+      </div>
+    </fieldset>
+  </section>
+</aside>
+<div class="shell__main">
+<div class="wrap" data-only="math">
+<header class="mast">
+  <p class="eyebrow" id="eyebrow"></p>
+  <h1>Xsolla Colour Formulas</h1>
+  <p class="lead" id="mast-lead"></p>
+</header>
+
+
+<div class="panel" data-only="math">
+  <div>
+    <h2 id="f-heading">The formula</h2>
+    <pre class="f" id="f-body"></pre>
+  </div>
+  <div>
+    <h2 id="lad-heading">Step ladder</h2>
+    <table class="ladder"><thead id="lad-head"></thead><tbody id="lad"></tbody></table>
+  </div>
+</div>
+
+
+
+
+<div class="legend">
+  <span><i style="background:var(--rule-2)"></i>ΔE &lt; 1</span>
+  <span><i class="s" style="background:var(--slight)"></i>1–3</span>
+  <span><i class="v" style="background:var(--warn)"></i>3–6</span>
+  <span><i class="b" style="background:var(--bad)"></i>&gt; 6</span>
+</div>
+
+<div class="sect">
+  <h2 class="sect-xl">Brand &amp; Labels</h2>
+</div>
+<div class="grid" id="g-brand"></div>
+<div id="playground" class="playground" data-only="math"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">UI (Semantic)</h2>
+</div>
+<div class="grid" id="g-semantic"></div>
+<div id="playground-ui" class="playground" data-only="math"></div>
+
+<div class="sect">
+  <h2 class="sect-xl">Neutrals</h2>
+</div>
+
+<div class="grid" id="g-theme"></div>
+
+<div id="playground-neutral" class="playground playground--pairs" data-only="math"></div>
+
+
+
+<footer id="foot"></footer>
+</div>
+
+<!-- Partner Customisation: hue controls left, the checkout on a black canvas
+     right. Built once; the sliders only rewrite colour variables. -->
+<main class="partner" id="partner" data-only="partner" hidden>
+  <div class="partner__canvas" id="pc-canvas">
+    <div class="xs-stage" id="pc-stage">
+      <div class="xs" id="xs">
+        <header class="xs-head">
+          <div class="xs-menu">
+            <div class="xs-back">
+              <i class="ico" style="--m:url(assets/partner/arrow-left.svg);width:18px;height:18px"></i>
+              <img src="assets/partner/partner-logo.png" alt="SuperGame">
+            </div>
+            <nav class="xs-nav"><b>Purchase</b><span>Backpack</span></nav>
+          </div>
+          <div class="xs-right">
+            <div class="xs-loc"><img src="assets/partner/flag-us.svg" alt="">US • ENG</div>
+            <div class="xs-bp">
+              <div class="xs-cur"><i class="ico" style="--m:url(assets/partner/pts-sm.svg);width:18px;height:18px;color:var(--b200)"></i>300</div>
+              <div class="xs-cur"><img src="assets/partner/gold.svg" alt="" width="18" height="18">150</div>
+              <div class="xs-avatar"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="5.75" r="3.25" fill="currentColor"/><path d="M2.5 16c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5z" fill="currentColor"/></svg></div>
+            </div>
+          </div>
+        </header>
+        <div class="xs-body">
+          <section class="xs-cart">
+            <div class="xs-cart__top">
+              <div class="xs-card">
+                <div class="xs-item">
+                  <img src="assets/partner/item.png" alt="">
+                  <div class="xs-row">
+                    <div><p class="m">Humble coin-pack</p><p>10% Webstore Bonus</p></div>
+                    <p class="m">$39.99</p>
+                  </div>
+                </div>
+                <div class="xs-row t3"><p>Subtotal</p><p>$39.99</p></div>
+                <div class="xs-total disp"><p>Total</p><p>$39.99</p></div>
+              </div>
+              <div class="xs-widgets">
+                <div class="xs-widget">
+                  <div class="xs-widget__ico"><i class="ico" style="--m:url(assets/partner/pts.svg);width:24px;height:24px;color:var(--b200)"></i></div>
+                  <div class="xs-widget__main">
+                    <div><p class="m">Save $15.00</p><p class="sub">with 150 Xsolla Points</p></div>
+                    <span class="xs-switch"><i></i></span>
+                  </div>
+                </div>
+                <div class="xs-widget">
+                  <div class="xs-widget__ico"><img src="assets/partner/gold.svg" alt="" width="24" height="24"></div>
+                  <div class="xs-widget__main">
+                    <div><p class="m">Save $10.00</p><p class="sub">with 10 Xsolla Gold</p></div>
+                    <span class="xs-switch on"><i></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="xs-foot">
+              <div class="xs-chat"><i class="ico" style="--m:url(assets/partner/chat.svg);width:24px;height:24px"></i></div>
+              <div class="xs-legal">
+                <div class="xs-legal__logo"><i class="ico" style="--m:url(assets/partner/xsolla-logo.svg);width:40px;height:16px;color:var(--n50)"></i><p>Secure connection</p></div>
+                <p>Legal • Privacy settings<br>Refund policy • Trust сenter</p>
+              </div>
+            </div>
+          </section>
+          <section class="xs-pay">
+            <div class="xs-apple"><i class="ico" style="--m:url(assets/partner/applepay.svg);width:64px;height:28px;color:#000"></i></div>
+            <div class="xs-methods">
+              <div class="xs-tab sel">
+                <div class="xs-tab__icon"><div style="background:#fff;padding:3px"><i class="ico" style="--m:url(assets/partner/bank-card.svg);width:18px;height:18px;color:#141D1F"></i></div></div>
+                <div class="xs-tab__title">Card</div>
+              </div>
+              <div class="xs-tab">
+                <div class="xs-tab__icon"><div style="background:#fff"><img src="assets/partner/paypal.png" alt="" style="position:absolute;left:5.15px;top:4.4px;width:14.94px;height:17.1px"></div></div>
+                <div class="xs-tab__title">PayPal</div>
+              </div>
+              <div class="xs-tab">
+                <div class="xs-tab__icon"><div style="position:absolute;left:0;top:-9px;width:33px;height:33px;overflow:hidden"><img src="assets/partner/xpay.png" alt="" style="position:absolute;left:-20.75%;top:-16.6%;width:141.13%;height:141.13%"></div></div>
+                <div class="xs-tab__title">Xsolla Pay</div>
+              </div>
+              <div class="xs-tab">
+                <div class="xs-tab__icon"><div style="background:#FFA8CD"><img src="assets/partner/klarna.png" alt="" style="position:absolute;left:-.5px;top:-1px;width:26px;height:26px"></div></div>
+                <div class="xs-tab__title">Klarna</div>
+              </div>
+              <div class="xs-tab xs-tab--more"><i class="ico" style="--m:url(assets/partner/more.svg);width:22px;height:22px"></i></div>
+            </div>
+            <div class="xs-form">
+              <p class="xs-h disp">Payment via card</p>
+              <div class="xs-field" style="margin-top:16px">
+                <span>Card number</span>
+                <div class="xs-cards">
+                  <div style="background:#fff"><img src="assets/partner/mastercard.svg" alt="" style="left:3px;top:3.4px;width:18px;height:11.2px"></div>
+                  <div><img src="assets/partner/visa.svg" alt="" style="left:0;top:0;width:24px;height:18px"></div>
+                  <div style="background:#fff"><img src="assets/partner/maestro.svg" alt="" style="left:3px;top:3.4px;width:18px;height:11.2px"></div>
+                  <div style="background:#fff"><img src="assets/partner/diners.svg" alt="" style="left:4.1px;top:3px;width:15.2px;height:12.04px"></div>
+                  <div style="background:#1977C6"><img src="assets/partner/amex.svg" alt="" style="left:6px;top:0;width:18px;height:18px"></div>
+                </div>
+              </div>
+              <div class="xs-pair" style="margin-top:-2px">
+                <div class="xs-field"><span>MM/YY</span></div>
+                <div class="xs-field"><span>CVC/CVV</span><i class="ico" style="--m:url(assets/partner/question.svg);width:18px;height:18px;color:var(--n50)"></i></div>
+              </div>
+              <div class="xs-check">
+                <span class="xs-check__box"><i class="ico" style="--m:url(assets/partner/check.svg);width:12px;height:12px"></i></span>
+                <p>Save card and earn <span class="lnk">Xsolla Points</span></p>
+              </div>
+              <div class="xs-phone">
+                <div class="xs-field"><img src="assets/partner/flag-us.svg" alt="" style="width:16px;height:12px;margin:0 1px"><i class="ico" style="--m:url(assets/partner/chevron-down.svg);width:18px;height:18px;color:var(--n50)"></i></div>
+                <div class="xs-field"><span>+1</span></div>
+              </div>
+              <div class="xs-bill">
+                <p class="xs-bill__t">Billing information</p>
+                <div class="xs-field"><i class="ico" style="--m:url(assets/partner/location.svg);width:18px;height:18px;color:var(--n50)"></i><span>Zip code</span></div>
+              </div>
+              <div class="xs-paybtn">Pay $39.99<i class="ico" style="--m:url(assets/partner/xsolla-icon.svg);width:28px;height:28px"></i></div>
+              <p class="xs-terms">By proceeding, you agree to <span class="lnk">Xsolla's EULA</span> and confirm you meet the legal age requirement in your country. <span class="lnk">Regional details</span></p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<main class="partner" id="h245" data-only="h245" hidden>
+  <div class="partner__canvas" id="h245-canvas"></div>
+</main>
+</div>
+</div>
+
+<script>
+const ALL = {"v7":{"id":"v7","label":"v7","families":[{"name":"Brand","kind":"chromatic","theme":"both","hue":190,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0204,"lift":null,"rows":[{"step":"25","orig":"#EBFCFF","hsl":"#E7FBFF","missing":false,"hsl_hsl":[190,100,95],"orig_hsl":[189,100,96],"dE_hsl":0.59,"px_hsl":4,"t":0.025,"scale":2.5,"L":95.25,"S":100.0,"H":190,"e":0.826,"dE_v5":0.48},{"step":"50","orig":"#D6F8FF","hsl":"#D3F8FF","missing":false,"hsl_hsl":[190,100,91],"orig_hsl":[190,100,92],"dE_hsl":0.36,"px_hsl":3,"t":0.05,"scale":5.0,"L":91.46,"S":100.0,"H":190,"e":0.821,"dE_v5":0.37},{"step":"100","orig":"#B2F2FF","hsl":"#B2F2FF","missing":false,"hsl_hsl":[190,100,85],"orig_hsl":[190,100,85],"dE_hsl":0.0,"px_hsl":0,"t":0.1,"scale":10.0,"L":84.85,"S":99.98,"H":190,"e":0.82,"dE_v5":0.55},{"step":"200","orig":"#80EAFF","hsl":"#78E8FE","missing":false,"hsl_hsl":[190,99,73],"orig_hsl":[190,100,75],"dE_hsl":0.91,"px_hsl":8,"t":0.2,"scale":20.0,"L":73.39,"S":98.66,"H":190,"e":0.823,"dE_v5":1.39},{"step":"300","orig":"#55DCF6","hsl":"#4CD9F5","missing":false,"hsl_hsl":[190,89,63],"orig_hsl":[190,90,65],"dE_hsl":1.04,"px_hsl":9,"t":0.3,"scale":30.0,"L":62.99,"S":89.59,"H":190,"e":0.826,"dE_v5":1.16},{"step":"400","orig":"#31CAE8","hsl":"#2BC5E4","missing":false,"hsl_hsl":[190,77,53],"orig_hsl":[190,80,55],"dE_hsl":1.46,"px_hsl":6,"t":0.4,"scale":40.0,"L":53.16,"S":77.53,"H":190,"e":0.828,"dE_v5":0.03},{"step":"500","orig":"#22A8C3","hsl":"#1FA5C0","missing":false,"hsl_hsl":[190,72,44],"orig_hsl":[190,70,45],"dE_hsl":0.91,"px_hsl":3,"t":0.5,"scale":50.0,"L":43.73,"S":72.42,"H":190,"e":0.829,"dE_v5":0.29},{"step":"600","orig":"#1B8398","hsl":"#1A8297","missing":false,"hsl_hsl":[190,71,35],"orig_hsl":[190,70,35],"dE_hsl":0.32,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.58,"S":70.86,"H":190,"e":0.831,"dE_v5":0.16},{"step":"700","orig":"#135D6C","hsl":"#136070","missing":false,"hsl_hsl":[190,71,26],"orig_hsl":[190,70,25],"dE_hsl":1.03,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.67,"S":70.35,"H":190,"e":0.832,"dE_v5":0.36},{"step":"800","orig":"#0B3841","hsl":"#0D3F4A","missing":false,"hsl_hsl":[191,70,17],"orig_hsl":[190,71,15],"dE_hsl":2.59,"px_hsl":9,"t":0.8,"scale":80.0,"L":16.95,"S":70.16,"H":190,"e":0.833,"dE_v5":0.49},{"step":"850","orig":null,"hsl":"#0A2F37","missing":true,"hsl_hsl":[191,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.66,"S":70.11,"H":190,"e":0.833,"dE_v5":0.42},{"step":"900","orig":null,"hsl":"#061F24","missing":true,"hsl_hsl":[190,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.4,"S":70.08,"H":190,"e":0.833,"dE_v5":0.9}],"d5":0.55,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E6FBFF 2.56%, #D3F8FF 5.13%, #C1F5FF 7.69%, #B0F2FF 10.26%, #A0EFFF 12.82%, #91EDFF 15.38%, #83EAFF 17.95%, #76E7FE 20.51%, #69E4FD 23.08%, #5DE0FB 25.64%, #53DCF8 28.21%, #49D8F4 30.77%, #41D2F0 33.33%, #38CDEB 35.9%, #30C8E7 38.46%, #28C3E3 41.03%, #20BEDE 43.59%, #20B4D2 46.15%, #1FAAC6 48.72%, #1EA1BB 51.28%, #1D97B0 53.85%, #1C8EA5 56.41%, #1A859B 58.97%, #197D91 61.54%, #177486 64.1%, #166B7C 66.67%, #146372 69.23%, #125A69 71.79%, #11525F 74.36%, #0F4955 76.92%, #0D414B 79.49%, #0C3942 82.05%, #0A3138 84.62%, #08282F 87.18%, #072025 89.74%, #05181C 92.31%, #031013 94.87%, #020809 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Core","kind":"chromatic","theme":"both","hue":250,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0,"lift":null,"rows":[{"step":"25","orig":"#EEEBFF","hsl":"#ECE8FF","missing":false,"hsl_hsl":[250,100,95],"orig_hsl":[249,100,96],"dE_hsl":0.85,"px_hsl":3,"t":0.025,"scale":2.5,"L":95.49,"S":100.0,"H":250,"e":0.84,"dE_v5":0.91},{"step":"50","orig":"#DDD6FF","hsl":"#DDD6FF","missing":false,"hsl_hsl":[250,100,92],"orig_hsl":[250,100,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.93,"S":100.0,"H":250,"e":0.84,"dE_v5":0.92},{"step":"100","orig":"#BFB2FF","hsl":"#C2B5FF","missing":false,"hsl_hsl":[251,100,85],"orig_hsl":[250,100,85],"dE_hsl":0.92,"px_hsl":3,"t":0.1,"scale":10.0,"L":85.55,"S":99.98,"H":250,"e":0.84,"dE_v5":0.46},{"step":"200","orig":"#9580FF","hsl":"#927CFE","missing":false,"hsl_hsl":[250,98,74],"orig_hsl":[250,100,75],"dE_hsl":1.09,"px_hsl":4,"t":0.2,"scale":20.0,"L":74.13,"S":98.66,"H":250,"e":0.84,"dE_v5":1.45},{"step":"300","orig":"#7055F6","hsl":"#6B4FF5","missing":false,"hsl_hsl":[250,89,64],"orig_hsl":[250,90,65],"dE_hsl":1.51,"px_hsl":6,"t":0.3,"scale":30.0,"L":63.63,"S":89.59,"H":250,"e":0.84,"dE_v5":1.25},{"step":"400","orig":"#5031E8","hsl":"#4C2DE4","missing":false,"hsl_hsl":[250,77,54],"orig_hsl":[250,80,55],"dE_hsl":1.16,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.68,"S":77.53,"H":250,"e":0.84,"dE_v5":0.27},{"step":"500","orig":"#3D22C3","hsl":"#3A1FC2","missing":false,"hsl_hsl":[250,72,44],"orig_hsl":[250,70,45],"dE_hsl":0.71,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":72.42,"H":250,"e":0.84,"dE_v5":0.12},{"step":"600","orig":"#301B98","hsl":"#2F1A98","missing":false,"hsl_hsl":[250,71,35],"orig_hsl":[250,70,35],"dE_hsl":0.25,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":70.86,"H":250,"e":0.84,"dE_v5":0.38},{"step":"700","orig":"#22136C","hsl":"#231470","missing":false,"hsl_hsl":[250,70,26],"orig_hsl":[250,70,25],"dE_hsl":0.79,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.89,"S":70.35,"H":250,"e":0.84,"dE_v5":0.7},{"step":"800","orig":"#140B41","hsl":"#170D4A","missing":false,"hsl_hsl":[250,70,17],"orig_hsl":[250,71,15],"dE_hsl":1.92,"px_hsl":9,"t":0.8,"scale":80.0,"L":17.09,"S":70.16,"H":250,"e":0.84,"dE_v5":0.95},{"step":"850","orig":null,"hsl":"#110A37","missing":true,"hsl_hsl":[249,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.76,"S":70.11,"H":250,"e":0.84,"dE_v5":1.06},{"step":"900","orig":null,"hsl":"#0C0625","missing":true,"hsl_hsl":[252,72,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.47,"S":70.08,"H":250,"e":0.84,"dE_v5":1.18}],"d5":0.8,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #EBE7FF 2.56%, #DCD5FF 5.13%, #CEC4FF 7.69%, #C0B4FF 10.26%, #B3A4FF 12.82%, #A795FF 15.38%, #9B87FF 17.95%, #8F79FE 20.51%, #846CFD 23.08%, #7A61FB 25.64%, #7156F8 28.21%, #684CF4 30.77%, #6044F0 33.33%, #583BEB 35.9%, #5133E7 38.46%, #492AE3 41.03%, #4121DF 43.59%, #3E20D4 46.15%, #3C1FC8 48.72%, #391FBC 51.28%, #361DB1 53.85%, #331CA7 56.41%, #301B9C 58.97%, #2D1992 61.54%, #2A1788 64.1%, #27167D 66.67%, #241473 69.23%, #21126A 71.79%, #1E1160 74.36%, #1B0F56 76.92%, #180D4C 79.49%, #150C42 82.05%, #120A39 84.62%, #0F082F 87.18%, #0C0726 89.74%, #09051C 92.31%, #060313 94.87%, #030209 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mindaro","kind":"chromatic","theme":"both","hue":75,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.2,"lift":null,"rows":[{"step":"25","orig":"#FAFFEB","hsl":"#F5FFD9","missing":false,"hsl_hsl":[76,100,93],"orig_hsl":[75,100,96],"dE_hsl":2.52,"px_hsl":18,"t":0.025,"scale":2.5,"L":92.55,"S":100.0,"H":75,"e":0.704,"dE_v5":0.19},{"step":"50","orig":"#F2FFCC","hsl":"#EDFFB8","missing":false,"hsl_hsl":[75,100,86],"orig_hsl":[75,100,90],"dE_hsl":2.66,"px_hsl":20,"t":0.05,"scale":5.0,"L":86.0,"S":100.0,"H":75,"e":0.656,"dE_v5":0.41},{"step":"100","orig":"#E6FF99","hsl":"#E2FF8A","missing":false,"hsl_hsl":[75,100,77],"orig_hsl":[75,100,80],"dE_hsl":1.76,"px_hsl":15,"t":0.1,"scale":10.0,"L":77.12,"S":99.98,"H":75,"e":0.641,"dE_v5":1.08},{"step":"200","orig":"#D9FF66","hsl":"#D3FE52","missing":false,"hsl_hsl":[75,99,66],"orig_hsl":[75,100,70],"dE_hsl":1.75,"px_hsl":20,"t":0.2,"scale":20.0,"L":65.92,"S":98.66,"H":75,"e":0.669,"dE_v5":2.74},{"step":"300","orig":"#C7F53D","hsl":"#C2F42E","missing":false,"hsl_hsl":[75,90,57],"orig_hsl":[75,90,60],"dE_hsl":1.02,"px_hsl":15,"t":0.3,"scale":30.0,"L":56.84,"S":89.59,"H":75,"e":0.698,"dE_v5":2.32},{"step":"400","orig":"#B2E51A","hsl":"#ABDB1C","missing":false,"hsl_hsl":[75,77,48],"orig_hsl":[75,80,50],"dE_hsl":2.88,"px_hsl":10,"t":0.4,"scale":40.0,"L":48.3,"S":77.53,"H":75,"e":0.72,"dE_v5":0.61},{"step":"500","orig":"#8AAD1F","hsl":"#8BB01C","missing":false,"hsl_hsl":[75,73,40],"orig_hsl":[75,70,40],"dE_hsl":0.89,"px_hsl":3,"t":0.5,"scale":50.0,"L":39.98,"S":72.42,"H":75,"e":0.737,"dE_v5":0.89},{"step":"600","orig":"#678217","hsl":"#6E8B18","missing":false,"hsl_hsl":[75,71,32],"orig_hsl":[75,70,30],"dE_hsl":2.87,"px_hsl":9,"t":0.6,"scale":60.0,"L":31.8,"S":70.86,"H":75,"e":0.749,"dE_v5":0.35},{"step":"700","orig":"#45570F","hsl":"#526712","missing":false,"hsl_hsl":[75,70,24],"orig_hsl":[75,71,20],"dE_hsl":5.46,"px_hsl":16,"t":0.7,"scale":70.0,"L":23.72,"S":70.35,"H":75,"e":0.759,"dE_v5":0.31},{"step":"800","orig":"#222B08","hsl":"#36440C","missing":false,"hsl_hsl":[75,70,16],"orig_hsl":[75,69,10],"dE_hsl":9.34,"px_hsl":25,"t":0.8,"scale":80.0,"L":15.74,"S":70.16,"H":75,"e":0.767,"dE_v5":0.56},{"step":"850","orig":null,"hsl":"#293309","missing":true,"hsl_hsl":[74,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.77,"S":70.11,"H":75,"e":0.771,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#1B2206","missing":true,"hsl_hsl":[75,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.83,"S":70.08,"H":75,"e":0.774,"dE_v5":0.87}],"d5":0.9,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F5FFD8 2.56%, #EDFFB6 5.13%, #E6FF9D 7.69%, #E1FF89 10.26%, #DDFF78 12.82%, #D9FF69 15.38%, #D6FE5C 17.95%, #D2FE50 20.51%, #CEFC45 23.08%, #CAFA3C 25.64%, #C6F633 28.21%, #C1F22C 30.77%, #BBED26 33.33%, #B6E920 35.9%, #B0E21B 38.46%, #A7D61C 41.03%, #9FCA1D 43.59%, #97BF1D 46.15%, #8FB51C 48.72%, #87AB1C 51.28%, #80A11B 53.85%, #789819 56.41%, #718E18 58.97%, #698517 61.54%, #627C15 64.1%, #5B7314 66.67%, #546A12 69.23%, #4D6111 71.79%, #46580F 74.36%, #3F4F0E 76.92%, #38460C 79.49%, #313D0B 82.05%, #2A3409 84.62%, #232C08 87.18%, #1C2306 89.74%, #151A05 92.31%, #0E1103 94.87%, #070902 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mint","kind":"chromatic","theme":"both","hue":145,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.1054,"lift":null,"rows":[{"step":"25","orig":"#EBFFF3","hsl":"#E1FFEE","missing":false,"hsl_hsl":[146,100,94],"orig_hsl":[144,100,96],"dE_hsl":1.48,"px_hsl":10,"t":0.025,"scale":2.5,"L":94.12,"S":100.0,"H":145,"e":0.768,"dE_v5":0.19},{"step":"50","orig":"#CCFFE1","hsl":"#C8FFDF","missing":false,"hsl_hsl":[145,100,89],"orig_hsl":[145,100,90],"dE_hsl":0.56,"px_hsl":4,"t":0.05,"scale":5.0,"L":89.21,"S":100.0,"H":145,"e":0.743,"dE_v5":0.3},{"step":"100","orig":"#B2FFD2","hsl":"#A1FFC8","missing":false,"hsl_hsl":[145,100,82],"orig_hsl":[145,100,85],"dE_hsl":2.31,"px_hsl":17,"t":0.1,"scale":10.0,"L":81.59,"S":99.98,"H":145,"e":0.735,"dE_v5":0.54},{"step":"200","orig":"#80FFB5","hsl":"#67FEA6","missing":false,"hsl_hsl":[145,99,70],"orig_hsl":[145,100,75],"dE_hsl":2.81,"px_hsl":25,"t":0.2,"scale":20.0,"L":70.08,"S":98.66,"H":145,"e":0.75,"dE_v5":1.97},{"step":"300","orig":"#55F698","hsl":"#3FF48A","missing":false,"hsl_hsl":[145,89,60],"orig_hsl":[145,90,65],"dE_hsl":2.14,"px_hsl":22,"t":0.3,"scale":30.0,"L":60.2,"S":89.59,"H":145,"e":0.765,"dE_v5":1.75},{"step":"400","orig":"#31E87E","hsl":"#21E372","missing":false,"hsl_hsl":[145,78,51],"orig_hsl":[145,80,55],"dE_hsl":1.87,"px_hsl":16,"t":0.4,"scale":40.0,"L":50.92,"S":77.53,"H":145,"e":0.777,"dE_v5":0.02},{"step":"500","orig":"#22C365","hsl":"#1EB95E","missing":false,"hsl_hsl":[145,72,42],"orig_hsl":[145,70,45],"dE_hsl":2.86,"px_hsl":10,"t":0.5,"scale":50.0,"L":41.98,"S":72.42,"H":145,"e":0.785,"dE_v5":0.56},{"step":"600","orig":"#1B984F","hsl":"#19914B","missing":false,"hsl_hsl":[145,71,33],"orig_hsl":[145,70,35],"dE_hsl":2.09,"px_hsl":7,"t":0.6,"scale":60.0,"L":33.28,"S":70.86,"H":145,"e":0.792,"dE_v5":0.33},{"step":"700","orig":"#136C38","hsl":"#136C38","missing":false,"hsl_hsl":[145,70,25],"orig_hsl":[145,70,25],"dE_hsl":0.0,"px_hsl":0,"t":0.7,"scale":70.0,"L":24.76,"S":70.35,"H":145,"e":0.797,"dE_v5":0.5},{"step":"800","orig":"#0B4122","hsl":"#0C4725","missing":false,"hsl_hsl":[145,71,16],"orig_hsl":[146,71,15],"dE_hsl":2.05,"px_hsl":6,"t":0.8,"scale":80.0,"L":16.38,"S":70.16,"H":145,"e":0.802,"dE_v5":0.51},{"step":"850","orig":null,"hsl":"#09351C","missing":true,"hsl_hsl":[146,71,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.24,"S":70.11,"H":145,"e":0.803,"dE_v5":0.51},{"step":"900","orig":null,"hsl":"#062312","missing":true,"hsl_hsl":[145,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.13,"S":70.08,"H":145,"e":0.805,"dE_v5":0.93}],"d5":0.68,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E0FFED 2.56%, #C7FFDE 5.13%, #B2FFD2 7.69%, #9FFFC7 10.26%, #8FFFBE 12.82%, #80FFB5 15.38%, #72FEAD 17.95%, #65FEA5 20.51%, #59FC9D 23.08%, #4EFA96 25.64%, #45F78F 28.21%, #3CF388 30.77%, #34EF82 33.33%, #2DEA7C 35.9%, #25E575 38.46%, #1EE16F 41.03%, #1ED56A 43.59%, #1EC966 46.15%, #1EBE61 48.72%, #1DB35C 51.28%, #1CA957 53.85%, #1B9F52 56.41%, #19954D 58.97%, #188B48 61.54%, #168143 64.1%, #15783E 66.67%, #136E39 69.23%, #126534 71.79%, #105C2F 74.36%, #0E522B 76.92%, #0D4926 79.49%, #0B4021 82.05%, #0A361C 84.62%, #082D18 87.18%, #062413 89.74%, #051B0E 92.31%, #031209 94.87%, #020905 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Yellow","kind":"chromatic","theme":"both","hue":50,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.1643,"lift":null,"rows":[{"step":"25","orig":"#FFFCEB","hsl":"#FFF9DC","missing":false,"hsl_hsl":[50,100,93],"orig_hsl":[51,100,96],"dE_hsl":1.85,"px_hsl":15,"t":0.025,"scale":2.5,"L":93.19,"S":100.0,"H":50,"e":0.728,"dE_v5":0.13},{"step":"50","orig":"#FFF7CC","hsl":"#FFF4BE","missing":false,"hsl_hsl":[50,100,87],"orig_hsl":[51,100,90],"dE_hsl":1.66,"px_hsl":14,"t":0.05,"scale":5.0,"L":87.31,"S":100.0,"H":50,"e":0.689,"dE_v5":0.17},{"step":"100","orig":"#FFF2B2","hsl":"#FFED94","missing":false,"hsl_hsl":[50,100,79],"orig_hsl":[50,100,85],"dE_hsl":3.25,"px_hsl":30,"t":0.1,"scale":10.0,"L":78.92,"S":99.98,"H":50,"e":0.676,"dE_v5":0.76},{"step":"200","orig":"#FFEA80","hsl":"#FEE35B","missing":false,"hsl_hsl":[50,99,68],"orig_hsl":[50,100,75],"dE_hsl":3.21,"px_hsl":37,"t":0.2,"scale":20.0,"L":67.55,"S":98.66,"H":50,"e":0.699,"dE_v5":2.0},{"step":"300","orig":"#F6DB55","hsl":"#F4D435","missing":false,"hsl_hsl":[50,90,58],"orig_hsl":[50,90,65],"dE_hsl":2.3,"px_hsl":32,"t":0.3,"scale":30.0,"L":58.14,"S":89.59,"H":50,"e":0.723,"dE_v5":1.59},{"step":"400","orig":"#E8CA31","hsl":"#DFBF1C","missing":false,"hsl_hsl":[50,78,49],"orig_hsl":[50,80,55],"dE_hsl":3.19,"px_hsl":21,"t":0.4,"scale":40.0,"L":49.31,"S":77.53,"H":50,"e":0.741,"dE_v5":0.71},{"step":"500","orig":"#C3A822","hsl":"#B39A1D","missing":false,"hsl_hsl":[50,72,41],"orig_hsl":[50,70,45],"dE_hsl":4.63,"px_hsl":16,"t":0.5,"scale":50.0,"L":40.75,"S":72.42,"H":50,"e":0.755,"dE_v5":0.96},{"step":"600","orig":"#98831B","hsl":"#8D7A18","missing":false,"hsl_hsl":[50,71,32],"orig_hsl":[50,70,35],"dE_hsl":3.18,"px_hsl":11,"t":0.6,"scale":60.0,"L":32.36,"S":70.86,"H":50,"e":0.765,"dE_v5":0.46},{"step":"700","orig":"#6C5E13","hsl":"#695A12","missing":false,"hsl_hsl":[50,71,24],"orig_hsl":[51,70,25],"dE_hsl":1.31,"px_hsl":4,"t":0.7,"scale":70.0,"L":24.11,"S":70.35,"H":50,"e":0.774,"dE_v5":0.3},{"step":"800","orig":"#41380B","hsl":"#453C0C","missing":false,"hsl_hsl":[51,70,16],"orig_hsl":[50,71,15],"dE_hsl":1.52,"px_hsl":4,"t":0.8,"scale":80.0,"L":15.98,"S":70.16,"H":50,"e":0.78,"dE_v5":0.42},{"step":"850","orig":null,"hsl":"#342D09","missing":true,"hsl_hsl":[50,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.95,"S":70.11,"H":50,"e":0.783,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#221E06","missing":true,"hsl_hsl":[51,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.94,"S":70.08,"H":50,"e":0.786,"dE_v5":0.98}],"d5":0.74,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFF9DB 2.56%, #FFF4BD 5.13%, #FFF0A5 7.69%, #FFED92 10.26%, #FFEA81 12.82%, #FFE772 15.38%, #FEE565 17.95%, #FEE258 20.51%, #FCDF4D 23.08%, #FADC43 25.64%, #F7D73A 28.21%, #F3D332 30.77%, #EECD2B 33.33%, #E9C825 35.9%, #E4C31E 38.46%, #DABB1D 41.03%, #CEB11D 43.59%, #C3A71D 46.15%, #B89E1D 48.72%, #AE961C 51.28%, #A48D1B 53.85%, #9A851A 56.41%, #917D19 58.97%, #877517 61.54%, #7E6D16 64.1%, #756514 66.67%, #6C5D13 69.23%, #625511 71.79%, #594D10 74.36%, #50450E 76.92%, #473D0C 79.49%, #3E360B 82.05%, #352E09 84.62%, #2C2608 87.18%, #231E06 89.74%, #1A1705 92.31%, #120F03 94.87%, #090802 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Edge","kind":"chromatic","theme":"both","hue":10,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0357,"lift":null,"rows":[{"step":"25","orig":"#FFEEEB","hsl":"#FFEAE6","missing":false,"hsl_hsl":[10,100,95],"orig_hsl":[9,100,96],"dE_hsl":1.01,"px_hsl":5,"t":0.025,"scale":2.5,"L":95.07,"S":100.0,"H":10,"e":0.816,"dE_v5":0.53},{"step":"50","orig":"#FFDDD6","hsl":"#FFD9D2","missing":false,"hsl_hsl":[9,100,91],"orig_hsl":[10,100,92],"dE_hsl":0.97,"px_hsl":4,"t":0.05,"scale":5.0,"L":91.09,"S":100.0,"H":10,"e":0.807,"dE_v5":0.53},{"step":"100","orig":"#FFBFB2","hsl":"#FFBCAF","missing":false,"hsl_hsl":[10,100,84],"orig_hsl":[10,100,85],"dE_hsl":0.72,"px_hsl":3,"t":0.1,"scale":10.0,"L":84.31,"S":99.98,"H":10,"e":0.804,"dE_v5":0.35},{"step":"200","orig":"#FF9580","hsl":"#FE8C75","missing":false,"hsl_hsl":[10,99,73],"orig_hsl":[10,100,75],"dE_hsl":2.07,"px_hsl":11,"t":0.2,"scale":20.0,"L":72.82,"S":98.66,"H":10,"e":0.809,"dE_v5":1.29},{"step":"300","orig":"#F67055","hsl":"#F5664A","missing":false,"hsl_hsl":[10,90,63],"orig_hsl":[10,90,65],"dE_hsl":1.98,"px_hsl":11,"t":0.3,"scale":30.0,"L":62.5,"S":89.59,"H":10,"e":0.815,"dE_v5":1.14},{"step":"400","orig":"#E84F30","hsl":"#E44829","missing":false,"hsl_hsl":[10,78,53],"orig_hsl":[10,80,55],"dE_hsl":1.51,"px_hsl":7,"t":0.4,"scale":40.0,"L":52.77,"S":77.53,"H":10,"e":0.819,"dE_v5":0.0},{"step":"500","orig":"#C33D22","hsl":"#BF391F","missing":false,"hsl_hsl":[10,72,44],"orig_hsl":[10,70,45],"dE_hsl":1.14,"px_hsl":4,"t":0.5,"scale":50.0,"L":43.42,"S":72.42,"H":10,"e":0.822,"dE_v5":0.21},{"step":"600","orig":"#98301B","hsl":"#962E1A","missing":false,"hsl_hsl":[10,70,35],"orig_hsl":[10,70,35],"dE_hsl":0.61,"px_hsl":2,"t":0.6,"scale":60.0,"L":34.35,"S":70.86,"H":10,"e":0.824,"dE_v5":0.35},{"step":"700","orig":"#6C2213","hsl":"#6F2313","missing":false,"hsl_hsl":[10,71,25],"orig_hsl":[10,70,25],"dE_hsl":0.73,"px_hsl":3,"t":0.7,"scale":70.0,"L":25.51,"S":70.35,"H":10,"e":0.826,"dE_v5":0.41},{"step":"800","orig":"#41140B","hsl":"#49170D","missing":false,"hsl_hsl":[10,70,17],"orig_hsl":[10,71,15],"dE_hsl":2.13,"px_hsl":8,"t":0.8,"scale":80.0,"L":16.85,"S":70.16,"H":10,"e":0.827,"dE_v5":0.68},{"step":"850","orig":null,"hsl":"#37110A","missing":true,"hsl_hsl":[9,69,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.59,"S":70.11,"H":10,"e":0.828,"dE_v5":0.74},{"step":"900","orig":null,"hsl":"#240B06","missing":true,"hsl_hsl":[10,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.36,"S":70.08,"H":10,"e":0.828,"dE_v5":1.09}],"d5":0.61,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFEAE5 2.56%, #FFD8D1 5.13%, #FFC9BE 7.69%, #FFBBAD 10.26%, #FFAE9E 12.82%, #FFA18F 15.38%, #FF9580 17.95%, #FE8A73 20.51%, #FD7F66 23.08%, #FB755B 25.64%, #F86C50 28.21%, #F46447 30.77%, #EF5C3F 33.33%, #EB5436 35.9%, #E64D2E 38.46%, #E24526 41.03%, #DC3F1F 43.59%, #D03D1F 46.15%, #C53B1F 48.72%, #B9381E 51.28%, #AF351D 53.85%, #A4321C 56.41%, #9A2F1A 58.97%, #902C19 61.54%, #862917 64.1%, #7C2615 66.67%, #722314 69.23%, #682012 71.79%, #5E1D10 74.36%, #551A0F 76.92%, #4B170D 79.49%, #41140B 82.05%, #38120A 84.62%, #2F0F08 87.18%, #250C07 89.74%, #1C0905 92.31%, #130603 94.87%, #090302 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Pulse","kind":"chromatic","theme":"both","hue":110,"group":"UI (Semantic)","semantic":true,"s_gain":1.0,"dip":0.1726,"lift":null,"rows":[{"step":"25","orig":"#EEFFEB","hsl":"#E1FFDC","missing":false,"hsl_hsl":[111,100,93],"orig_hsl":[111,100,96],"dE_hsl":2.72,"px_hsl":15,"t":0.025,"scale":2.5,"L":93.04,"S":99.99,"H":110,"e":0.723,"dE_v5":0.12},{"step":"50","orig":"#D5FFCC","hsl":"#C8FFBD","missing":false,"hsl_hsl":[110,100,87],"orig_hsl":[109,100,90],"dE_hsl":2.62,"px_hsl":15,"t":0.05,"scale":5.0,"L":87.02,"S":99.95,"H":110,"e":0.681,"dE_v5":0.35},{"step":"100","orig":"#BFFFB2","hsl":"#A4FF92","missing":false,"hsl_hsl":[110,100,79],"orig_hsl":[110,100,85],"dE_hsl":5.14,"px_hsl":32,"t":0.1,"scale":10.0,"L":78.52,"S":99.57,"H":110,"e":0.668,"dE_v5":1.32},{"step":"200","orig":"#95FF80","hsl":"#75FC5A","missing":false,"hsl_hsl":[110,96,67],"orig_hsl":[110,100,75],"dE_hsl":4.82,"px_hsl":38,"t":0.2,"scale":20.0,"L":67.18,"S":96.64,"H":110,"e":0.692,"dE_v5":3.56},{"step":"300","orig":"#70F655","hsl":"#53F433","missing":false,"hsl_hsl":[110,90,58],"orig_hsl":[110,90,65],"dE_hsl":3.19,"px_hsl":34,"t":0.3,"scale":30.0,"L":57.84,"S":89.44,"H":110,"e":0.717,"dE_v5":5.33},{"step":"400","orig":"#50E831","hsl":"#3CDF1C","missing":false,"hsl_hsl":[110,78,49],"orig_hsl":[110,80,55],"dE_hsl":2.91,"px_hsl":21,"t":0.4,"scale":40.0,"L":49.08,"S":77.98,"H":110,"e":0.736,"dE_v5":4.35},{"step":"500","orig":"#3DC322","hsl":"#3BAA25","missing":false,"hsl_hsl":[110,64,41],"orig_hsl":[110,70,45],"dE_hsl":7.26,"px_hsl":25,"t":0.5,"scale":50.0,"L":40.57,"S":64.11,"H":110,"e":0.751,"dE_v5":1.68},{"step":"600","orig":"#368F24","hsl":"#377B29","missing":false,"hsl_hsl":[110,50,32],"orig_hsl":[110,60,35],"dE_hsl":6.21,"px_hsl":20,"t":0.6,"scale":60.0,"L":32.23,"S":50.24,"H":110,"e":0.762,"dE_v5":0.93},{"step":"700","orig":"#2F5827","hsl":"#2E5526","missing":false,"hsl_hsl":[110,38,24],"orig_hsl":[110,39,25],"dE_hsl":0.99,"px_hsl":3,"t":0.7,"scale":70.0,"L":24.02,"S":38.08,"H":110,"e":0.77,"dE_v5":2.46},{"step":"800","orig":"#1F301C","hsl":"#21341D","missing":false,"hsl_hsl":[110,28,16],"orig_hsl":[111,26,15],"dE_hsl":1.46,"px_hsl":4,"t":0.8,"scale":80.0,"L":15.92,"S":28.22,"H":110,"e":0.777,"dE_v5":3.39},{"step":"850","orig":null,"hsl":"#192617","missing":true,"hsl_hsl":[112,25,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.91,"S":24.15,"H":110,"e":0.78,"dE_v5":3.2},{"step":"900","orig":null,"hsl":"#111810","missing":true,"hsl_hsl":[112,20,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.92,"S":20.59,"H":110,"e":0.783,"dE_v5":3.32}],"d5":2.5,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E1FFDB 2.56%, #C7FFBB 5.13%, #B3FFA3 7.69%, #A2FF90 10.26%, #95FE80 12.82%, #89FE71 15.38%, #7EFD64 17.95%, #73FC58 20.51%, #6AFA4D 23.08%, #61F843 25.64%, #59F639 28.21%, #51F331 30.77%, #4AEF29 33.33%, #43EB22 35.9%, #3DE61B 38.46%, #3CD91D 41.03%, #3CCB1F 43.59%, #3CBD22 46.15%, #3CB024 48.72%, #3BA326 51.28%, #3A9727 53.85%, #398B28 56.41%, #378029 58.97%, #367529 61.54%, #346B28 64.1%, #316128 66.67%, #2F5726 69.23%, #2C4E25 71.79%, #294623 74.36%, #253D20 76.92%, #22361E 79.49%, #1E2E1B 82.05%, #1A2718 84.62%, #162014 87.18%, #121910 89.74%, #0E120D 92.31%, #090C09 94.87%, #050604 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Flash","kind":"chromatic","theme":"both","hue":32,"group":"UI (Semantic)","semantic":true,"s_gain":0.6,"dip":0.107,"lift":null,"rows":[{"step":"25","orig":"#FFF5EB","hsl":"#FFF1E1","missing":false,"hsl_hsl":[32,100,94],"orig_hsl":[30,100,96],"dE_hsl":1.37,"px_hsl":10,"t":0.025,"scale":2.5,"L":94.1,"S":100.0,"H":32,"e":0.767,"dE_v5":0.24},{"step":"50","orig":"#FFE7CC","hsl":"#FFE5C8","missing":false,"hsl_hsl":[32,100,89],"orig_hsl":[32,100,90],"dE_hsl":0.59,"px_hsl":4,"t":0.05,"scale":5.0,"L":89.16,"S":99.97,"H":32,"e":0.742,"dE_v5":0.2},{"step":"100","orig":"#FFDBB2","hsl":"#FFD3A1","missing":false,"hsl_hsl":[32,100,82],"orig_hsl":[32,100,85],"dE_hsl":2.37,"px_hsl":17,"t":0.1,"scale":10.0,"L":81.52,"S":99.74,"H":32,"e":0.733,"dE_v5":0.6},{"step":"200","orig":"#FFC380","hsl":"#FDB868","missing":false,"hsl_hsl":[32,97,70],"orig_hsl":[32,100,75],"dE_hsl":3.1,"px_hsl":24,"t":0.2,"scale":20.0,"L":70.02,"S":97.98,"H":32,"e":0.748,"dE_v5":1.68},{"step":"300","orig":"#F6AB55","hsl":"#F9A03A","missing":false,"hsl_hsl":[32,94,60],"orig_hsl":[32,90,65],"dE_hsl":2.72,"px_hsl":27,"t":0.3,"scale":30.0,"L":60.14,"S":93.67,"H":32,"e":0.764,"dE_v5":2.99},{"step":"400","orig":"#E89331","hsl":"#EE8915","missing":false,"hsl_hsl":[32,86,51],"orig_hsl":[32,80,55],"dE_hsl":2.29,"px_hsl":28,"t":0.4,"scale":40.0,"L":50.88,"S":86.79,"H":32,"e":0.776,"dE_v5":3.51},{"step":"500","orig":"#C37822","hsl":"#BF7117","missing":false,"hsl_hsl":[32,79,42],"orig_hsl":[32,70,45],"dE_hsl":1.89,"px_hsl":11,"t":0.5,"scale":50.0,"L":41.95,"S":78.46,"H":32,"e":0.785,"dE_v5":2.52},{"step":"600","orig":"#985D1B","hsl":"#905919","missing":false,"hsl_hsl":[32,70,33],"orig_hsl":[32,70,35],"dE_hsl":1.91,"px_hsl":8,"t":0.6,"scale":60.0,"L":33.26,"S":70.14,"H":32,"e":0.791,"dE_v5":1.39},{"step":"700","orig":"#6C4313","hsl":"#674217","missing":false,"hsl_hsl":[32,63,25],"orig_hsl":[32,70,25],"dE_hsl":1.07,"px_hsl":5,"t":0.7,"scale":70.0,"L":24.74,"S":62.85,"H":32,"e":0.797,"dE_v5":0.71},{"step":"800","orig":"#30271C","hsl":"#422B12","missing":false,"hsl_hsl":[31,57,16],"orig_hsl":[33,26,15],"dE_hsl":4.22,"px_hsl":18,"t":0.8,"scale":80.0,"L":16.37,"S":56.93,"H":32,"e":0.801,"dE_v5":0.68},{"step":"850","orig":null,"hsl":"#30200E","missing":true,"hsl_hsl":[32,55,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.23,"S":54.49,"H":32,"e":0.803,"dE_v5":0.81},{"step":"900","orig":null,"hsl":"#20150A","missing":true,"hsl_hsl":[30,52,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.13,"S":52.36,"H":32,"e":0.805,"dE_v5":1.28}],"d5":1.38,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFF1E0 2.56%, #FFE5C7 5.13%, #FFDBB1 7.69%, #FFD29F 10.26%, #FFCB8F 12.82%, #FEC380 15.38%, #FEBD72 17.95%, #FDB665 20.51%, #FCB059 23.08%, #FBAA4D 25.64%, #FAA442 28.21%, #F89E37 30.77%, #F6982D 33.33%, #F39223 35.9%, #F08C1A 38.46%, #ED8712 41.03%, #DF8014 43.59%, #D27A15 46.15%, #C57416 48.72%, #B96D18 51.28%, #AC6718 53.85%, #A06119 56.41%, #955B19 58.97%, #8A5519 61.54%, #7F4F19 64.1%, #744919 66.67%, #6A4318 69.23%, #603E17 71.79%, #563815 74.36%, #4D3214 76.92%, #432C12 79.49%, #3A2710 82.05%, #32210F 84.62%, #291C0C 87.18%, #20160A 89.74%, #181008 92.31%, #100B05 94.87%, #080503 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Pink","kind":"chromatic","theme":"both","hue":350,"group":"UI (Semantic)","semantic":true,"s_gain":0.975,"dip":0.0015,"lift":null,"rows":[{"step":"25","orig":"#FFEBEE","hsl":"#FFE8EC","missing":false,"hsl_hsl":[350,100,95],"orig_hsl":[351,100,96],"dE_hsl":0.72,"px_hsl":3,"t":0.025,"scale":2.5,"L":95.47,"S":99.99,"H":350,"e":0.839,"dE_v5":0.73},{"step":"50","orig":"#FFD6DD","hsl":"#FFD6DD","missing":false,"hsl_hsl":[350,100,92],"orig_hsl":[350,100,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.89,"S":99.95,"H":350,"e":0.839,"dE_v5":0.77},{"step":"100","orig":"#FFB2BF","hsl":"#FFB5C1","missing":false,"hsl_hsl":[350,100,85],"orig_hsl":[350,100,85],"dE_hsl":0.69,"px_hsl":3,"t":0.1,"scale":10.0,"L":85.5,"S":99.58,"H":350,"e":0.838,"dE_v5":0.47},{"step":"200","orig":"#FF8095","hsl":"#FD7D92","missing":false,"hsl_hsl":[350,97,74],"orig_hsl":[350,100,75],"dE_hsl":0.78,"px_hsl":3,"t":0.2,"scale":20.0,"L":74.07,"S":96.72,"H":350,"e":0.839,"dE_v5":1.93},{"step":"300","orig":"#F65570","hsl":"#F54F6B","missing":false,"hsl_hsl":[350,89,64],"orig_hsl":[350,90,65],"dE_hsl":1.05,"px_hsl":6,"t":0.3,"scale":30.0,"L":63.58,"S":89.71,"H":350,"e":0.839,"dE_v5":3.1},{"step":"400","orig":"#E8304F","hsl":"#E62C4B","missing":false,"hsl_hsl":[350,79,54],"orig_hsl":[350,80,55],"dE_hsl":0.73,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.65,"S":78.53,"H":350,"e":0.839,"dE_v5":3.19},{"step":"500","orig":"#C3223D","hsl":"#BA2740","missing":false,"hsl_hsl":[350,65,44],"orig_hsl":[350,70,45],"dE_hsl":1.77,"px_hsl":9,"t":0.5,"scale":50.0,"L":44.11,"S":64.99,"H":350,"e":0.839,"dE_v5":1.85},{"step":"600","orig":"#8F2436","hsl":"#872B3A","missing":false,"hsl_hsl":[350,52,35],"orig_hsl":[350,60,35],"dE_hsl":1.77,"px_hsl":8,"t":0.6,"scale":60.0,"L":34.87,"S":51.47,"H":350,"e":0.839,"dE_v5":0.21},{"step":"700","orig":"#58272F","hsl":"#5C2831","missing":false,"hsl_hsl":[350,39,26],"orig_hsl":[350,39,25],"dE_hsl":0.96,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.87,"S":39.61,"H":350,"e":0.839,"dE_v5":1.52},{"step":"800","orig":"#311C1F","hsl":"#391E23","missing":false,"hsl_hsl":[349,31,17],"orig_hsl":[351,27,15],"dE_hsl":2.02,"px_hsl":8,"t":0.8,"scale":80.0,"L":17.08,"S":30.0,"H":350,"e":0.839,"dE_v5":2.02},{"step":"850","orig":null,"hsl":"#29181B","missing":true,"hsl_hsl":[349,26,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.75,"S":26.03,"H":350,"e":0.839,"dE_v5":1.99},{"step":"900","orig":null,"hsl":"#1A1112","missing":true,"hsl_hsl":[353,21,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.47,"S":22.56,"H":350,"e":0.839,"dE_v5":1.78}],"d5":1.63,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFE7EB 2.56%, #FFD5DC 5.13%, #FFC4CE 7.69%, #FFB4C0 10.26%, #FFA4B3 12.82%, #FE96A7 15.38%, #FE889B 17.95%, #FD7A90 20.51%, #FB6E85 23.08%, #FA627B 25.64%, #F75671 28.21%, #F54C68 30.77%, #F1425F 33.33%, #ED3957 35.9%, #E9314F 38.46%, #E32948 41.03%, #DE2241 43.59%, #CF2441 46.15%, #C12640 48.72%, #B3283F 51.28%, #A52A3E 53.85%, #982B3D 56.41%, #8C2B3B 58.97%, #802B39 61.54%, #742B37 64.1%, #692A34 66.67%, #5F2831 69.23%, #55272E 71.79%, #4C242B 74.36%, #432227 76.92%, #3A1F24 79.49%, #321C20 82.05%, #2A191C 84.62%, #231517 87.18%, #1B1113 89.74%, #140D0E 92.31%, #0D090A 94.87%, #070405 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"light","hue":75,"group":"Neutrals","semantic":false,"s_gain":null,"dip":0.0,"lift":null,"rows":[{"step":"25","orig":"#F5F6F4","hsl":"#F4F5F2","missing":false,"hsl_hsl":[80,13,95],"orig_hsl":[90,10,96],"dE_hsl":0.35,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.49,"S":10.25,"H":75,"e":0.84,"dE_v5":0.52},{"step":"50","orig":"#ECEDE9","hsl":"#EBECE8","missing":false,"hsl_hsl":[75,10,92],"orig_hsl":[75,10,92],"dE_hsl":0.3,"px_hsl":1,"t":0.05,"scale":5.0,"L":91.93,"S":9.89,"H":75,"e":0.84,"dE_v5":0.3},{"step":"100","orig":"#DDDFD8","hsl":"#DCDED7","missing":false,"hsl_hsl":[77,10,86],"orig_hsl":[77,10,86],"dE_hsl":0.31,"px_hsl":1,"t":0.1,"scale":10.0,"L":85.55,"S":9.25,"H":75,"e":0.84,"dE_v5":0.61},{"step":"200","orig":"#C2C4BA","hsl":"#C0C2B8","missing":false,"hsl_hsl":[72,8,74],"orig_hsl":[72,8,75],"dE_hsl":0.63,"px_hsl":2,"t":0.2,"scale":20.0,"L":74.13,"S":8.11,"H":75,"e":0.84,"dE_v5":0.41},{"step":"300","orig":"#A9ACA0","hsl":"#A6A99C","missing":false,"hsl_hsl":[74,7,64],"orig_hsl":[75,7,65],"dE_hsl":1.0,"px_hsl":4,"t":0.3,"scale":30.0,"L":63.63,"S":7.06,"H":75,"e":0.84,"dE_v5":0.63},{"step":"400","orig":"#909385","hsl":"#8C9082","missing":false,"hsl_hsl":[77,6,54],"orig_hsl":[73,6,55],"dE_hsl":1.08,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.68,"S":6.07,"H":75,"e":0.84,"dE_v5":0.34},{"step":"500","orig":"#76786D","hsl":"#73766B","missing":false,"hsl_hsl":[76,5,44],"orig_hsl":[71,5,45],"dE_hsl":0.78,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":5.11,"H":75,"e":0.84,"dE_v5":0.3},{"step":"600","orig":"#5B5D56","hsl":"#5B5D55","missing":false,"hsl_hsl":[75,4,35],"orig_hsl":[77,4,35],"dE_hsl":0.16,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":4.19,"H":75,"e":0.84,"dE_v5":0.39},{"step":"700","orig":"#41423E","hsl":"#434440","missing":false,"hsl_hsl":[75,3,26],"orig_hsl":[75,3,25],"dE_hsl":0.76,"px_hsl":2,"t":0.7,"scale":70.0,"L":25.89,"S":3.29,"H":75,"e":0.84,"dE_v5":0.38},{"step":"800","orig":"#272725","hsl":"#2C2D2B","missing":false,"hsl_hsl":[90,2,17],"orig_hsl":[60,3,15],"dE_hsl":2.35,"px_hsl":6,"t":0.8,"scale":80.0,"L":17.09,"S":2.41,"H":75,"e":0.84,"dE_v5":0.4},{"step":"850","orig":null,"hsl":"#212120","missing":true,"hsl_hsl":[60,2,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.76,"S":1.98,"H":75,"e":0.84,"dE_v5":0.75},{"step":"900","orig":"#1A1A19","hsl":"#161615","missing":false,"hsl_hsl":[60,2,8],"orig_hsl":[60,2,10],"dE_hsl":1.76,"px_hsl":4,"t":0.9,"scale":90.0,"L":8.47,"S":1.55,"H":75,"e":0.84,"dE_v5":0.88}],"d5":0.49,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F4F4F2 2.56%, #EBECE8 5.13%, #E3E4DF 7.69%, #DBDDD6 10.26%, #D4D6CE 12.82%, #CCCFC6 15.38%, #C5C8BE 17.95%, #BEC1B6 20.51%, #B7BAAF 23.08%, #B1B4A8 25.64%, #AAADA1 28.21%, #A4A79A 30.77%, #9DA093 33.33%, #979A8C 35.9%, #909486 38.46%, #8A8E7F 41.03%, #848779 43.59%, #7D8073 46.15%, #777A6E 48.72%, #707368 51.28%, #6A6C62 53.85%, #64665D 56.41%, #5D5F57 58.97%, #575952 61.54%, #51534C 64.1%, #4B4C47 66.67%, #454641 69.23%, #3F403C 71.79%, #393A37 74.36%, #333431 76.92%, #2D2E2C 79.49%, #272826 82.05%, #222221 84.62%, #1C1C1B 87.18%, #161716 89.74%, #111110 92.31%, #0B0B0B 94.87%, #060605 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"dark","hue":190,"group":"Neutrals","semantic":false,"s_gain":null,"dip":0.0,"lift":null,"rows":[{"step":"25","orig":"#F4F5F6","hsl":"#F2F4F5","missing":false,"hsl_hsl":[200,13,95],"orig_hsl":[210,10,96],"dE_hsl":0.39,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.49,"S":11.39,"H":190,"e":0.84,"dE_v5":0.44},{"step":"50","orig":"#E8ECED","hsl":"#E8ECED","missing":false,"hsl_hsl":[192,12,92],"orig_hsl":[192,12,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.93,"S":11.79,"H":190,"e":0.84,"dE_v5":0.44},{"step":"100","orig":"#D7DEE0","hsl":"#D6DDDF","missing":false,"hsl_hsl":[193,12,86],"orig_hsl":[193,13,86],"dE_hsl":0.31,"px_hsl":1,"t":0.1,"scale":10.0,"L":85.55,"S":12.49,"H":190,"e":0.84,"dE_v5":0.45},{"step":"200","orig":"#B7C5C8","hsl":"#B4C3C6","missing":false,"hsl_hsl":[190,14,74],"orig_hsl":[191,13,75],"dE_hsl":0.71,"px_hsl":3,"t":0.2,"scale":20.0,"L":74.13,"S":13.76,"H":190,"e":0.84,"dE_v5":0.4},{"step":"300","orig":"#99AEB2","hsl":"#94ABB0","missing":false,"hsl_hsl":[191,15,64],"orig_hsl":[190,14,65],"dE_hsl":1.11,"px_hsl":5,"t":0.3,"scale":30.0,"L":63.63,"S":14.93,"H":190,"e":0.84,"dE_v5":0.21},{"step":"400","orig":"#7B989D","hsl":"#76969C","missing":false,"hsl_hsl":[189,16,54],"orig_hsl":[189,15,55],"dE_hsl":0.9,"px_hsl":5,"t":0.4,"scale":40.0,"L":53.68,"S":16.04,"H":190,"e":0.84,"dE_v5":0.33},{"step":"500","orig":"#607F85","hsl":"#5D7D84","missing":false,"hsl_hsl":[191,17,44],"orig_hsl":[190,16,45],"dE_hsl":0.73,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":17.1,"H":190,"e":0.84,"dE_v5":0.0},{"step":"600","orig":"#4A6368","hsl":"#496469","missing":false,"hsl_hsl":[189,18,35],"orig_hsl":[190,17,35],"dE_hsl":0.31,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":18.12,"H":190,"e":0.84,"dE_v5":0.16},{"step":"700","orig":"#34474B","hsl":"#354A4F","missing":false,"hsl_hsl":[192,20,26],"orig_hsl":[190,18,25],"dE_hsl":1.05,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.89,"S":19.12,"H":190,"e":0.84,"dE_v5":0.37},{"step":"800","orig":"#233134","hsl":"#233134","missing":false,"hsl_hsl":[191,20,17],"orig_hsl":[191,20,17],"dE_hsl":0.0,"px_hsl":0,"t":0.8,"scale":80.0,"L":17.09,"S":20.1,"H":190,"e":0.84,"dE_v5":0.73},{"step":"850","orig":"#1B2628","hsl":"#1A2527","missing":false,"hsl_hsl":[189,20,13],"orig_hsl":[189,19,13],"dE_hsl":0.41,"px_hsl":1,"t":0.85,"scale":85.0,"L":12.76,"S":20.58,"H":190,"e":0.84,"dE_v5":0.76},{"step":"900","orig":"#141D1F","hsl":"#11191A","missing":false,"hsl_hsl":[187,21,8],"orig_hsl":[191,22,10],"dE_hsl":1.71,"px_hsl":5,"t":0.9,"scale":90.0,"L":8.47,"S":21.06,"H":190,"e":0.84,"dE_v5":0.94}],"d5":0.44,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F2F4F5 2.56%, #E7ECEC 5.13%, #DEE4E5 7.69%, #D5DCDE 10.26%, #CCD5D7 12.82%, #C3CFD1 15.38%, #BBC8CB 17.95%, #B2C2C5 20.51%, #AABCBF 23.08%, #A2B6B9 25.64%, #9AB0B4 28.21%, #92AAAE 30.77%, #8AA4A9 33.33%, #829EA4 35.9%, #7B999F 38.46%, #73939A 41.03%, #6B8E95 43.59%, #65878E 46.15%, #608187 48.72%, #5B7A80 51.28%, #557379 53.85%, #506D73 56.41%, #4B666C 58.97%, #466065 61.54%, #41595E 64.1%, #3C5357 66.67%, #374C51 69.23%, #32464A 71.79%, #2D4043 74.36%, #28393C 76.92%, #243336 79.49%, #1F2C2F 82.05%, #1B2628 84.62%, #162022 87.18%, #11191B 89.74%, #0D1314 92.31%, #090D0D 94.87%, #040607 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]}],"hues":{"Edge":10,"Flash":32,"Yellow":50,"Mindaro":75,"Pulse":110,"Mint":145,"Brand":190,"Core":250,"Pink":350},"formula":{"L0":100.0,"L_range":100.0,"p_base":0.84,"dip":0.2,"dip_c":0.09,"L_peak_hue":75.0,"lobe_up":145.0,"lobe_dn":90.0,"adj_knots":[[75.0,1.0],[245.0,-0.4],[290.0,-0.05],[359.0,-0.1]],"adj_lift":2.5,"adj_s_knee":0.72,"adj_s_drop":64.0,"adj_s_order":4.0,"adj_n_knots":[[140.0,0.1],[190.0,0.0],[240.0,-0.1],[290.0,-0.05],[359.0,-0.05]],"adj_n_lift":0.7,"adj_neutral":1.0,"S_drop":30.0,"S_knee":0.333333,"S_order":6.0,"S_ui_drop":106.0,"S_ui_knee":0.625,"S_ui_order":3.0,"semantic":["Pulse","Flash","Pink"],"S_ui_hue":32.0,"S_ui_lobe_up":28.0,"S_ui_lobe_dn":50.0,"S_ui_cut":0.4,"groups":[{"name":"Brand & Labels","families":["Brand","Core","Mindaro","Mint","Yellow","Edge"]},{"name":"UI (Semantic)","families":["Pulse","Flash","Pink"]}],"steps":[25,50,100,200,300,400,500,600,700,800,850,900]},"meta":{"b":"b(t) = 4c\u00b7t/(t+c)\u00b2 with c = 0.09  \u2014 a log-t bell, no ln","e":"e(t) = 0.84 \u2212 0.20\u00b7w(H)\u00b7b(t)","L":"L(t,H) = 100 \u2212 100\u00b7t^e(t)   \u2014 the ends pin themselves","S":"S(t) = 100 \u2212 30\u00b7(3t)\u2076/(1 + (3t)\u2076)  \u2014 one curve, every hue","S_ui":"UI: S(t) = 100 \u2212 106\u00b7g(H)\u00b7u/(1 + u), u = (1.6t)\u00b3","S_g":"g(H) = 1 \u2212 0.4\u00b7cos\u00b2(\u00bd\u03c0\u00b7d), d = |H\u221232| / (28 up, 50 down)","w":"w(H) as in v5 \u2014 cos\u00b2 lobe, 145\u00b0 up and 90\u00b0 down"},"curves":{"chromatic":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.784,94.179,91.801,89.578,87.468,85.445,83.493,81.597,79.748,77.94,76.166,74.422,72.705,71.011,69.339,67.686,66.05,64.431,62.827,61.237,59.66,58.095,56.542,55.0,53.467,51.945,50.432,48.927,47.431,45.943,44.463,42.99,41.525,40.066,38.614,37.168,35.729,34.295,32.868,31.446,30.029,28.618,27.212,25.811,24.415,23.023,21.637,20.254,18.877,17.503,16.134,14.769,13.408,12.05,10.697,9.347,8.002,6.659,5.321,3.985,2.654,1.325,0.0],"S":[100.0,100.0,100.0,100.0,99.999,99.995,99.984,99.959,99.909,99.815,99.654,99.393,98.991,98.402,97.579,96.483,95.092,93.411,91.481,89.373,87.18,85.0,82.92,81.005,79.293,77.799,76.519,75.438,74.533,73.781,73.158,72.644,72.219,71.868,71.578,71.337,71.137,70.97,70.831,70.714,70.615,70.532,70.462,70.402,70.35,70.307,70.269,70.237,70.209,70.185,70.164,70.146,70.13,70.116,70.103,70.093,70.083,70.075,70.067,70.061,70.055,70.05,70.045,70.041]},"chromatic_semantic":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,95.565,91.274,87.529,84.341,81.598,79.188,77.021,75.034,73.18,71.425,69.747,68.128,66.555,65.02,63.514,62.033,60.573,59.13,57.701,56.286,54.881,53.486,52.1,50.721,49.349,47.984,46.625,45.271,43.922,42.578,41.239,39.903,38.572,37.245,35.921,34.601,33.284,31.97,30.66,29.353,28.049,26.747,25.449,24.153,22.86,21.57,20.282,18.997,17.715,16.434,15.157,13.881,12.608,11.338,10.069,8.803,7.539,6.277,5.018,3.76,2.505,1.251,0.0],"S":[100.0,99.998,99.986,99.953,99.889,99.783,99.626,99.408,99.118,98.749,98.292,97.738,97.082,96.318,95.44,94.447,93.335,92.105,90.757,89.293,87.718,86.038,84.257,82.384,80.428,78.398,76.304,74.156,71.964,69.741,67.494,65.236,62.976,60.722,58.483,56.268,54.082,51.932,49.823,47.761,45.748,43.789,41.885,40.039,38.252,36.524,34.856,33.249,31.701,30.212,28.781,27.407,26.089,24.825,23.614,22.454,21.342,20.279,19.261,18.288,17.357,16.466,15.615,14.801]},"chromatic_L_peak":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,95.301,90.614,86.551,83.15,80.281,77.804,75.612,73.625,71.788,70.063,68.42,66.84,65.309,63.816,62.354,60.915,59.497,58.095,56.706,55.329,53.962,52.604,51.253,49.909,48.57,47.237,45.909,44.586,43.266,41.951,40.639,39.33,38.025,36.723,35.424,34.127,32.834,31.543,30.255,28.969,27.686,26.405,25.127,23.851,22.577,21.305,20.036,18.769,17.504,16.241,14.98,13.721,12.464,11.209,9.956,8.705,7.456,6.208,4.963,3.72,2.478,1.238,0.0],"S":[100.0,100.0,100.0,100.0,99.999,99.995,99.984,99.959,99.909,99.815,99.654,99.393,98.991,98.402,97.579,96.483,95.092,93.411,91.481,89.373,87.18,85.0,82.92,81.005,79.293,77.799,76.519,75.438,74.533,73.781,73.158,72.644,72.219,71.868,71.578,71.337,71.137,70.97,70.831,70.714,70.615,70.532,70.462,70.402,70.35,70.307,70.269,70.237,70.209,70.185,70.164,70.146,70.13,70.116,70.103,70.093,70.083,70.075,70.067,70.061,70.055,70.05,70.045,70.041]},"neutral_light":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.92,94.487,92.249,90.131,88.096,86.126,84.208,82.334,80.496,78.691,76.915,75.165,73.438,71.732,70.045,68.376,66.724,65.087,63.465,61.857,60.261,58.677,57.105,55.544,53.993,52.452,50.921,49.398,47.884,46.379,44.881,43.392,41.909,40.434,38.966,37.505,36.05,34.601,33.158,31.721,30.29,28.865,27.445,26.03,24.621,23.216,21.816,20.421,19.031,17.645,16.264,14.887,13.514,12.145,10.781,9.42,8.063,6.71,5.361,4.016,2.674,1.335,0.0],"S":[10.7,10.392,10.149,9.925,9.713,9.51,9.313,9.121,8.933,8.75,8.569,8.392,8.216,8.044,7.873,7.704,7.538,7.372,7.209,7.047,6.886,6.726,6.568,6.411,6.254,6.099,5.945,5.792,5.64,5.488,5.338,5.188,5.039,4.891,4.743,4.597,4.45,4.305,4.16,4.016,3.872,3.729,3.586,3.444,3.303,3.162,3.022,2.882,2.742,2.603,2.465,2.326,2.189,2.051,1.915,1.778,1.642,1.506,1.371,1.236,1.102,0.967,0.834,0.7]},"neutral_dark":{"t":[0.0,0.0159,0.0317,0.0476,0.0635,0.0794,0.0952,0.1111,0.127,0.1429,0.1587,0.1746,0.1905,0.2063,0.2222,0.2381,0.254,0.2698,0.2857,0.3016,0.3175,0.3333,0.3492,0.3651,0.381,0.3968,0.4127,0.4286,0.4444,0.4603,0.4762,0.4921,0.5079,0.5238,0.5397,0.5556,0.5714,0.5873,0.6032,0.619,0.6349,0.6508,0.6667,0.6825,0.6984,0.7143,0.7302,0.746,0.7619,0.7778,0.7937,0.8095,0.8254,0.8413,0.8571,0.873,0.8889,0.9048,0.9206,0.9365,0.9524,0.9683,0.9841,1.0],"scale":[0.0,1.59,3.17,4.76,6.35,7.94,9.52,11.11,12.7,14.29,15.87,17.46,19.05,20.63,22.22,23.81,25.4,26.98,28.57,30.16,31.75,33.33,34.92,36.51,38.1,39.68,41.27,42.86,44.44,46.03,47.62,49.21,50.79,52.38,53.97,55.56,57.14,58.73,60.32,61.9,63.49,65.08,66.67,68.25,69.84,71.43,73.02,74.6,76.19,77.78,79.37,80.95,82.54,84.13,85.71,87.3,88.89,90.48,92.06,93.65,95.24,96.83,98.41,100.0],"L":[100.0,96.92,94.487,92.249,90.131,88.096,86.126,84.208,82.334,80.496,78.691,76.915,75.165,73.438,71.732,70.045,68.376,66.724,65.087,63.465,61.857,60.261,58.677,57.105,55.544,53.993,52.452,50.921,49.398,47.884,46.379,44.881,43.392,41.909,40.434,38.966,37.505,36.05,34.601,33.158,31.721,30.29,28.865,27.445,26.03,24.621,23.216,21.816,20.421,19.031,17.645,16.264,14.887,13.514,12.145,10.781,9.42,8.063,6.71,5.361,4.016,2.674,1.335,0.0],"S":[10.889,11.231,11.501,11.75,11.985,12.212,12.43,12.644,12.852,13.056,13.257,13.454,13.648,13.84,14.03,14.217,14.403,14.586,14.768,14.948,15.127,15.304,15.48,15.655,15.828,16.001,16.172,16.342,16.511,16.68,16.847,17.013,17.179,17.343,17.507,17.67,17.833,17.994,18.155,18.316,18.475,18.634,18.793,18.951,19.108,19.264,19.42,19.576,19.731,19.885,20.039,20.193,20.346,20.498,20.651,20.802,20.953,21.104,21.254,21.404,21.554,21.703,21.852,22.0]}},"families_adjusted":[{"name":"Brand","kind":"chromatic","theme":"both","hue":190,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0,"lift":0.171,"rows":[{"step":"25","orig":"#EBFCFF","hsl":"#EBFCFF","missing":false,"hsl_hsl":[189,100,96],"orig_hsl":[189,100,96],"dE_hsl":0.0,"px_hsl":0,"t":0.025,"scale":2.5,"L":96.05,"S":100.0,"H":190,"e":0.84,"dE_v5":1.07},{"step":"50","orig":"#D6F8FF","hsl":"#DBF9FF","missing":false,"hsl_hsl":[190,100,93],"orig_hsl":[190,100,92],"dE_hsl":0.68,"px_hsl":5,"t":0.05,"scale":5.0,"L":92.87,"S":100.0,"H":190,"e":0.84,"dE_v5":1.36},{"step":"100","orig":"#B2F2FF","hsl":"#BDF4FF","missing":false,"hsl_hsl":[190,100,87],"orig_hsl":[190,100,85],"dE_hsl":1.37,"px_hsl":11,"t":0.1,"scale":10.0,"L":87.14,"S":99.98,"H":190,"e":0.84,"dE_v5":1.79},{"step":"200","orig":"#80EAFF","hsl":"#89EBFF","missing":false,"hsl_hsl":[190,100,77],"orig_hsl":[190,100,75],"dE_hsl":0.85,"px_hsl":9,"t":0.2,"scale":20.0,"L":76.75,"S":99.18,"H":190,"e":0.84,"dE_v5":2.59},{"step":"300","orig":"#55DCF6","hsl":"#5DDFF9","missing":false,"hsl_hsl":[190,93,67],"orig_hsl":[190,90,65],"dE_hsl":1.06,"px_hsl":8,"t":0.3,"scale":30.0,"L":67.06,"S":93.16,"H":190,"e":0.84,"dE_v5":3.03},{"step":"400","orig":"#31CAE8","hsl":"#3CCDEA","missing":false,"hsl_hsl":[190,81,58],"orig_hsl":[190,80,55],"dE_hsl":1.03,"px_hsl":11,"t":0.4,"scale":40.0,"L":57.76,"S":80.64,"H":190,"e":0.84,"dE_v5":2.48},{"step":"500","orig":"#22A8C3","hsl":"#23B8D5","missing":false,"hsl_hsl":[190,72,49],"orig_hsl":[190,70,45],"dE_hsl":4.73,"px_hsl":18,"t":0.5,"scale":50.0,"L":48.69,"S":71.73,"H":190,"e":0.84,"dE_v5":5.35},{"step":"600","orig":"#1B8398","hsl":"#2093AA","missing":false,"hsl_hsl":[190,68,40],"orig_hsl":[190,70,35],"dE_hsl":4.98,"px_hsl":18,"t":0.6,"scale":60.0,"L":39.75,"S":68.05,"H":190,"e":0.84,"dE_v5":5.34},{"step":"700","orig":"#135D6C","hsl":"#1A7283","missing":false,"hsl_hsl":[190,67,31],"orig_hsl":[190,70,25],"dE_hsl":6.87,"px_hsl":23,"t":0.7,"scale":70.0,"L":30.84,"S":66.67,"H":190,"e":0.84,"dE_v5":5.9},{"step":"800","orig":"#0B3841","hsl":"#13505C","missing":false,"hsl_hsl":[190,66,22],"orig_hsl":[190,71,15],"dE_hsl":8.48,"px_hsl":27,"t":0.8,"scale":80.0,"L":21.82,"S":66.11,"H":190,"e":0.84,"dE_v5":5.61},{"step":"850","orig":null,"hsl":"#0F3F49","missing":true,"hsl_hsl":[190,66,17],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":17.21,"S":65.97,"H":190,"e":0.84,"dE_v5":5.43},{"step":"900","orig":null,"hsl":"#0B2E35","missing":true,"hsl_hsl":[190,66,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":12.44,"S":65.87,"H":190,"e":0.84,"dE_v5":4.95}],"d5":3.74,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #EAFCFF 2.56%, #DAF9FF 5.13%, #CBF6FF 7.69%, #BCF4FF 10.26%, #AEF1FF 12.82%, #A0EFFF 15.38%, #93EDFF 17.95%, #86EAFE 20.51%, #7AE8FE 23.08%, #6FE5FD 25.64%, #64E2FB 28.21%, #5ADEF8 30.77%, #51DAF5 33.33%, #49D5F1 35.9%, #41D0ED 38.46%, #39CBE8 41.03%, #32C6E4 43.59%, #2AC1E0 46.15%, #23BDDB 48.72%, #23B3CF 51.28%, #23A9C4 53.85%, #22A0B9 56.41%, #2197AE 58.97%, #208EA4 61.54%, #1E859A 64.1%, #1C7D90 66.67%, #1B7486 69.23%, #196C7C 71.79%, #176372 74.36%, #155A68 76.92%, #13525E 79.49%, #114954 82.05%, #0F414A 84.62%, #0D3840 87.18%, #0B2F36 89.74%, #09252B 92.31%, #071B20 94.87%, #041113 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Core","kind":"chromatic","theme":"both","hue":250,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0,"lift":0.974,"rows":[{"step":"25","orig":"#EEEBFF","hsl":"#F9F8FF","missing":false,"hsl_hsl":[249,100,99],"orig_hsl":[249,100,96],"dE_hsl":3.79,"px_hsl":13,"t":0.025,"scale":2.5,"L":98.66,"S":100.0,"H":250,"e":0.84,"dE_v5":5.54},{"step":"50","orig":"#DDD6FF","hsl":"#F4F1FF","missing":false,"hsl_hsl":[253,100,97],"orig_hsl":[250,100,92],"dE_hsl":7.93,"px_hsl":27,"t":0.05,"scale":5.0,"L":97.32,"S":100.0,"H":250,"e":0.84,"dE_v5":8.84},{"step":"100","orig":"#BFB2FF","hsl":"#E8E4FF","missing":false,"hsl_hsl":[249,100,95],"orig_hsl":[250,100,85],"dE_hsl":14.65,"px_hsl":50,"t":0.1,"scale":10.0,"L":94.62,"S":99.98,"H":250,"e":0.84,"dE_v5":14.06},{"step":"200","orig":"#9580FF","hsl":"#D0C7FF","missing":false,"hsl_hsl":[250,100,89],"orig_hsl":[250,100,75],"dE_hsl":20.63,"px_hsl":71,"t":0.2,"scale":20.0,"L":89.04,"S":99.63,"H":250,"e":0.84,"dE_v5":20.63},{"step":"300","orig":"#7055F6","hsl":"#B8AAFE","missing":false,"hsl_hsl":[250,98,83],"orig_hsl":[250,90,65],"dE_hsl":23.74,"px_hsl":85,"t":0.3,"scale":30.0,"L":83.14,"S":97.81,"H":250,"e":0.84,"dE_v5":24.47},{"step":"400","orig":"#5031E8","hsl":"#9F8DFB","missing":false,"hsl_hsl":[250,93,77],"orig_hsl":[250,80,55],"dE_hsl":24.1,"px_hsl":92,"t":0.4,"scale":40.0,"L":76.83,"S":92.86,"H":250,"e":0.84,"dE_v5":25.3},{"step":"500","orig":"#3D22C3","hsl":"#8872F3","missing":false,"hsl_hsl":[250,84,70],"orig_hsl":[250,70,45],"dE_hsl":22.34,"px_hsl":80,"t":0.5,"scale":50.0,"L":70.01,"S":84.24,"H":250,"e":0.84,"dE_v5":23.12},{"step":"600","orig":"#301B98","hsl":"#7059E6","missing":false,"hsl_hsl":[250,74,63],"orig_hsl":[250,70,35],"dE_hsl":21.4,"px_hsl":78,"t":0.6,"scale":60.0,"L":62.5,"S":73.92,"H":250,"e":0.84,"dE_v5":21.42},{"step":"700","orig":"#22136C","hsl":"#573ED6","missing":false,"hsl_hsl":[250,65,54],"orig_hsl":[250,70,25],"dE_hsl":22.35,"px_hsl":106,"t":0.7,"scale":70.0,"L":54.01,"S":64.74,"H":250,"e":0.84,"dE_v5":21.31},{"step":"800","orig":"#140B41","hsl":"#452FB1","missing":false,"hsl_hsl":[250,58,44],"orig_hsl":[250,71,15],"dE_hsl":23.53,"px_hsl":112,"t":0.8,"scale":80.0,"L":43.99,"S":58.01,"H":250,"e":0.84,"dE_v5":21.1},{"step":"850","orig":null,"hsl":"#3D2B97","missing":true,"hsl_hsl":[250,56,38],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":38.04,"S":55.54,"H":250,"e":0.84,"dE_v5":20.28},{"step":"900","orig":null,"hsl":"#332579","missing":true,"hsl_hsl":[250,53,31],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":31.01,"S":53.55,"H":250,"e":0.84,"dE_v5":18.7}],"d5":18.73,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F9F8FF 2.56%, #F3F1FF 5.13%, #EDEAFF 7.69%, #E8E3FF 10.26%, #E2DCFF 12.82%, #DCD4FF 15.38%, #D5CDFF 17.95%, #CFC6FF 20.51%, #C9BEFF 23.08%, #C3B7FF 25.64%, #BCAFFE 28.21%, #B6A8FE 30.77%, #B0A0FD 33.33%, #A999FD 35.9%, #A391FC 38.46%, #9D8AFA 41.03%, #9783F9 43.59%, #917CF7 46.15%, #8B75F4 48.72%, #856FF2 51.28%, #7F68EF 53.85%, #7962EB 56.41%, #735BE8 58.97%, #6D55E4 61.54%, #664EE0 64.1%, #6047DB 66.67%, #5940D7 69.23%, #5239D2 71.79%, #4B31CD 74.36%, #4930C1 76.92%, #452FB4 79.49%, #422EA7 82.05%, #3E2C99 84.62%, #39298B 87.18%, #33257B 89.74%, #2D216A 92.31%, #251B56 94.87%, #1A133C 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mindaro","kind":"chromatic","theme":"both","hue":75,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.2,"lift":null,"rows":[{"step":"25","orig":"#FAFFEB","hsl":"#F5FFD9","missing":false,"hsl_hsl":[76,100,93],"orig_hsl":[75,100,96],"dE_hsl":2.52,"px_hsl":18,"t":0.025,"scale":2.5,"L":92.55,"S":100.0,"H":75,"e":0.704,"dE_v5":0.19},{"step":"50","orig":"#F2FFCC","hsl":"#EDFFB8","missing":false,"hsl_hsl":[75,100,86],"orig_hsl":[75,100,90],"dE_hsl":2.66,"px_hsl":20,"t":0.05,"scale":5.0,"L":86.0,"S":100.0,"H":75,"e":0.656,"dE_v5":0.41},{"step":"100","orig":"#E6FF99","hsl":"#E2FF8A","missing":false,"hsl_hsl":[75,100,77],"orig_hsl":[75,100,80],"dE_hsl":1.76,"px_hsl":15,"t":0.1,"scale":10.0,"L":77.12,"S":99.98,"H":75,"e":0.641,"dE_v5":1.08},{"step":"200","orig":"#D9FF66","hsl":"#D3FE52","missing":false,"hsl_hsl":[75,99,66],"orig_hsl":[75,100,70],"dE_hsl":1.75,"px_hsl":20,"t":0.2,"scale":20.0,"L":65.92,"S":98.66,"H":75,"e":0.669,"dE_v5":2.74},{"step":"300","orig":"#C7F53D","hsl":"#C2F42E","missing":false,"hsl_hsl":[75,90,57],"orig_hsl":[75,90,60],"dE_hsl":1.02,"px_hsl":15,"t":0.3,"scale":30.0,"L":56.84,"S":89.59,"H":75,"e":0.698,"dE_v5":2.32},{"step":"400","orig":"#B2E51A","hsl":"#ABDB1C","missing":false,"hsl_hsl":[75,77,48],"orig_hsl":[75,80,50],"dE_hsl":2.88,"px_hsl":10,"t":0.4,"scale":40.0,"L":48.3,"S":77.53,"H":75,"e":0.72,"dE_v5":0.61},{"step":"500","orig":"#8AAD1F","hsl":"#8BB01C","missing":false,"hsl_hsl":[75,73,40],"orig_hsl":[75,70,40],"dE_hsl":0.89,"px_hsl":3,"t":0.5,"scale":50.0,"L":39.98,"S":72.42,"H":75,"e":0.737,"dE_v5":0.89},{"step":"600","orig":"#678217","hsl":"#6E8B18","missing":false,"hsl_hsl":[75,71,32],"orig_hsl":[75,70,30],"dE_hsl":2.87,"px_hsl":9,"t":0.6,"scale":60.0,"L":31.8,"S":70.86,"H":75,"e":0.749,"dE_v5":0.35},{"step":"700","orig":"#45570F","hsl":"#526712","missing":false,"hsl_hsl":[75,70,24],"orig_hsl":[75,71,20],"dE_hsl":5.46,"px_hsl":16,"t":0.7,"scale":70.0,"L":23.72,"S":70.35,"H":75,"e":0.759,"dE_v5":0.31},{"step":"800","orig":"#222B08","hsl":"#36440C","missing":false,"hsl_hsl":[75,70,16],"orig_hsl":[75,69,10],"dE_hsl":9.34,"px_hsl":25,"t":0.8,"scale":80.0,"L":15.74,"S":70.16,"H":75,"e":0.767,"dE_v5":0.56},{"step":"850","orig":null,"hsl":"#293309","missing":true,"hsl_hsl":[74,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":11.77,"S":70.11,"H":75,"e":0.771,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#1B2206","missing":true,"hsl_hsl":[75,70,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":7.83,"S":70.08,"H":75,"e":0.774,"dE_v5":0.87}],"d5":0.9,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F5FFD8 2.56%, #EDFFB6 5.13%, #E6FF9D 7.69%, #E1FF89 10.26%, #DDFF78 12.82%, #D9FF69 15.38%, #D6FE5C 17.95%, #D2FE50 20.51%, #CEFC45 23.08%, #CAFA3C 25.64%, #C6F633 28.21%, #C1F22C 30.77%, #BBED26 33.33%, #B6E920 35.9%, #B0E21B 38.46%, #A7D61C 41.03%, #9FCA1D 43.59%, #97BF1D 46.15%, #8FB51C 48.72%, #87AB1C 51.28%, #80A11B 53.85%, #789819 56.41%, #718E18 58.97%, #698517 61.54%, #627C15 64.1%, #5B7314 66.67%, #546A12 69.23%, #4D6111 71.79%, #46580F 74.36%, #3F4F0E 76.92%, #38460C 79.49%, #313D0B 82.05%, #2A3409 84.62%, #232C08 87.18%, #1C2306 89.74%, #151A05 92.31%, #0E1103 94.87%, #070902 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Mint","kind":"chromatic","theme":"both","hue":145,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0983,"lift":null,"rows":[{"step":"25","orig":"#EBFFF3","hsl":"#E2FFEE","missing":false,"hsl_hsl":[145,100,94],"orig_hsl":[144,100,96],"dE_hsl":1.37,"px_hsl":9,"t":0.025,"scale":2.5,"L":94.23,"S":100.0,"H":145,"e":0.773,"dE_v5":0.29},{"step":"50","orig":"#CCFFE1","hsl":"#C9FFE0","missing":false,"hsl_hsl":[146,100,89],"orig_hsl":[145,100,90],"dE_hsl":0.38,"px_hsl":3,"t":0.05,"scale":5.0,"L":89.42,"S":100.0,"H":145,"e":0.75,"dE_v5":0.42},{"step":"100","orig":"#B2FFD2","hsl":"#A3FFC9","missing":false,"hsl_hsl":[145,100,82],"orig_hsl":[145,100,85],"dE_hsl":2.06,"px_hsl":15,"t":0.1,"scale":10.0,"L":81.88,"S":99.98,"H":145,"e":0.742,"dE_v5":0.54},{"step":"200","orig":"#80FFB5","hsl":"#69FEA7","missing":false,"hsl_hsl":[145,99,70],"orig_hsl":[145,100,75],"dE_hsl":2.62,"px_hsl":23,"t":0.2,"scale":20.0,"L":70.37,"S":98.66,"H":145,"e":0.756,"dE_v5":1.92},{"step":"300","orig":"#55F698","hsl":"#40F48B","missing":false,"hsl_hsl":[145,89,60],"orig_hsl":[145,90,65],"dE_hsl":2.02,"px_hsl":21,"t":0.3,"scale":30.0,"L":60.44,"S":89.59,"H":145,"e":0.77,"dE_v5":1.7},{"step":"400","orig":"#31E87E","hsl":"#22E372","missing":false,"hsl_hsl":[145,78,51],"orig_hsl":[145,80,55],"dE_hsl":1.86,"px_hsl":15,"t":0.4,"scale":40.0,"L":51.11,"S":77.53,"H":145,"e":0.781,"dE_v5":0.0},{"step":"500","orig":"#22C365","hsl":"#1EB95E","missing":false,"hsl_hsl":[145,72,42],"orig_hsl":[145,70,45],"dE_hsl":2.86,"px_hsl":10,"t":0.5,"scale":50.0,"L":42.13,"S":72.42,"H":145,"e":0.789,"dE_v5":0.56},{"step":"600","orig":"#1B984F","hsl":"#19914B","missing":false,"hsl_hsl":[145,71,33],"orig_hsl":[145,70,35],"dE_hsl":2.09,"px_hsl":7,"t":0.6,"scale":60.0,"L":33.39,"S":70.86,"H":145,"e":0.795,"dE_v5":0.33},{"step":"700","orig":"#136C38","hsl":"#136C38","missing":false,"hsl_hsl":[145,70,25],"orig_hsl":[145,70,25],"dE_hsl":0.0,"px_hsl":0,"t":0.7,"scale":70.0,"L":24.83,"S":70.35,"H":145,"e":0.8,"dE_v5":0.5},{"step":"800","orig":"#0B4122","hsl":"#0D4725","missing":false,"hsl_hsl":[145,69,16],"orig_hsl":[146,71,15],"dE_hsl":2.06,"px_hsl":6,"t":0.8,"scale":80.0,"L":16.43,"S":70.16,"H":145,"e":0.804,"dE_v5":0.47},{"step":"850","orig":null,"hsl":"#09351C","missing":true,"hsl_hsl":[146,71,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.28,"S":70.11,"H":145,"e":0.806,"dE_v5":0.51},{"step":"900","orig":null,"hsl":"#062312","missing":true,"hsl_hsl":[145,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.16,"S":70.08,"H":145,"e":0.807,"dE_v5":0.93}],"d5":0.68,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #E1FFED 2.56%, #C8FFDF 5.13%, #B3FFD3 7.69%, #A1FFC8 10.26%, #91FFBF 12.82%, #82FFB6 15.38%, #73FFAD 17.95%, #66FEA5 20.51%, #5AFD9E 23.08%, #4FFA97 25.64%, #46F790 28.21%, #3DF389 30.77%, #35EF83 33.33%, #2EEA7C 35.9%, #26E576 38.46%, #1FE170 41.03%, #1FD66B 43.59%, #1FCA66 46.15%, #1EBF61 48.72%, #1DB45C 51.28%, #1CAA57 53.85%, #1B9F52 56.41%, #19954D 58.97%, #188C48 61.54%, #168243 64.1%, #15783E 66.67%, #136F39 69.23%, #126534 71.79%, #105C30 74.36%, #0E522B 76.92%, #0D4926 79.49%, #0B4021 82.05%, #0A371C 84.62%, #082D18 87.18%, #062413 89.74%, #051B0E 92.31%, #031209 94.87%, #020905 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Yellow","kind":"chromatic","theme":"both","hue":50,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.1463,"lift":null,"rows":[{"step":"25","orig":"#FFFCEB","hsl":"#FFF9DE","missing":false,"hsl_hsl":[49,100,94],"orig_hsl":[51,100,96],"dE_hsl":1.61,"px_hsl":13,"t":0.025,"scale":2.5,"L":93.49,"S":100.0,"H":50,"e":0.74,"dE_v5":0.13},{"step":"50","orig":"#FFF7CC","hsl":"#FFF5C1","missing":false,"hsl_hsl":[50,100,88],"orig_hsl":[51,100,90],"dE_hsl":1.3,"px_hsl":11,"t":0.05,"scale":5.0,"L":87.92,"S":100.0,"H":50,"e":0.706,"dE_v5":0.34},{"step":"100","orig":"#FFF2B2","hsl":"#FFEE98","missing":false,"hsl_hsl":[50,100,80],"orig_hsl":[50,100,85],"dE_hsl":2.83,"px_hsl":26,"t":0.1,"scale":10.0,"L":79.77,"S":99.98,"H":50,"e":0.694,"dE_v5":0.89},{"step":"200","orig":"#FFEA80","hsl":"#FEE35F","missing":false,"hsl_hsl":[50,99,68],"orig_hsl":[50,100,75],"dE_hsl":2.95,"px_hsl":33,"t":0.2,"scale":20.0,"L":68.35,"S":98.66,"H":50,"e":0.715,"dE_v5":1.88},{"step":"300","orig":"#F6DB55","hsl":"#F4D538","missing":false,"hsl_hsl":[50,90,59],"orig_hsl":[50,90,65],"dE_hsl":2.08,"px_hsl":29,"t":0.3,"scale":30.0,"L":58.78,"S":89.59,"H":50,"e":0.736,"dE_v5":1.75},{"step":"400","orig":"#E8CA31","hsl":"#E1C11D","missing":false,"hsl_hsl":[50,77,50],"orig_hsl":[50,80,55],"dE_hsl":2.59,"px_hsl":20,"t":0.4,"scale":40.0,"L":49.81,"S":77.53,"H":50,"e":0.752,"dE_v5":0.15},{"step":"500","orig":"#C3A822","hsl":"#B59C1D","missing":false,"hsl_hsl":[50,72,41],"orig_hsl":[50,70,45],"dE_hsl":3.99,"px_hsl":14,"t":0.5,"scale":50.0,"L":41.13,"S":72.42,"H":50,"e":0.764,"dE_v5":0.32},{"step":"600","orig":"#98831B","hsl":"#8E7B18","missing":false,"hsl_hsl":[50,71,33],"orig_hsl":[50,70,35],"dE_hsl":2.85,"px_hsl":10,"t":0.6,"scale":60.0,"L":32.64,"S":70.86,"H":50,"e":0.774,"dE_v5":0.21},{"step":"700","orig":"#6C5E13","hsl":"#6A5B12","missing":false,"hsl_hsl":[50,71,24],"orig_hsl":[51,70,25],"dE_hsl":0.96,"px_hsl":3,"t":0.7,"scale":70.0,"L":24.31,"S":70.35,"H":50,"e":0.781,"dE_v5":0.22},{"step":"800","orig":"#41380B","hsl":"#463C0C","missing":false,"hsl_hsl":[50,71,16],"orig_hsl":[50,71,15],"dE_hsl":1.63,"px_hsl":5,"t":0.8,"scale":80.0,"L":16.1,"S":70.16,"H":50,"e":0.787,"dE_v5":0.33},{"step":"850","orig":null,"hsl":"#342D09","missing":true,"hsl_hsl":[50,70,12],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.04,"S":70.11,"H":50,"e":0.789,"dE_v5":0.45},{"step":"900","orig":null,"hsl":"#231E06","missing":true,"hsl_hsl":[50,71,8],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":8.0,"S":70.08,"H":50,"e":0.792,"dE_v5":0.84}],"d5":0.63,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFF9DD 2.56%, #FFF5C0 5.13%, #FFF1A9 7.69%, #FFEE96 10.26%, #FFEB86 12.82%, #FFE877 15.38%, #FEE669 17.95%, #FEE35C 20.51%, #FCE051 23.08%, #FADC46 25.64%, #F7D83D 28.21%, #F3D335 30.77%, #EECE2E 33.33%, #E9C927 35.9%, #E5C420 38.46%, #DCBC1D 41.03%, #D0B21E 43.59%, #C5A91E 46.15%, #BAA01D 48.72%, #B0971C 51.28%, #A68F1B 53.85%, #9C861A 56.41%, #927E19 58.97%, #897617 61.54%, #7F6E16 64.1%, #766514 66.67%, #6C5D13 69.23%, #635511 71.79%, #5A4E10 74.36%, #51460E 76.92%, #483E0D 79.49%, #3F360B 82.05%, #362E09 84.62%, #2D2608 87.18%, #241F06 89.74%, #1B1705 92.31%, #120F03 94.87%, #090802 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Edge","kind":"chromatic","theme":"both","hue":10,"group":"Brand & Labels","semantic":false,"s_gain":null,"dip":0.0,"lift":0.11,"rows":[{"step":"25","orig":"#FFEEEB","hsl":"#FFEDEA","missing":false,"hsl_hsl":[9,100,96],"orig_hsl":[9,100,96],"dE_hsl":0.25,"px_hsl":1,"t":0.025,"scale":2.5,"L":95.85,"S":100.0,"H":10,"e":0.84,"dE_v5":1.3},{"step":"50","orig":"#FFDDD6","hsl":"#FFDFD9","missing":false,"hsl_hsl":[9,100,93],"orig_hsl":[10,100,92],"dE_hsl":0.53,"px_hsl":3,"t":0.05,"scale":5.0,"L":92.54,"S":100.0,"H":10,"e":0.84,"dE_v5":2.02},{"step":"100","orig":"#FFBFB2","hsl":"#FFC6BB","missing":false,"hsl_hsl":[10,100,87],"orig_hsl":[10,100,85],"dE_hsl":1.75,"px_hsl":9,"t":0.1,"scale":10.0,"L":86.57,"S":99.98,"H":10,"e":0.84,"dE_v5":2.57},{"step":"200","orig":"#FF9580","hsl":"#FE9984","missing":false,"hsl_hsl":[10,98,76],"orig_hsl":[10,100,75],"dE_hsl":0.88,"px_hsl":4,"t":0.2,"scale":20.0,"L":75.82,"S":99.04,"H":10,"e":0.84,"dE_v5":2.72},{"step":"300","orig":"#F67055","hsl":"#F87258","missing":false,"hsl_hsl":[10,92,66],"orig_hsl":[10,90,65],"dE_hsl":0.62,"px_hsl":3,"t":0.3,"scale":30.0,"L":65.84,"S":92.07,"H":10,"e":0.84,"dE_v5":2.67},{"step":"400","orig":"#E84F30","hsl":"#E85537","missing":false,"hsl_hsl":[10,79,56],"orig_hsl":[10,80,55],"dE_hsl":1.01,"px_hsl":7,"t":0.4,"scale":40.0,"L":56.31,"S":79.33,"H":10,"e":0.84,"dE_v5":2.44},{"step":"500","orig":"#C33D22","hsl":"#CE3F22","missing":false,"hsl_hsl":[10,72,47],"orig_hsl":[10,70,45],"dE_hsl":2.29,"px_hsl":11,"t":0.5,"scale":50.0,"L":47.07,"S":71.71,"H":10,"e":0.84,"dE_v5":3.17},{"step":"600","orig":"#98301B","hsl":"#A4341E","missing":false,"hsl_hsl":[10,69,38],"orig_hsl":[10,70,35],"dE_hsl":2.74,"px_hsl":12,"t":0.6,"scale":60.0,"L":38.02,"S":68.9,"H":10,"e":0.84,"dE_v5":3.34},{"step":"700","orig":"#6C2213","hsl":"#7C2918","missing":false,"hsl_hsl":[10,68,29],"orig_hsl":[10,70,25],"dE_hsl":4.01,"px_hsl":16,"t":0.7,"scale":70.0,"L":29.07,"S":67.9,"H":10,"e":0.84,"dE_v5":3.29},{"step":"800","orig":"#41140B","hsl":"#561C11","missing":false,"hsl_hsl":[10,67,20],"orig_hsl":[10,71,15],"dE_hsl":5.53,"px_hsl":21,"t":0.8,"scale":80.0,"L":20.14,"S":67.51,"H":10,"e":0.84,"dE_v5":3.08},{"step":"850","orig":null,"hsl":"#43160D","missing":true,"hsl_hsl":[10,68,16],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":15.62,"S":67.41,"H":10,"e":0.84,"dE_v5":2.95},{"step":"900","orig":null,"hsl":"#2F0F09","missing":true,"hsl_hsl":[9,68,11],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.9,"scale":90.0,"L":11.02,"S":67.35,"H":10,"e":0.84,"dE_v5":2.26}],"d5":2.65,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #FFEDE9 2.56%, #FFDFD8 5.13%, #FFD1C8 7.69%, #FFC5B9 10.26%, #FFB9AA 12.82%, #FFAD9C 15.38%, #FFA18F 17.95%, #FE9682 20.51%, #FE8C75 23.08%, #FC8269 25.64%, #FA795F 28.21%, #F77055 30.77%, #F3684C 33.33%, #EF6044 35.9%, #EB593C 38.46%, #E65234 41.03%, #E24A2C 43.59%, #DE4324 46.15%, #D44022 48.72%, #C83E22 51.28%, #BD3B21 53.85%, #B23820 56.41%, #A8361F 58.97%, #9E331D 61.54%, #93301C 64.1%, #892D1A 66.67%, #7F2A18 69.23%, #762617 71.79%, #6C2315 74.36%, #622013 76.92%, #581D11 79.49%, #4E1A0F 82.05%, #44160D 84.62%, #3A130B 87.18%, #301009 89.74%, #260C07 92.31%, #1B0905 94.87%, #100503 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"light","hue":75,"group":"Neutrals","semantic":false,"s_gain":null,"dip":0.0068,"lift":null,"rows":[{"step":"25","orig":"#F5F6F4","hsl":"#F4F4F2","missing":false,"hsl_hsl":[60,8,95],"orig_hsl":[90,10,96],"dE_hsl":0.53,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.41,"S":10.24,"H":75,"e":0.835,"dE_v5":0.3},{"step":"50","orig":"#ECEDE9","hsl":"#EBECE8","missing":false,"hsl_hsl":[75,10,92],"orig_hsl":[75,10,92],"dE_hsl":0.3,"px_hsl":1,"t":0.05,"scale":5.0,"L":91.77,"S":9.88,"H":75,"e":0.834,"dE_v5":0.3},{"step":"100","orig":"#DDDFD8","hsl":"#DBDDD6","missing":false,"hsl_hsl":[77,9,85],"orig_hsl":[77,10,86],"dE_hsl":0.61,"px_hsl":2,"t":0.1,"scale":10.0,"L":85.32,"S":9.23,"H":75,"e":0.833,"dE_v5":0.31},{"step":"200","orig":"#C2C4BA","hsl":"#BFC2B7","missing":false,"hsl_hsl":[76,8,74],"orig_hsl":[72,8,75],"dE_hsl":0.75,"px_hsl":3,"t":0.2,"scale":20.0,"L":73.88,"S":8.09,"H":75,"e":0.834,"dE_v5":0.32},{"step":"300","orig":"#A9ACA0","hsl":"#A5A89B","missing":false,"hsl_hsl":[74,7,63],"orig_hsl":[75,7,65],"dE_hsl":1.32,"px_hsl":5,"t":0.3,"scale":30.0,"L":63.41,"S":7.04,"H":75,"e":0.835,"dE_v5":0.33},{"step":"400","orig":"#909385","hsl":"#8C9081","missing":false,"hsl_hsl":[76,6,54],"orig_hsl":[73,6,55],"dE_hsl":1.12,"px_hsl":4,"t":0.4,"scale":40.0,"L":53.51,"S":6.05,"H":75,"e":0.836,"dE_v5":0.4},{"step":"500","orig":"#76786D","hsl":"#73766A","missing":false,"hsl_hsl":[75,5,44],"orig_hsl":[71,5,45],"dE_hsl":0.83,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.0,"S":5.1,"H":75,"e":0.836,"dE_v5":0.38},{"step":"600","orig":"#5B5D56","hsl":"#5B5C55","missing":false,"hsl_hsl":[69,4,35],"orig_hsl":[77,4,35],"dE_hsl":0.3,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.79,"S":4.18,"H":75,"e":0.837,"dE_v5":0.16},{"step":"700","orig":"#41423E","hsl":"#434440","missing":false,"hsl_hsl":[75,3,26],"orig_hsl":[75,3,25],"dE_hsl":0.76,"px_hsl":2,"t":0.7,"scale":70.0,"L":25.82,"S":3.28,"H":75,"e":0.837,"dE_v5":0.38},{"step":"800","orig":"#272725","hsl":"#2C2D2A","missing":false,"hsl_hsl":[80,3,17],"orig_hsl":[60,3,15],"dE_hsl":2.32,"px_hsl":6,"t":0.8,"scale":80.0,"L":17.05,"S":2.4,"H":75,"e":0.838,"dE_v5":0.47},{"step":"850","orig":null,"hsl":"#212120","missing":true,"hsl_hsl":[60,2,13],"orig_hsl":null,"dE_hsl":null,"px_hsl":null,"t":0.85,"scale":85.0,"L":12.73,"S":1.97,"H":75,"e":0.838,"dE_v5":0.75},{"step":"900","orig":"#1A1A19","hsl":"#161615","missing":false,"hsl_hsl":[60,2,8],"orig_hsl":[60,2,10],"dE_hsl":1.76,"px_hsl":4,"t":0.9,"scale":90.0,"L":8.45,"S":1.54,"H":75,"e":0.838,"dE_v5":0.88}],"d5":0.42,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F4F4F2 2.56%, #EBECE7 5.13%, #E2E4DE 7.69%, #DBDCD5 10.26%, #D3D5CD 12.82%, #CCCEC5 15.38%, #C5C7BD 17.95%, #BEC0B6 20.51%, #B7BAAE 23.08%, #B0B3A7 25.64%, #AAADA0 28.21%, #A3A699 30.77%, #9DA092 33.33%, #969A8C 35.9%, #909385 38.46%, #8A8D7F 41.03%, #838778 43.59%, #7D8073 46.15%, #76796D 48.72%, #707368 51.28%, #6A6C62 53.85%, #63655D 56.41%, #5D5F57 58.97%, #575952 61.54%, #51524C 64.1%, #4B4C47 66.67%, #454641 69.23%, #3F403C 71.79%, #393A36 74.36%, #333431 76.92%, #2D2E2C 79.49%, #272826 82.05%, #222221 84.62%, #1C1C1B 87.18%, #161616 89.74%, #111110 92.31%, #0B0B0B 94.87%, #060605 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]},{"name":"Neutral","kind":"neutral","theme":"dark","hue":190,"group":"Neutrals","semantic":false,"s_gain":null,"dip":0.0,"lift":null,"rows":[{"step":"25","orig":"#F4F5F6","hsl":"#F2F4F5","missing":false,"hsl_hsl":[200,13,95],"orig_hsl":[210,10,96],"dE_hsl":0.39,"px_hsl":2,"t":0.025,"scale":2.5,"L":95.49,"S":11.39,"H":190,"e":0.84,"dE_v5":0.44},{"step":"50","orig":"#E8ECED","hsl":"#E8ECED","missing":false,"hsl_hsl":[192,12,92],"orig_hsl":[192,12,92],"dE_hsl":0.0,"px_hsl":0,"t":0.05,"scale":5.0,"L":91.93,"S":11.79,"H":190,"e":0.84,"dE_v5":0.44},{"step":"100","orig":"#D7DEE0","hsl":"#D6DDDF","missing":false,"hsl_hsl":[193,12,86],"orig_hsl":[193,13,86],"dE_hsl":0.31,"px_hsl":1,"t":0.1,"scale":10.0,"L":85.55,"S":12.49,"H":190,"e":0.84,"dE_v5":0.45},{"step":"200","orig":"#B7C5C8","hsl":"#B4C3C6","missing":false,"hsl_hsl":[190,14,74],"orig_hsl":[191,13,75],"dE_hsl":0.71,"px_hsl":3,"t":0.2,"scale":20.0,"L":74.13,"S":13.76,"H":190,"e":0.84,"dE_v5":0.4},{"step":"300","orig":"#99AEB2","hsl":"#94ABB0","missing":false,"hsl_hsl":[191,15,64],"orig_hsl":[190,14,65],"dE_hsl":1.11,"px_hsl":5,"t":0.3,"scale":30.0,"L":63.63,"S":14.93,"H":190,"e":0.84,"dE_v5":0.21},{"step":"400","orig":"#7B989D","hsl":"#76969C","missing":false,"hsl_hsl":[189,16,54],"orig_hsl":[189,15,55],"dE_hsl":0.9,"px_hsl":5,"t":0.4,"scale":40.0,"L":53.68,"S":16.04,"H":190,"e":0.84,"dE_v5":0.33},{"step":"500","orig":"#607F85","hsl":"#5D7D84","missing":false,"hsl_hsl":[191,17,44],"orig_hsl":[190,16,45],"dE_hsl":0.73,"px_hsl":3,"t":0.5,"scale":50.0,"L":44.14,"S":17.1,"H":190,"e":0.84,"dE_v5":0.0},{"step":"600","orig":"#4A6368","hsl":"#496469","missing":false,"hsl_hsl":[189,18,35],"orig_hsl":[190,17,35],"dE_hsl":0.31,"px_hsl":1,"t":0.6,"scale":60.0,"L":34.89,"S":18.12,"H":190,"e":0.84,"dE_v5":0.16},{"step":"700","orig":"#34474B","hsl":"#354A4F","missing":false,"hsl_hsl":[192,20,26],"orig_hsl":[190,18,25],"dE_hsl":1.05,"px_hsl":4,"t":0.7,"scale":70.0,"L":25.89,"S":19.12,"H":190,"e":0.84,"dE_v5":0.37},{"step":"800","orig":"#233134","hsl":"#233134","missing":false,"hsl_hsl":[191,20,17],"orig_hsl":[191,20,17],"dE_hsl":0.0,"px_hsl":0,"t":0.8,"scale":80.0,"L":17.09,"S":20.1,"H":190,"e":0.84,"dE_v5":0.73},{"step":"850","orig":"#1B2628","hsl":"#1A2527","missing":false,"hsl_hsl":[189,20,13],"orig_hsl":[189,19,13],"dE_hsl":0.41,"px_hsl":1,"t":0.85,"scale":85.0,"L":12.76,"S":20.58,"H":190,"e":0.84,"dE_v5":0.76},{"step":"900","orig":"#141D1F","hsl":"#11191A","missing":false,"hsl_hsl":[187,21,8],"orig_hsl":[191,22,10],"dE_hsl":1.71,"px_hsl":5,"t":0.9,"scale":90.0,"L":8.47,"S":21.06,"H":190,"e":0.84,"dE_v5":0.94}],"d5":0.44,"gradient":"linear-gradient(to bottom, #FFFFFF 0.0%, #F2F4F5 2.56%, #E7ECEC 5.13%, #DEE4E5 7.69%, #D5DCDE 10.26%, #CCD5D7 12.82%, #C3CFD1 15.38%, #BBC8CB 17.95%, #B2C2C5 20.51%, #AABCBF 23.08%, #A2B6B9 25.64%, #9AB0B4 28.21%, #92AAAE 30.77%, #8AA4A9 33.33%, #829EA4 35.9%, #7B999F 38.46%, #73939A 41.03%, #6B8E95 43.59%, #65878E 46.15%, #608187 48.72%, #5B7A80 51.28%, #557379 53.85%, #506D73 56.41%, #4B666C 58.97%, #466065 61.54%, #41595E 64.1%, #3C5357 66.67%, #374C51 69.23%, #32464A 71.79%, #2D4043 74.36%, #28393C 76.92%, #243336 79.49%, #1F2C2F 82.05%, #1B2628 84.62%, #162022 87.18%, #11191B 89.74%, #0D1314 92.31%, #090D0D 94.87%, #040607 97.44%, #000000 100.0%)","positions":[0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.9]}],"h245":{"hue":245.0,"L":{"p0":[0.0,100.0],"p3":[1.0,0.0],"h1":[0.268,86.2],"h2":[1.0,49.07]},"S":{"p0":[0.0,100.0],"p3":[1.0,50.5],"h1":[0.607,104.63],"h2":[0.459,64.67]}},"vs_v5":{"mean":0.98,"max":5.33},"vs_current":{"mean":1.71,"max":9.34}}};
+
+const K=t=>`<span class="k">${t}</span>`, V=t=>`<span class="v">${t}</span>`;
+const fx=(n,d=0)=> Number(n).toFixed(d);
+
+/* ---------- page copy ---------- */
+const COPY = {
+  eyebrow: "",
+  lead: "Every ramp in the palette regenerates from one hue per family and two shared curves. Each card "
+      + "puts the current Figma values next to the formula output, so any drift is visible without reading a number.",
+  fHead: "The formula",
+  ladHead: "Brand, step by step",
+  foot: ''
+};
+
+/* ---------- formula + ladder ---------- */
+function renderFormula(){
+  const VD=ALL.v7, F=ALL.v7.formula;
+  const hueW = adjusted()
+? `${K('// hue weight, adjusted — brand colours · one smooth curve through')}
+${K('// '+knotStr(F.adj_knots)+', a half-cosine between each pair')}
+x    = ${V('(H − H₀) / (H₁ − H₀)')}
+w(H) = ${V('w₁ + (w₀ − w₁)·(1 + cos(π·x)) / 2')}
+`
+: `${K('// hue weight — 1 at hue 75, 0 past the lobe')}
+d(H) = ${V('|H − 75| / (145 up, 90 down)')}
+w(H) = ${V('cos²(½π·d)')} if d<1 else 0
+`;
+  document.getElementById('f-body').innerHTML =
+`${hueW}
+${K('// lightness')}
+b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
+${adjusted()
+? `e(t) = ${V('0.84 − 0.20·w·b(t)')}   if w ≥ 0   ${K('dips the light end')}
+L(t,H) = ${V('(1 − s)·(100 − 100·t^0.84) + s·100·√(1 − t)')}   if w < 0
+s = ${V(`min(1, ${numStr(F.adj_lift)}·|w|)`)}               ${K('1 on the 245 trough')}
+u(t) = ${V('2t·(1 − t⁴)')}                   ${K('0 at both ends')}`
+: `e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}`}
+L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
+
+${K('// saturation and hue')}
+r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
+S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}${adjusted() ? `
+${K('// brand, w < 0 — the same switch, later, deeper and gentler by |w|')}
+S(t) = ${V('100 − D·r/(1 + r)')},  r = ${V('(t/k)ⁿ')}
+k = ${V(`1/3 + ${numStr(playF().adj_s_knee)}·|w|`)},  D = ${V(`30 + ${numStr(playF().adj_s_drop)}·|w|`)},  n = ${V(`6 − ${numStr(playF().adj_s_order)}·|w|`)}` : ''}
+H(t) = ${V('H₀')}
+
+${K('// UI families — Pulse · Flash · Pink')}
+dₛ(H) = ${V('|H − 32| / (28 up, 50 down)')}
+g(H) = ${V('1 − 0.4·cos²(½π·dₛ)')} if dₛ<1 else 1   ${K('0.6 on orange, gone by 60')}
+u(t) = ${V('(1.6t)³')}                      ${K('1 at the knee · t = 5/8')}
+S(t) = ${V('100 − 106·g·u/(1 + u)')}        ${K('the same switch, three numbers')}
+
+${K('// neutrals')}
+${adjusted() ? `${K('// neutrals: the same form on their own curve')}
+${K('// '+knotStr(F.adj_n_knots))}
+${K(`// lift ${numStr(F.adj_n_lift)} · strength ${numStr(F.adj_neutral)}`)}
+` : ''}neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
+neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
+
+${K('// named tokens sample the scale')}
+scale = step / 10                 ${K('25 → 2.5, 850 → 85')}
+t     = scale / 100`;
+
+
+  const brand7 = brandFamilies().find(f=>f.name==='Brand');
+  document.getElementById('lad-head').innerHTML =
+    `<tr><th>Label</th><th>scale</th><th>L</th><th>S</th><th>e(t)</th><th>ΔE</th></tr>`;
+  document.getElementById('lad').innerHTML = brand7.rows.map(r=>
+    `<tr><td>${r.step}</td>`+
+    `<td>${fx(r.scale,1)}</td><td>${fx(r.L,1)}</td><td>${fx(r.S,0)}</td>`+
+    `<td>${fx(r.e,3)}</td><td>${r.dE_hsl==null?'—':fx(r.dE_hsl,2)}</td></tr>`
+  ).join('');
+}
+
+/* ---------- swatch text contrast ---------- */
+function ink(hex){
+  const n=parseInt(hex.slice(1),16), r=n>>16&255, g=n>>8&255, b=n&255;
+  const lum=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  return (.2126*lum[0]+.7152*lum[1]+.0722*lum[2])>.34 ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.82)';
+}
+const band=d=> (d==null || d<1)?'':d<3?'s':d<6?'v':'b';
+
+/* ---------- perceptual lift ---------- */
+/* HSL → sRGB at full precision. The 8-bit rounding in hsl2hex is worth ±0.1 of
+   OKLab L, which is invisible in a swatch but reads as noise on a plotted curve. */
+function hsl2rgbf(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{ const k=(n+h/30)%12; return l-a*Math.max(Math.min(k-3,9-k,1),-1); };
+  return [f(0), f(8), f(4)];
+}
+/* OKLab L, 0–100 — the perceptual axis the palette's ΔE is measured on */
+function okLrgb(r,g,b){
+  const lin=c=>{c=Math.max(0,Math.min(1,c)); return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
+  const R=lin(r), G=lin(g), B=lin(b);
+  const cb=x=> x>0 ? Math.cbrt(x) : 0;
+  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
+  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
+  const q=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
+  return 100*(0.2104542553*l + 0.7936177850*m - 0.0040720468*q);
+}
+/* How much lighter a tinted step reads than a pure grey of the same nominal L.
+   This is the quantity the chromatic bend exists to cancel — so the palette cards
+   and the playgrounds both quote it, from this one function, off the same H/S/L. */
+function perceptualLift(H, S, L){
+  return okLrgb(...hsl2rgbf(H,S,L)) - okLrgb(...hsl2rgbf(0,0,L));
+}
+function liftStr(v){ return (v<0?'−':'+')+Math.abs(v).toFixed(2); }
+
+/* Full OKLab, and the page's ΔE — the same metric build.py quotes, measured the
+   same way: on the 8-bit hex, so a ΔE read here is comparable to a ΔE in the
+   generated data without qualification. */
+function oklabHex(hex){
+  const n=parseInt(hex.slice(1),16);
+  const lin=c=>{c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);};
+  const R=lin(n>>16&255), G=lin(n>>8&255), B=lin(n&255);
+  const cb=x=> x>0 ? Math.cbrt(x) : 0;
+  const l=cb(0.4122214708*R + 0.5363325363*G + 0.0514459929*B);
+  const m=cb(0.2119034982*R + 0.6806995451*G + 0.1073969566*B);
+  const s=cb(0.0883024619*R + 0.2817188376*G + 0.6299787005*B);
+  return [0.2104542553*l + 0.7936177850*m - 0.0040720468*s,
+          1.9779984951*l - 2.4285922050*m + 0.4505937099*s,
+          0.0259040371*l + 0.7827717662*m - 0.8086757660*s];
+}
+function dEhex(a, b){
+  const x=oklabHex(a), y=oklabHex(b);
+  return 100*Math.hypot(x[0]-y[0], x[1]-y[1], x[2]-y[2]);
+}
+/* Perceptual lightness of a finished swatch — what "strictly darkening" means. */
+const okLhex = hex => 100*oklabHex(hex)[0];
+
+/* ---------- render ---------- */
+function famCard(f, cols=['Current','Formula']){
+  /* Lift is quoted on the neutrals only, and only in the swatch tooltips — there
+     it is the evidence that they need no correction. On a chromatic ramp the dip
+     already answers for it. */
+  const showLift = f.kind==='neutral';
+  const param = f.paramText ? f.paramText
+    : f.kind==='grey' ? 'achromatic'
+    : f.lift!=null ? `H₀ ${f.hue} · √ blend ${Number(f.lift).toFixed(2)}`
+    : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
+  const grad = f.gradient;
+  const n = f.rows.length;
+
+  const body = f.rows.map((r,i)=>{
+    const missing = !!(r.missing || r.orig==null);
+    const d=r.dE_hsl, b=band(d);
+    const tPos = r.scale!=null ? ` · scale ${r.scale}` : (r.t!=null ? ` · t ${r.t.toFixed(3)}` : '');
+    const tLift = showLift ? ` · lift ${liftStr(perceptualLift(r.H, r.S, r.L))}` : '';
+    const tip = missing
+      ? `${r.step} · no current swatch → formula ${r.hsl}${tPos}${tLift}`
+      : `${r.step} · current ${r.orig} → formula ${r.hsl} · ΔE ${d.toFixed(2)}${tPos}${tLift}`;
+    const figmaTile = missing
+      ? `<span class="tile empty" style="grid-row:${i+1};grid-column:2" title="${tip}"></span>`
+      : `<span class="tile" style="grid-row:${i+1};grid-column:2;background:${r.orig};color:${ink(r.orig)}" title="${tip}"></span>`;
+    const deCell = missing
+      ? `<span class="dl" style="grid-row:${i+1};grid-column:5" title="No current value">—</span>`
+      : `<span class="dl" style="grid-row:${i+1};grid-column:5" title="ΔE ${d.toFixed(2)}"><i class="${b}"></i></span>`;
+    return `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+      figmaTile+
+      `<span class="tile b" style="grid-row:${i+1};grid-column:3;background:${r.hsl};color:${ink(r.hsl)}" title="${tip}"></span>`+
+      deCell;
+  }).join('');
+
+  const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
+  return `<article class="fam">
+    <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
+    <div class="colhead"><span></span><span>${cols[0]}</span><span>${cols[1]}</span><span>Gradient</span><span>Δ</span></div>
+    <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
+      ${body}
+      <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
+    </div></article>`;
+}
+
+function render(){
+  const list = ALL.v7.families;
+  const put=(id,sel)=>{
+    const l = list.filter(sel);
+    document.getElementById(id).innerHTML = l.length ? l.map(f=>famCard(f)).join('')
+      : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
+  };
+  document.getElementById('g-brand').innerHTML = brandFamilies().map(f=>famCard(f)).join('');
+  put('g-semantic', f=>f.group==='UI (Semantic)');
+  document.getElementById('g-theme').innerHTML = neutralFamilies().map(f=>famCard(f)).join('');
+}
+
+
+/* ---------- hue playground ---------- */
+const playF   = ()=> ALL.v7.formula;
+const basePow = F => F.p_base;
+/* the dip: a bell in log t, written without ln or exp */
+const dipShape = (t,F)=> 4*F.dip_c*t/Math.pow(t+F.dip_c, 2);
+const PLAY_CORR = 1;         /* the shipped bend — settled, so no longer a control */
+/* One playground per chromatic group: the brand one probes the shared curves,
+   the UI one probes the same curves with the semantic saturation on top — so its
+   hue slider moves the lobe weight as well as the hue. */
+const PLAYS = {
+  brand: {host:'playground',    id:'play',    hue:75,  ui:false, built:false},
+  ui:    {host:'playground-ui', id:'play-ui', hue:110, ui:true,  built:false},
+};
+
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function hsl2hex(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const f=n=>{
+    const k=(n+h/30)%12;
+    const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);
+    return Math.round(255*clamp01(c));
+  };
+  const hex=n=>n.toString(16).padStart(2,'0').toUpperCase();
+  return '#'+hex(f(0))+hex(f(8))+hex(f(4));
+}
+
+/* How much a hue needs the correction: 1 at the perceptual-peak hue, easing to 0
+   at the edge of the lobe — wider on the green side, since greens stay
+   perceptually light much further round the wheel than the warm hues do. */
+/* Adjusted (the default, brand colours only) swaps the lobe for one smooth curve
+   round the wheel that goes negative on the blues, which the current curve
+   leaves reading far too dark. */
+/* the two adjusted curves: points, lift and an overall strength */
+const brandCurve   = (F=playF())=> ({knots:F.adj_knots,   lift:F.adj_lift,   k:1});
+const neutralCurve = (F=playF())=> ({knots:F.adj_n_knots, lift:F.adj_n_lift, k:F.adj_neutral});
+function hueWeight(H, F, adj=false, cv=brandCurve(F)){
+  if(H==null) return 0;
+  const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
+  if(adj){
+    /* half-cosines between consecutive (hue, weight) points — flat at every join */
+    const pts=sortKnots(cv.knots), m=(v)=>((v%360)+360)%360;
+    for(let n=0;n<pts.length;n++){
+      const [h0,w0]=pts[n], [h1,w1]=pts[(n+1)%pts.length];
+      const x=m(H-h0)/m(h1-h0);
+      if(x<=1) return cv.k*(w1 + (w0-w1)*(1+Math.cos(Math.PI*x))/2);
+    }
+    return 0;
+  }
+  const d=Math.abs(delta)/(delta>=0 ? F.lobe_up : F.lobe_dn);
+  if(d>=1) return 0;
+  const c=Math.cos(Math.PI/2*d);
+  return c*c;
+}
+/* how far a negative weight moves the ramp onto 100·√(1 − t) */
+const liftBlend = (w, cv) => w<0 ? Math.min(1, -cv.lift*w) : 0;
+function Lplay(t, H, F, corr, adj=false, cv=brandCurve(F)){
+  if(t<=0) return F.L0;
+  /* the exponent goes straight into the power law */
+  let L=F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr,adj,cv));
+  /* adjusted, negative weight: blend towards 100·√(1 − t), the lightness drawn
+     on the Hue 245 tab — both curves fall 100 → 0, so every blend does too */
+  if(adj){
+    const sb=liftBlend(hueWeight(H,F,true,cv), cv);
+    if(sb>0) L = (1-sb)*L + sb*100*Math.sqrt(Math.max(0, 1-t));
+  }
+  return L;
+}
+/* local exponent of the ramp at t — the curve the dip actually reshapes */
+function Qplay(t, H, F, corr, adj=false, cv=brandCurve(F)){
+  const w=hueWeight(H,F,adj,cv);
+  /* negative weight: the same bell flipped, easing the light end; the dark-end
+     lift is applied in Lplay */
+  if(w<0) return F.p_base;
+  return F.p_base - F.dip*w*dipShape(t,F)*(corr==null ? 1 : corr);
+}
+/* how much of the UI drop a hue takes — 1 away from the lobe, 0.2 at its centre */
+function sGain(H, F){
+  const delta = ((H-F.S_ui_hue+180)%360+360)%360-180;
+  const d = Math.abs(delta)/(delta>=0 ? F.S_ui_lobe_up : F.S_ui_lobe_dn);
+  if(d>=1) return 1;
+  const c=Math.cos(Math.PI/2*d);
+  return 1 - F.S_ui_cut*c*c;
+}
+/* Brand saturation: the shared Hill, switching later, dropping deeper and
+   turning more gently where the adjusted weight is negative. */
+function Sbrand(t, F, H, adj){
+  const w = adj ? hueWeight(H,F,true) : 0;
+  if(w>=0) return Splay(t,F);
+  const a=-w, k=F.S_knee + F.adj_s_knee*a;
+  const r=Math.pow(t/k, F.S_order - F.adj_s_order*a);
+  return Math.max(0, Math.min(100, 100 - (F.S_drop + F.adj_s_drop*a)*r/(1 + r)));
+}
+function Splay(t,F,uiHue){
+  /* Hill switch: flat on 100 below the knee, flat on the floor above it.
+     The UI ramp is the same switch with a deeper, hue-weighted drop and a later,
+     gentler knee — one slope, not a staircase. */
+  if(uiHue==null){
+    const r = Math.pow(t/F.S_knee, F.S_order);
+    return Math.max(0, Math.min(100, 100 - F.S_drop*r/(1 + r)));
+  }
+  const u = Math.pow(t/F.S_ui_knee, F.S_ui_order);
+  return Math.max(0, Math.min(100, 100 - F.S_ui_drop*sGain(uiHue,F)*u/(1 + u)));
+}
+
+/* The diagram card is stretched to the height of the ramp card beside it, so the
+   plot is drawn to whatever height that leaves instead of being letterboxed in it.
+   viewBox width stays 380, so one user unit is the same size as before and the
+   labels keep their type size — only the plot gets taller. */
+function fitSvg(svg){
+  const body=svg.parentElement, r=body.getBoundingClientRect(), cs=getComputedStyle(body);
+  const w=r.width  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const h=r.height - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+  const vh = (w>0 && h>0) ? Math.max(240, Math.min(900, Math.round(380*h/w))) : 300;
+  svg.setAttribute('viewBox', `0 0 380 ${vh}`);
+  return vh;
+}
+
+/* ---- live diagram: L and S across the scale, nothing else ---- */
+function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null, adj=false){
+  const W=380, padL=34, padR=32, padT=14, padB=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+
+  const N=160, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">L</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    <path class="S" d="${path(t=> uiHue==null ? Sbrand(t,F,hue,adj) : Splay(t,F,uiHue))}"/>
+    <path class="L" d="${path(t=>Lplay(t,hue,F,corr,adj))}"/>`;
+}
+
+/* ---- live diagram: the correction across the hue wheel ----
+   w(H) is the bell that scales the lightness dip; on the UI card g(H), the
+   saturation gain, rides the same 0–1 axis. The strip under the axis is the
+   wheel itself, and the dashed rule is where the slider sits. */
+function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false){
+  const W=380, padL=34, padR=32, padT=14, padB=38;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const lo = adj ? Math.min(-0.5, Math.floor(Math.min(...F.adj_knots.map(k=>k[1]))*4)/4) : 0;
+  const xOf=h=> padL + h/360*plotW;
+  const yOf=v=> padT + (1 - v)/(1 - lo)*plotH;
+
+  const hs=[];
+  for(let h=0;h<=360;h+=1) hs.push(h);
+  const path=fn=> hs.map((h,i)=>
+    `${i===0?'M':'L'}${xOf(h).toFixed(2)} ${yOf(fn(h)).toFixed(2)}`).join(' ');
+
+  const yTicks = [], yStep = (1-lo)>1.6 ? .5 : .25;
+  for(let v=1; v>=lo-1e-9; v-=yStep) yTicks.push(Math.round(v*100)/100);
+  const xTicks=[0,90,180,270,360];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(h=>
+      `<line class="gridline" x1="${xOf(h)}" y1="${padT}" x2="${xOf(h)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${String(v).replace('-','−')}</text>`).join('');
+  const xLabels = xTicks.map(h=>
+    `<text class="label" x="${xOf(h)}" y="${H-padB+23}" text-anchor="middle">${h}°</text>`).join('');
+  const stops=[];
+  for(let h=0;h<=360;h+=30) stops.push(`<stop offset="${(h/360).toFixed(4)}" stop-color="${hsl2hex(h,70,55)}"/>`);
+
+  const x=xOf(hue), w=hueWeight(hue,F,adj), g=sGain(hue,F);
+  return `<defs><linearGradient id="${id}-wheel" x1="0" x2="1" y1="0" y2="0">${stops.join('')}</linearGradient></defs>
+    ${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${adj ? `<line class="axis" x1="${padL}" y1="${yOf(0)}" x2="${W-padR}" y2="${yOf(0)}"/>` : ''}
+    <rect x="${padL}" y="${H-padB+4}" width="${plotW}" height="5" rx="1" fill="url(#${id}-wheel)"/>
+    ${yLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">weight</text>
+    <text class="title" x="${W-padR}" y="${H-4}" text-anchor="end">hue 0 → 360</text>
+    <line class="marker" x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}"/>
+    ${ui ? `<path class="S" d="${path(h=>sGain(h,F))}"/>` : ''}
+    <path class="L" d="${path(h=>hueWeight(h,F,adj))}"/>
+    ${ui ? `<circle class="dot S" cx="${x}" cy="${yOf(g)}" r="3.5"/>` : ''}
+    <circle class="dot L" cx="${x}" cy="${yOf(w)}" r="3.5"/>`;
+}
+
+/* Repaint only what the sliders change — the inputs themselves are never replaced,
+   so a drag keeps its grab and updates continuously. */
+function updatePlayground(key){
+  const P=PLAYS[key], F=playF(), id=P.id;
+  const corr=PLAY_CORR;
+  const hue=P.hue, uiHue = P.ui ? P.hue : null;
+  const adj = !P.ui && adjusted();
+  const w=hueWeight(hue,F,adj);
+
+  const rows=F.steps.map(step=>{
+    const t=step/1000;
+    const L=Lplay(t, hue, F, corr, adj);
+    const S=P.ui ? Splay(t, F, uiHue) : Sbrand(t, F, hue, adj);
+    return {step, L, S, hex:hsl2hex(hue, S, L)};
+  });
+  const gradStops=[];
+  for(let i=0;i<48;i++){
+    const t=i/47;
+    gradStops.push(`${hsl2hex(hue, P.ui ? Splay(t,F,uiHue) : Sbrand(t,F,hue,adj), Lplay(t,hue,F,corr,adj))} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(0)} · L ${r.L.toFixed(1)}"></span>`
+  ).join('');
+
+  document.getElementById(id+'-ramp').innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${gradStops.join(', ')})" `+
+    `title="Playground continuous scale"></div>`;
+  document.getElementById(id+'-hue-val').textContent  = hue+'°';
+  document.getElementById(id+'-stats').textContent =
+    (w<0 ? `w ${w.toFixed(2)} · √ blend ${liftBlend(w, brandCurve(F)).toFixed(2)}` : `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`).replace(/-/g,'−')+
+    (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
+
+  const psvg=document.getElementById(id+'-svg');
+  psvg.innerHTML = playCurvesSvg(F, corr, fitSvg(psvg), hue, uiHue, adj);
+  document.getElementById(id+'-curve-meta').textContent =
+    `H ${hue}° · e ${basePow(F)} → ${Qplay(F.dip_c,hue,F,corr,adj).toFixed(3)}`;
+
+  const hsvg=document.getElementById(id+'-hue-svg');
+  hsvg.innerHTML = playHueSvg(F, fitSvg(hsvg), hue, P.ui, id, adj);
+  document.getElementById(id+'-hue-meta').textContent =
+    `H ${hue}° · w ${w.toFixed(2).replace('-','−')}` + (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
+}
+
+function renderPlayground(key){
+  const P=PLAYS[key];
+  const host=document.getElementById(P.host);
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const F=playF(), id=P.id;
+
+  if(!P.built){
+    host.innerHTML =
+      `<article class="fam play-card">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Playground</h3>
+            <span class="play-meta" id="${id}-stats"></span>
+          </div>
+          <div class="play-slider">
+            <label for="${id}-hue">Hue</label>
+            <input id="${id}-hue" type="range" min="0" max="359" step="1" value="${P.hue}">
+            <span class="play-meta" id="${id}-hue-val"></span>
+          </div>
+        </div>
+        <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+        <div class="ramp-wrap" id="${id}-ramp" style="grid-template-rows:repeat(${F.steps.length},32px)"></div>
+      </article>
+      <article class="fam play-card play-curves">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Curve</h3>
+            <span class="play-meta" id="${id}-curve-meta"></span>
+          </div>
+          <div class="curves__legend">
+            <span><i class="L"></i>L</span>
+            <span><i class="S"></i>S</span>
+          </div>
+        </div>
+        <div class="play-curves__body">
+          <svg class="curves__svg play-curves__svg" id="${id}-svg" viewBox="0 0 380 300"
+               role="img" aria-label="Lightness and saturation across the scale"></svg>
+        </div>
+      </article>
+      <article class="fam play-card play-curves">
+        <div class="play-head">
+          <div class="play-head__top">
+            <h3>Hue</h3>
+            <span class="play-meta" id="${id}-hue-meta"></span>
+          </div>
+          <div class="curves__legend">
+            <span><i class="L"></i>w · L dip</span>
+            ${P.ui ? '<span><i class="S"></i>g · S gain</span>' : ''}
+          </div>
+        </div>
+        <div class="play-curves__body">
+          <svg class="curves__svg play-curves__svg" id="${id}-hue-svg" viewBox="0 0 380 300"
+               role="img" aria-label="Correction weight across the hue wheel"></svg>
+        </div>
+      </article>`;
+    const sl=document.getElementById(id+'-hue');
+    sl.addEventListener('input', ()=>{ P.hue = Number(sl.value); updatePlayground(key); });
+    P.built = true;
+  }
+  updatePlayground(key);
+}
+
+
+/* ---------- neutrals: functions and playgrounds ---------- */
+/* Neutral lightness: the unbent power law, or — with the adjusted correction —
+   the same hue curve as the brand colours at the neutral strength. */
+function neutralL(t, hue, F=playF()){
+  return adjusted() ? Lplay(t, hue, F, PLAY_CORR, true, neutralCurve(F)) : Lplay(t, null, F, 0);
+}
+function neutralS(theme, L){
+  /* the light ramp keeps a floor of tint — it never reaches neutral grey */
+  return theme==='light' ? L/10 + 0.7 : 22 - L/9;
+}
+
+/* one neutral diagram — same grid, pads and classes as the chromatic one */
+function neutralSvg(F, hue, theme, H=300){
+  const W=380, padT=14, padB=32;
+  const padL=34, padR=32;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=t=> padL + t*plotW;
+  const yOf=v=> padT + (1 - v/100)*plotH;
+
+  const N=140, ts=[];
+  for(let i=0;i<=N;i++) ts.push(i/N);
+  const path=(fn,map)=> ts.map((t,i)=>
+    `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
+  const Lb=t=> neutralL(t, hue, F);
+
+  const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
+  const grid = yTicks.map(v=>
+      `<line class="gridline" x1="${padL}" y1="${yOf(v)}" x2="${W-padR}" y2="${yOf(v)}"/>`).join('')
+    + xTicks.map(t=>
+      `<line class="gridline" x1="${xOf(t)}" y1="${padT}" x2="${xOf(t)}" y2="${H-padB}"/>`).join('');
+  const yLabels = yTicks.map(v=>
+    `<text class="label" x="${padL-6}" y="${yOf(v)+4}" text-anchor="end">${v}</text>`).join('');
+  const xLabels = xTicks.map(t=>
+    `<text class="label" x="${xOf(t)}" y="${H-padB+17}" text-anchor="middle">${Math.round(t*100)}</text>`).join('');
+  return `${grid}
+    <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
+    <line class="axis" x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}"/>
+    ${yLabels}${xLabels}
+    <text class="title" x="${padL}" y="${padT-3}">value</text>
+    <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
+    <path class="S" d="${path(t=>neutralS(theme, Lb(t)))}"/>
+    <path class="L" d="${path(Lb)}"/>`;
+}
+
+/* ---- neutral playgrounds: one pair of cards per theme ---- */
+const N_HUE = {light:75, dark:190};      /* the hues the palette actually ships */
+let nPlayBuilt = false;
+
+function updateNeutralTheme(theme){
+  const F=playF();
+  const hue=N_HUE[theme];
+  const steps=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
+  const rows=steps.map(step=>{
+    const t=Number(step)/1000;
+    const L=neutralL(t, hue, F);
+    const S=neutralS(theme, L);
+    return {step, L, S, hex:hsl2hex(hue,S,L), lift:perceptualLift(hue,S,L)};
+  });
+  const stops=[];
+  for(let i=0;i<40;i++){
+    const t=i/39, L=neutralL(t,hue,F);
+    stops.push(`${hsl2hex(hue, neutralS(theme,L), L)} ${(100*t).toFixed(2)}%`);
+  }
+  const body=rows.map((r,i)=>
+    `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
+    `<span class="tile b" style="grid-row:${i+1};grid-column:2;background:${r.hex}" `+
+      `title="${theme} · ${r.step} · ${r.hex} · H ${hue} · S ${r.S.toFixed(1)} · L ${r.L.toFixed(1)} · lift ${liftStr(r.lift)}"></span>`
+  ).join('');
+
+  document.getElementById(`nplay-${theme}-ramp`).innerHTML = body +
+    `<div class="grad-col" style="background:linear-gradient(to bottom, ${stops.join(', ')})" `+
+    `title="${theme} continuous scale"></div>`;
+  document.getElementById(`nplay-${theme}-hue-val`).textContent = hue+'°';
+
+  document.getElementById(`nplay-${theme}-stats`).textContent =
+    `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)}`;
+  const nsvg=document.getElementById(`nplay-${theme}-svg`);
+  nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
+  const wn = adjusted() ? hueWeight(hue,F,true,neutralCurve(F)) : 0;
+  document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`
+    + (adjusted() ? ` · w ${wn.toFixed(2).replace('-','−')}` : '');
+}
+
+function neutralCardPair(theme, n){
+  const label = theme==='light' ? 'Neutrals · light' : 'Neutrals · dark';
+  return `<article class="fam play-card">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>${label}</h3>
+          <span class="play-meta" id="nplay-${theme}-stats"></span>
+        </div>
+        <div class="play-slider">
+          <label for="nplay-${theme}-hue">Tint hue</label>
+          <input id="nplay-${theme}-hue" type="range" min="0" max="359" step="1" value="${N_HUE[theme]}">
+          <span class="play-meta" id="nplay-${theme}-hue-val"></span>
+        </div>
+      </div>
+      <div class="colhead"><span></span><span>Formula</span><span>Gradient</span></div>
+      <div class="ramp-wrap" id="nplay-${theme}-ramp" style="grid-template-rows:repeat(${n},32px)"></div>
+    </article>
+    <article class="fam play-card play-curves">
+      <div class="play-head">
+        <div class="play-head__top">
+          <h3>Curve</h3>
+          <span class="play-meta" id="nplay-${theme}-meta"></span>
+        </div>
+        <div class="curves__legend">
+          <span><i class="L"></i>L</span>
+          <span><i class="S"></i>S ${theme}</span>
+        </div>
+      </div>
+      <div class="play-curves__body">
+        <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
+             role="img" aria-label="Neutral ${theme} lightness and saturation"></svg>
+      </div>
+    </article>`;
+}
+
+function renderNeutralPlayground(){
+  const host=document.getElementById('playground-neutral');
+  if(!host) return;
+  const show = !!playF();
+  host.style.display = show ? '' : 'none';
+  if(!show) return;
+  const n=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.length;
+
+  if(!nPlayBuilt){
+    host.innerHTML = neutralCardPair('light', n) + neutralCardPair('dark', n);
+    ['light','dark'].forEach(theme=>{
+      const sl=document.getElementById(`nplay-${theme}-hue`);
+      sl.addEventListener('input', ()=>{ N_HUE[theme]=Number(sl.value); updateNeutralTheme(theme); });
+    });
+    nPlayBuilt = true;
+  }
+  updateNeutralTheme('light');
+  updateNeutralTheme('dark');
+}
+
+
+/* ==================================================================
+   Partner Customisation — a real checkout painted from the formulas
+
+   The screen is the Figma frame, built once at its own size. Every
+   colour in it that comes from the dark neutral or the brand palette
+   is a CSS variable, recomputed here from the same functions the
+   playgrounds use; everything else is the hex it was drawn in. The
+   two sliders only rewrite those variables.
+   ================================================================== */
+const XS_W = 1004, XS_H = 837, XS_GUTTER = 32;
+/* the steps the screen actually paints with — marked on the strips */
+const XS_USE = {brand:[100,200,300,400,500,700], neutral:[25,50,100,400,700,800,850,900]};
+const PARTNER_KEY = 'xcf.partner';
+const LINK_KEY = 'xcf.link';
+const PARTNER_DEF = {brand:190, neutral:190};
+const partner = {...PARTNER_DEF};
+
+const brandHexAt = (step, hue)=>{
+  const F=playF(), t=step/1000;
+  return hsl2hex(hue, Sbrand(t,F,hue,adjusted()), Lplay(t,hue,F,PLAY_CORR,adjusted()));
+};
+/* the dark neutral: the unbent power law, tinted with 22 − L/9 */
+const neutralHexAt = (step, hue)=>{
+  const F=playF(), t=step/1000, L=neutralL(t,hue,F);
+  return hsl2hex(hue, neutralS('dark',L), L);
+};
+const hexA = (hex, a)=>{
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+};
+const WHEEL = (()=>{ const s=[]; for(let h=0;h<=360;h+=30) s.push(hsl2hex(h,80,55)); return `linear-gradient(to right, ${s.join(', ')})`; })();
+
+function paintStrip(key, fn, hue){
+  const steps=playF().steps, use=new Set(XS_USE[key]);
+  const strip=document.getElementById(`pc-${key}-strip`);
+  strip.innerHTML = steps.map(s=>{
+    const hex=fn(s,hue);
+    return `<span class="${use.has(s)?'use':''}" style="background:${hex};--dot:${ink(hex)}" `+
+           `title="${key} ${s} · ${hex}${use.has(s)?' · on screen':''}"></span>`;
+  }).join('');
+  document.getElementById(`pc-${key}-lab`).innerHTML = steps.map(s=>`<span>${s}</span>`).join('');
+  document.getElementById(`pc-${key}-val`).textContent = hue+'°';
+  const sl=document.getElementById(`pc-${key}`);
+  sl.value = hue;
+  sl.style.setProperty('--wheel', WHEEL);
+  sl.style.setProperty('--thumb', fn(key==='brand' ? 300 : 700, hue));
+}
+
+/* write the frame's palette variables from two step → hex functions */
+function paintXs(B, N){
+  const xs=document.getElementById('xs');
+  XS_USE.brand.forEach(s=> xs.style.setProperty(`--b${s}`, B(s)));
+  XS_USE.neutral.forEach(s=> xs.style.setProperty(`--n${s}`, N(s)));
+  xs.style.setProperty('--ink',   N(50));
+  xs.style.setProperty('--ink-3', hexA(N(50), .58));
+  xs.style.setProperty('--line',  hexA(B(100), .15));
+  xs.style.setProperty('--wash',  hexA(B(100), .06));
+}
+function paintPartner(){
+  if(mode!=='partner') return;        /* the frame is on loan to another tab */
+  const xs=document.getElementById('xs');
+  const B=s=>brandHexAt(s, partner.brand), N=s=>neutralHexAt(s, partner.neutral);
+  XS_USE.brand.forEach(s=> xs.style.setProperty(`--b${s}`, B(s)));
+  XS_USE.neutral.forEach(s=> xs.style.setProperty(`--n${s}`, N(s)));
+  /* the semantic tokens in the frame are palette steps with alpha on top */
+  xs.style.setProperty('--ink',   N(50));                 /* content/primary  */
+  xs.style.setProperty('--ink-3', hexA(N(50), .58));      /* content/tertiary */
+  xs.style.setProperty('--line',  hexA(B(100), .15));     /* border/secondary */
+  xs.style.setProperty('--wash',  hexA(B(100), .06));     /* overlay/mono     */
+  paintStrip('brand',   brandHexAt,   partner.brand);
+  paintStrip('neutral', neutralHexAt, partner.neutral);
+}
+
+/* shrink the whole frame, never reflow it */
+/* The checkout frame is one DOM node; each tab that shows it borrows it. */
+function moveStage(canvasId){
+  const stage=document.getElementById('pc-stage'), c=document.getElementById(canvasId);
+  if(stage.parentElement!==c) c.appendChild(stage);
+}
+function fitPartner(){
+  const c=document.getElementById('pc-stage').parentElement;
+  const w=c.clientWidth-2*XS_GUTTER, h=c.clientHeight-2*XS_GUTTER;
+  if(w<=0 || h<=0) return;
+  const s=Math.min(1, w/XS_W, h/XS_H);
+  document.getElementById('pc-stage').style.setProperty('--xs-scale', s.toFixed(4));
+}
+
+let partnerBuilt=false;
+function partnerEnsure(){
+  if(partnerBuilt) return;
+  partnerBuilt=true;
+  try{
+    const o=JSON.parse(localStorage.getItem(PARTNER_KEY)||'null');
+    if(o) for(const k in PARTNER_DEF) if(Number.isFinite(o[k])) partner[k]=clampTo(Math.round(o[k]),0,359);
+  }catch(e){}
+  const save=()=>{ try{ localStorage.setItem(PARTNER_KEY, JSON.stringify(partner)); }catch(e){} };
+  /* Linked (the default): dragging either hue moves the other by the same
+     amount, wrapping round the wheel. */
+  const link=document.getElementById('pc-link');
+  try{ if(localStorage.getItem(LINK_KEY)==='0') link.checked=false; }catch(e){}
+  link.addEventListener('change', ()=>{
+    try{ localStorage.setItem(LINK_KEY, link.checked ? '1' : '0'); }catch(e){}
+  });
+  let raf=0;
+  ['brand','neutral'].forEach(k=>{
+    const sl=document.getElementById(`pc-${k}`);
+    sl.addEventListener('input', ()=>{
+      const v=Number(sl.value);
+      if(link.checked){
+        const o = k==='brand' ? 'neutral' : 'brand';
+        partner[o] = ((partner[o] + v - partner[k]) % 360 + 360) % 360;
+      }
+      partner[k]=v;
+      cancelAnimationFrame(raf);
+      raf=requestAnimationFrame(paintPartner);
+    });
+    sl.addEventListener('change', save);
+  });
+  document.getElementById('pc-reset').addEventListener('click', ()=>{
+    Object.assign(partner, PARTNER_DEF); save(); paintPartner();
+  });
+  if(window.ResizeObserver){
+    const ro=new ResizeObserver(fitPartner);
+    ro.observe(document.getElementById('pc-canvas'));
+    ro.observe(document.getElementById('h245-canvas'));
+  }
+  else addEventListener('resize', fitPartner);
+  paintPartner();
+}
+const clampTo = (v,lo,hi)=> v<lo?lo:v>hi?hi:v;
+
+/* ==================================================================
+   Hue 245 — the brand ramp as two pen-drawn curves
+   Each curve is one cubic Bézier between fixed anchors at scale 0 and
+   100; the handle on each anchor is what you drag. State lives in its
+   own key and is read by nothing else on the page.
+   ================================================================== */
+const H245_KEY='xcf.h245';
+const H245_DEF = ALL.v7.h245;
+const H245 = H245_DEF.hue;
+const h245 = {L:null, S:null};
+const cloneCurve = c => ({p0:[...c.p0], p3:[...c.p3], h1:[...c.h1], h2:[...c.h2]});
+/* the plot window for each curve — wider than the curve so handles have room */
+const PEN_BOX = {L:{lo:-20, hi:120, label:'Lightness'}, S:{lo:20, hi:120, label:'Saturation'}};
+/* end points that can slide up and down (their x stays at 0 / 100) */
+const PEN_MOVABLE = {L:false, S:true};
+const PEN_PAIR = {p0:'h1', p3:'h2'};      /* the handle that rides with each end point */
+
+function bezPt(c, s){
+  const m=1-s, a=m*m*m, b=3*m*m*s, d=3*m*s*s, e=s*s*s;
+  return [a*c.p0[0]+b*c.h1[0]+d*c.h2[0]+e*c.p3[0], a*c.p0[1]+b*c.h1[1]+d*c.h2[1]+e*c.p3[1]];
+}
+/* y at x — handle x stays inside [0, 1], so x(s) never folds back */
+function bezY(c, x){
+  let lo=0, hi=1;
+  for(let i=0;i<32;i++){ const mid=(lo+hi)/2; if(bezPt(c,mid)[0]<x) lo=mid; else hi=mid; }
+  return bezPt(c,(lo+hi)/2)[1];
+}
+const h245L = t => Math.max(0, Math.min(100, bezY(h245.L, t)));
+const h245S = t => Math.max(0, Math.min(100, bezY(h245.S, t)));
+const h245Brand = step => { const t=step/1000; return hsl2hex(H245, h245S(t), h245L(t)); };
+/* the neutral is the page's built neutral formula at 245, whatever the switch says */
+const h245Neutral = step => {
+  const F=playF(), t=step/1000, L=Lplay(t, H245, F, PLAY_CORR, true, neutralCurve(F));
+  return hsl2hex(H245, neutralS('dark', L), L);
+};
+/* the reference: the page's adjusted brand formula at 245 */
+const h245RefL = t => Lplay(t, H245, playF(), PLAY_CORR, true, brandCurve(playF()));
+const h245RefS = t => Sbrand(t, playF(), H245, true);
+
+function penSvg(key){
+  const c=h245[key], box=PEN_BOX[key];
+  const W=340, H=230, padL=30, padR=10, padT=10, padB=24;
+  const pw=W-padL-padR, ph=H-padT-padB;
+  const X=x=> padL + x*pw, Y=v=> padT + (box.hi-v)/(box.hi-box.lo)*ph;
+  const grid=[], labels=[];
+  for(let v=Math.ceil(box.lo/20)*20; v<=box.hi; v+=20){
+    grid.push(`<line class="gridline${v===0||v===100?' strong':''}" x1="${padL}" y1="${Y(v)}" x2="${W-padR}" y2="${Y(v)}"/>`);
+    labels.push(`<text class="label" x="${padL-5}" y="${Y(v)+3.5}" text-anchor="end">${v}</text>`);
+  }
+  for(let x=0;x<=1.0001;x+=.25){
+    grid.push(`<line class="gridline" x1="${X(x)}" y1="${padT}" x2="${X(x)}" y2="${H-padB}"/>`);
+    labels.push(`<text class="label" x="${X(x)}" y="${H-padB+15}" text-anchor="middle">${Math.round(x*100)}</text>`);
+  }
+  const d=`M${X(c.p0[0])} ${Y(c.p0[1])} C${X(c.h1[0])} ${Y(c.h1[1])} ${X(c.h2[0])} ${Y(c.h2[1])} ${X(c.p3[0])} ${Y(c.p3[1])}`;
+  const refFn = key==='L' ? h245RefL : h245RefS;
+  const ref=[]; for(let i=0;i<=100;i++){ const t=i/100; ref.push(`${i?'L':'M'}${X(t).toFixed(1)} ${Y(refFn(t)).toFixed(1)}`); }
+  const fn = key==='L' ? h245L : h245S;
+  const dots=playF().steps.map(s=>`<circle class="stepdot ${key}" cx="${X(s/1000)}" cy="${Y(fn(s/1000))}" r="2.6"/>`).join('');
+  const hd=(h,p,name)=>`<line class="leader" x1="${X(p[0])}" y1="${Y(p[1])}" x2="${X(h[0])}" y2="${Y(h[1])}"/>`+
+    `<rect class="handle" data-h="${name}" x="${X(h[0])-5}" y="${Y(h[1])-5}" width="10" height="10"/>`+
+    `<circle class="hit" data-h="${name}" cx="${X(h[0])}" cy="${Y(h[1])}" r="13"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" data-key="${key}" role="img" aria-label="${box.label} curve editor">
+    ${grid.join('')}${labels.join('')}
+    <path class="ref" d="${ref.join(' ')}"/>
+    <path class="curve ${key}" d="${d}"/>
+    ${dots}
+    ${hd(c.h1,c.p0,'h1')}${hd(c.h2,c.p3,'h2')}
+    ${['p0','p3'].map(a=> PEN_MOVABLE[key]
+      ? `<circle class="anchor movable" data-a="${a}" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="4.5"/>`+
+        `<circle class="hit ns" data-a="${a}" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="11"/>`
+      : `<circle class="anchor" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="4.5"/>`).join('')}
+  </svg>`;
+}
+function penDraw(key){
+  const host=document.getElementById(`h245-pen-${key}`), c=h245[key];
+  const f=v=>Math.round(v*10)/10;
+  host.innerHTML = `<div class="pen__head"><h3>${PEN_BOX[key].label}</h3>`+
+    `<span class="play-meta">${PEN_MOVABLE[key] ? `${f(c.p0[1])} → ${f(c.p3[1])} · ` : ''}`+
+    `(${f(c.h1[0]*100)}, ${f(c.h1[1])}) · (${f(c.h2[0]*100)}, ${f(c.h2[1])})</span></div>`+
+    penSvg(key);
+}
+/* dragging: the SVG is redrawn under the pointer, so the drag is tracked on the
+   host, which stays put */
+function penBind(key){
+  const host=document.getElementById(`h245-pen-${key}`);
+  let drag=null;
+  const toPlot=e=>{
+    const svg=host.querySelector('svg'), pt=svg.createSVGPoint();
+    pt.x=e.clientX; pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    const box=PEN_BOX[key], W=340, H=230, padL=30, padR=10, padT=10, padB=24;
+    const x=(p.x-padL)/(W-padL-padR);
+    const v=box.hi - (p.y-padT)/(H-padT-padB)*(box.hi-box.lo);
+    return [Math.max(0, Math.min(1, x)), Math.max(box.lo, Math.min(box.hi, v))];
+  };
+  host.addEventListener('pointerdown', e=>{
+    const ds=e.target.dataset||{}, h=ds.h || (PEN_MOVABLE[key] && ds.a);
+    if(!h) return;
+    e.preventDefault();
+    drag=h;
+    host.setPointerCapture(e.pointerId);
+  });
+  host.addEventListener('pointermove', e=>{
+    if(!drag) return;
+    const c=h245[key], p=toPlot(e).map(v=>Math.round(v*10000)/10000);
+    if(drag in PEN_PAIR){
+      /* an end point moves only up and down, and carries its handle with it */
+      const box=PEN_BOX[key], dy=p[1]-c[drag][1], hk=PEN_PAIR[drag];
+      c[drag][1]=p[1];
+      c[hk][1]=Math.max(box.lo, Math.min(box.hi, Math.round((c[hk][1]+dy)*10000)/10000));
+    }else{
+      c[drag]=p;
+    }
+    h245Changed(key);
+    const r=host.querySelector(`[data-h="${drag}"].handle, [data-a="${drag}"].anchor`); if(r) r.classList.add('drag');
+  });
+  const end=e=>{
+    if(!drag) return;
+    drag=null;
+    try{ host.releasePointerCapture(e.pointerId); }catch(_){}
+    h245Save();
+    penDraw(key);
+  };
+  host.addEventListener('pointerup', end);
+  host.addEventListener('pointercancel', end);
+}
+let h245Raf=0;
+function h245Changed(key){
+  penDraw(key);
+  cancelAnimationFrame(h245Raf);
+  h245Raf=requestAnimationFrame(()=>{ h245Paint(); h245Card(); });
+}
+function h245Save(){
+  const pick=c=>({p0:c.p0, p3:c.p3, h1:c.h1, h2:c.h2});
+  try{ localStorage.setItem(H245_KEY, JSON.stringify({L:pick(h245.L), S:pick(h245.S)})); }catch(e){}
+}
+function h245Paint(){
+  if(mode!=='h245') return;
+  paintXs(h245Brand, h245Neutral);
+}
+function h245Card(){
+  const F=playF();
+  const rows=F.steps.map(step=>{
+    const t=step/1000, L=h245L(t), S=h245S(t), hex=hsl2hex(H245,S,L);
+    const ref=hsl2hex(H245, h245RefS(t), h245RefL(t));
+    return {step:String(step), orig:ref, hsl:hex, missing:false, dE_hsl:dEhex(ref,hex),
+            t, scale:step/10, H:H245, S, L};
+  });
+  const stops=[];
+  for(let i=0;i<40;i++){ const t=i/39; stops.push(`${hsl2hex(H245,h245S(t),h245L(t))} ${Math.round(10000*t)/100}%`); }
+  document.getElementById('h245-card').innerHTML = famCard({
+    name:'Brand 245', kind:'chromatic', theme:'both', hue:H245, rows,
+    gradient:`linear-gradient(to bottom, ${stops.join(', ')})`,
+    paramText:'pen curves vs formula'
+  }, ['Formula','Pen']);
+}
+let h245Built=false;
+function h245Ensure(){
+  if(h245Built) return;
+  h245Built=true;
+  h245.L=cloneCurve(H245_DEF.L); h245.S=cloneCurve(H245_DEF.S);
+  try{
+    const o=JSON.parse(localStorage.getItem(H245_KEY)||'null');
+    const okP=p=>Array.isArray(p) && p.length===2 && p.every(Number.isFinite) && p[0]>=0 && p[0]<=1;
+    for(const k of ['L','S']) if(o && o[k] && okP(o[k].h1) && okP(o[k].h2)){
+      h245[k].h1=[...o[k].h1]; h245[k].h2=[...o[k].h2];
+      /* only the movable end points are restored; the others stay where the build put them */
+      if(PEN_MOVABLE[k]) for(const a of ['p0','p3'])
+        if(o[k][a] && Number.isFinite(o[k][a][1])) h245[k][a][1]=o[k][a][1];
+    }
+  }catch(e){}
+  ['L','S'].forEach(k=>{ penDraw(k); penBind(k); });
+  h245Card();
+  document.getElementById('h245-reset').addEventListener('click', ()=>{
+    h245.L=cloneCurve(H245_DEF.L); h245.S=cloneCurve(H245_DEF.S);
+    try{ localStorage.removeItem(H245_KEY); }catch(e){}
+    penDraw('L'); penDraw('S'); h245Paint(); h245Card();
+  });
+  const copyBtn=document.getElementById('h245-copy');
+  copyBtn.addEventListener('click', async ()=>{
+    const r=v=>Math.round(v*1000)/1000;
+    const text=['L','S'].map(k=>`${k}: ends ${r(h245[k].p0[1])} → ${r(h245[k].p3[1])} · h1 (${r(h245[k].h1[0]*100)}, ${r(h245[k].h1[1])}) · h2 (${r(h245[k].h2[0]*100)}, ${r(h245[k].h2[1])})`).join('\n');
+    let ok=false;
+    try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){}
+    if(!ok){ window.prompt('Copy these values', text); return; }
+    copyBtn.textContent='Copied';
+    setTimeout(()=>{ copyBtn.textContent='Copy values'; }, 1400);
+  });
+}
+
+/* ---- mode switch ---- */
+/* Xsolla Palettes is the default; the choice is kept per viewer. */
+const MODE_KEY='xcf.mode';
+let mode='math';
+function applyMode(m, persist){
+  mode = (m==='partner' || m==='h245') ? m : 'math';
+  document.querySelectorAll('[data-only]').forEach(el=>{ el.hidden = el.dataset.only!==mode; });
+  /* the sidebar only shows when something in it does */
+  const side=document.getElementById('side');
+  side.hidden = ![...side.children].some(el=>!el.hidden);
+  document.querySelectorAll('#mode-switch .seg__opt').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.mode===mode ? 'true' : 'false'));
+  if(persist){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
+  document.body.classList.toggle('partner-on', mode!=='math');
+  document.body.classList.toggle('h245-on', mode==='h245');
+  if(mode==='partner'){
+    moveStage('pc-canvas');
+    partnerEnsure();
+    paintPartner();
+    fitPartner();
+  }else if(mode==='h245'){
+    moveStage('h245-canvas');
+    partnerEnsure();          /* builds the frame's listeners once */
+    h245Ensure();
+    h245Paint();
+    fitPartner();
+  }else{
+    render();
+    renderPlayground('brand'); renderPlayground('ui'); renderNeutralPlayground();
+  }
+}
+
+/* ---- brand hue correction switch ---- */
+/* Adjusted is the default; like the mode, the choice is kept per viewer. */
+const CORR_KEY='xcf.corr';
+let corrMode='adjusted';
+const adjusted = ()=> corrMode==='adjusted';
+const brandFamilies = ()=> adjusted() ? liveFamilies().filter(f=>f.kind==='chromatic')
+  : ALL.v7.families.filter(f=>f.group==='Brand & Labels');
+const neutralFamilies = ()=> adjusted() ? liveFamilies().filter(f=>f.kind==='neutral')
+  : ALL.v7.families.filter(f=>f.kind==='neutral');
+
+/* ---- adjusted correction: editable points ----
+   The built data carries the defaults; the sidebar edits a copy that lives in
+   the formula object, so every function that reads F sees the edit. The brand
+   cards are recomputed here from the same functions (and the same 8-bit ΔE)
+   that build.py uses, so at the defaults they match the built cards exactly. */
+/* v3: the sidebar edits the neutral curve (five points); older saves are dropped */
+const ADJ_KEY='xcf.adjn';
+const ADJ_DEF = {knots: ALL.v7.formula.adj_n_knots.map(k=>[...k]), lift: ALL.v7.formula.adj_n_lift,
+                 neutral: ALL.v7.formula.adj_neutral};
+const numStr = v => (Math.round(v*1000)/1000).toString().replace('-','−');
+const hueNorm = h => ((h%360)+360)%360;
+function sortKnots(knots){
+  return knots.slice().sort((a,b)=>hueNorm(a[0])-hueNorm(b[0]));
+}
+const knotStr = knots => sortKnots(knots).map(([h,w])=>`(${h}, ${numStr(w)})`).join(' · ');
+function adjSet(knots, lift, neutral){
+  ALL.v7.formula.adj_n_knots = knots.map(k=>[hueNorm(k[0]), k[1]]);
+  ALL.v7.formula.adj_n_lift = lift;
+  ALL.v7.formula.adj_neutral = neutral;
+}
+function liveFamilies(){
+  const F=playF();
+  return ALL.v7.families_adjusted.map(f=>{
+    const H=f.hue, cv = f.kind==='neutral' ? neutralCurve(F) : brandCurve(F), w=hueWeight(H,F,true,cv);
+    const LS = t=>{
+      const L=Lplay(t,H,F,PLAY_CORR,true,cv);
+      return [L, f.kind==='neutral' ? neutralS(f.theme, L) : Sbrand(t,F,H,true)];
+    };
+    const rows=f.rows.map(r=>{
+      const t=r.t, [L,S]=LS(t), hex=hsl2hex(H,S,L);
+      return {...r, L, S, hsl:hex, e:Qplay(t,H,F,PLAY_CORR,true,cv),
+              dE_hsl: r.orig ? dEhex(r.orig, hex) : null};
+    });
+    const stops=[];
+    for(let i=0;i<40;i++){
+      const t=i/39, [L,S]=LS(t);
+      stops.push(`${hsl2hex(H, S, L)} ${Math.round(10000*t)/100}%`);
+    }
+    return {...f, rows, gradient:`linear-gradient(to bottom, ${stops.join(', ')})`,
+            dip: w>0 ? F.dip*w : 0, lift: w<0 ? -cv.lift*w : null};
+  });
+}
+
+/* repaint whatever shows the adjusted curve on the current tab */
+function refreshBrand(){
+  renderFormula();
+  if(mode==='partner') paintPartner();
+  else if(mode==='math'){
+    render();
+    if(PLAYS.brand.built) updatePlayground('brand');
+    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
+  }
+}
+
+function adjFields(){
+  const F=playF();
+  document.getElementById('adj-points').innerHTML = F.adj_n_knots.map((k,i)=>
+    `<div class="adj__row">
+      <span>Point ${i+1}</span>
+      <input type="number" data-i="${i}" data-f="h" min="0" max="359" step="1" inputmode="numeric"
+             aria-label="Point ${i+1} hue" value="${Math.round(k[0])}">
+      <input type="number" data-i="${i}" data-f="w" min="-1" max="1" step="0.01" inputmode="decimal"
+             aria-label="Point ${i+1} weight" value="${Math.round(k[1]*1000)/1000}">
+    </div>`).join('');
+  document.getElementById('adj-lift').value = F.adj_n_lift;
+  document.getElementById('adj-neutral').value = F.adj_neutral;
+}
+function adjState(){
+  const on=adjusted();
+  document.getElementById('adj-form').disabled = !on;
+  document.getElementById('adj-off').hidden = on;
+}
+/* Read every field; apply only when the whole set is valid, so a half-typed
+   number never reaches the palette. */
+function adjRead(){
+  const form=document.getElementById('adj-form'), err=document.getElementById('adj-err');
+  const knots=playF().adj_n_knots.map(k=>[...k]);
+  let msg='';
+  form.querySelectorAll('input').forEach(el=>el.removeAttribute('aria-invalid'));
+  const bad=(el,m)=>{ el.setAttribute('aria-invalid','true'); msg=msg||m; };
+  form.querySelectorAll('#adj-points input').forEach(el=>{
+    const v=el.valueAsNumber, i=+el.dataset.i;
+    if(el.dataset.f==='h'){
+      if(!Number.isFinite(v) || v<0 || v>=360) bad(el,'Hue must be 0–359.');
+      else if(v!==Math.round(knots[i][0])) knots[i][0]=v;
+    }else{
+      if(!Number.isFinite(v) || v<-1 || v>1) bad(el,'Weight must be between −1 and 1.');
+      else if(v!==Math.round(knots[i][1]*1000)/1000) knots[i][1]=v;   /* untouched keeps full precision */
+    }
+  });
+  const hs=knots.map(k=>Math.round(hueNorm(k[0])));
+  if(new Set(hs).size!==hs.length)
+    form.querySelectorAll('#adj-points input[data-f="h"]').forEach((el,i)=>{
+      if(hs.indexOf(hs[i])!==i || hs.lastIndexOf(hs[i])!==i) bad(el,'Two points share a hue.');
+    });
+  const liftEl=document.getElementById('adj-lift'), lift=liftEl.valueAsNumber;
+  const neuEl=document.getElementById('adj-neutral'), neutral=neuEl.valueAsNumber;
+  if(!Number.isFinite(neutral) || neutral<0 || neutral>2) bad(neuEl,'Neutral strength must be 0–2.');
+  if(!Number.isFinite(lift) || lift<0 || lift>5) bad(liftEl,'Lift strength must be 0–5.');
+  /* past this the darkness share outruns the power law and the ramp turns back up */
+
+  err.hidden=!msg; err.textContent=msg;
+  if(msg) return;
+  adjSet(knots, lift, neutral);
+  try{ localStorage.setItem(ADJ_KEY, JSON.stringify({knots, lift, neutral})); }catch(e){}
+  cancelAnimationFrame(adjRaf);
+  adjRaf=requestAnimationFrame(refreshBrand);
+}
+let adjRaf=0;
+function adjInit(){
+  if(!document.getElementById('adj').hidden) try{
+    const o=JSON.parse(localStorage.getItem(ADJ_KEY)||'null');
+    if(o && Array.isArray(o.knots) && o.knots.length===ADJ_DEF.knots.length &&
+       o.knots.every(k=>Array.isArray(k) && k.length===2 && k.every(Number.isFinite)) &&
+       Number.isFinite(o.lift))
+      adjSet(o.knots, o.lift, Number.isFinite(o.neutral) ? o.neutral : ADJ_DEF.neutral);
+  }catch(e){}
+  adjFields(); adjState();
+  const form=document.getElementById('adj-form');
+  form.addEventListener('input', adjRead);
+  document.getElementById('adj-reset').addEventListener('click', ()=>{
+    adjSet(ADJ_DEF.knots, ADJ_DEF.lift, ADJ_DEF.neutral);
+    try{ localStorage.removeItem(ADJ_KEY); }catch(e){}
+    adjFields(); adjRead();
+  });
+  const copyBtn=document.getElementById('adj-copy');
+  copyBtn.addEventListener('click', async ()=>{
+    const F=playF(), f=v=>{ const r=Math.round(v*10000)/10000; return Number.isInteger(r) ? r.toFixed(1) : String(r); };
+    const text = `ADJ_NEUTRAL_KNOTS_V7 = [${sortKnots(F.adj_n_knots).map(([h,w])=>`(${f(h)}, ${f(w)})`).join(', ')}]\n`
+               + `ADJ_NEUTRAL_LIFT_V7 = ${f(F.adj_n_lift)}\n`
+               + `ADJ_NEUTRAL_V7 = ${f(F.adj_neutral)}`;
+    let ok=false;
+    try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){}
+    if(!ok){ window.prompt('Copy these into build.py', text); return; }
+    copyBtn.textContent='Copied';
+    setTimeout(()=>{ copyBtn.textContent='Copy values'; }, 1400);
+  });
+}
+function applyCorr(c, persist){
+  corrMode = c==='current' ? 'current' : 'adjusted';
+  document.querySelectorAll('#corr-switch .seg__opt').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.corr===corrMode ? 'true' : 'false'));
+  if(persist){ try{ localStorage.setItem(CORR_KEY, corrMode); }catch(e){} }
+  adjState();
+  refreshBrand();
+}
+
+/* the plots are sized from the box they land in, so a resize has to redraw them */
+let fitRaf=0;
+addEventListener('resize', ()=>{
+  cancelAnimationFrame(fitRaf);
+  fitRaf=requestAnimationFrame(()=>{
+    if(mode!=='math') return;
+    for(const k in PLAYS) if(PLAYS[k].built) updatePlayground(k);
+    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
+  });
+});
+
+function renderPage(){
+  const c = COPY;
+  /* the page runs without most of the prose — each element is filled when
+     there is copy for it and hidden when there is not */
+  const put=(id, text, html)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const has = !!(text && String(text).trim());
+    el[html ? 'innerHTML' : 'textContent'] = has ? text : '';
+    el.style.display = has ? '' : 'none';
+  };
+  put('mast-lead',   c.lead);
+  put('eyebrow',     c.eyebrow);
+  put('foot',        c.foot, true);
+  document.getElementById('f-heading').textContent = c.fHead;
+  document.getElementById('lad-heading').textContent = c.ladHead;
+  try{ if(localStorage.getItem(CORR_KEY)==='current') corrMode='current'; }catch(e){}
+  document.querySelectorAll('#corr-switch .seg__opt').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.corr===corrMode ? 'true' : 'false'));
+  adjInit();
+  renderFormula();
+  document.getElementById('corr-switch').addEventListener('click', e=>{
+    const c = e.target.dataset && e.target.dataset.corr;
+    if(c && c!==corrMode) applyCorr(c, true);
+  });
+
+  document.getElementById('mode-switch').addEventListener('click', e=>{
+    const m = e.target.dataset && e.target.dataset.mode;
+    if(m && m!==mode) applyMode(m, true);
+  });
+  let start='math';
+  try{ const m=localStorage.getItem(MODE_KEY); if(m==='partner' || m==='h245') start=m; }catch(e){}
+  applyMode(start, false);
+}
+
+renderPage();
+</script>
+
+</body>
+</html>

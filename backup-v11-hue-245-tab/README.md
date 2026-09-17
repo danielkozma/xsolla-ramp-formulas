@@ -242,13 +242,12 @@ points: (75, 1) · (245, −0.4) · (290, −0.05) · (359, −0.1)
 x    = (H − H₀) / (H₁ − H₀)                       # between neighbours H₀ → H₁
 w(H) = w₁ + (w₀ − w₁)·(1 + cos(π·x)) / 2
 e(t)   = 0.84 − 0.20·w·b(t)                  if w ≥ 0   # the light-end dip, as before
-L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·T(t)        if w < 0
-T(t)   = 100·(1 − t) / √(1 − 0.97·t)             # ≈ 100·√(1 − t), with a finite end
+L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·100·√(1 − t)   if w < 0
 s      = min(1, λ·|w|)                       # brand λ 2.5 (s = 1 on the 245 trough), neutrals 0.7
 
-# brand saturation, w < 0 — the shared Hill, later, deeper and gentler by a = w²/0.4
+# brand saturation, w < 0 — the shared Hill, later, deeper and gentler by |w|
 S(t)   = 100 − D·r/(1 + r),  r = (t/k)ⁿ
-k = 1/3 + 0.72·a,  D = 30 + 64·a,  n = 6 − 4·a
+k = 1/3 + 0.72·|w|,  D = 30 + 64·|w|,  n = 6 − 4·|w|
 ```
 
 It dips the light end around 75, lifts hardest at 245, nearly lets go at 290
@@ -281,22 +280,7 @@ at half the plain ramp's rate, around step 600. With the same points, Core (250)
 | … plus the light-end ease | 72 | 63 | 56 | 50 | 45 | 38 | 32 | 25 |
 | … and brand λ 0.7 → 1.0 | 73 | 65 | 59 | 55 | 52 | 46 | 40 | 31 |
 
-**The brand Hue diagram shows saturation too.** Beside the red weight curve,
-a blue line plots the saturation each hue's brand ramp ends on (S at scale 100,
-÷ 100 to share the axis): a flat 0.70 wherever w ≥ 0, dipping to 0.50 at 245
-and slightly around 359. The saturation correction scales with `a = w²/0.4`
-rather than `|w|`: the same at the 245 trough, but it starts from 0 with zero
-slope, so the line has no corners where w crosses 0, and small weights (Brand
-190, the 290–359 shoulder) take much less of it. The meta line quotes it as `S end`.
-
-**The blend target has a finite end.** `100·√(1 − t)` meets black vertically,
-which read as a cliff at the very end of the ramp. `T(t) = 100·(1 − t)/√(1 − b·t)`
-is exactly that curve at b = 1 and ends with a finite slope below it; b = 0.97
-(`ADJ_SOFT_V7`) softens the last stretch and moves the mids by 1–3 L. Core at
-245 now reads 99 / 95 / 89 / 83 / 76 / 69 / 61 / 52 / 42 / 28 across
-25 / 100 / 200 … 800 / 900 (from 99 / 95 / 89 / 84 / 77 / 71 / 63 / 55 / 45 / 32).
-
-**Lightness is a blend onto a √ curve.** The fitted lift below
+**Lightness is now a blend onto `100·√(1 − t)`.** The fitted lift below
 (`2t·(1 − t⁴)` with the flipped light-end bell) matched the drawn curve to
 1.2 L but drew a double wave. The drawn lightness is almost exactly
 `100·√(1 − t)` (rms 1.6 L) — straight through the lights and mids, bending down
@@ -345,8 +329,8 @@ barely move. The ease also steadies the ramp, so the 0.5 limit on `λ·|w|`
 stays safe. Both curves share it; the neutral weights are too small for it to
 show on the shipped neutrals.
 
-Mean ΔE against Figma, current → adjusted: Brand 0.92 → 2.85, Core 0.92 →
-17.62, Edge 1.29 → 1.86, Mindaro 3.12 → 3.11, Mint 1.82 → 1.73, Yellow
+Mean ΔE against Figma, current → adjusted: Brand 0.92 → 3.00, Core 0.92 →
+18.45, Edge 1.29 → 1.96, Mindaro 3.12 → 3.11, Mint 1.82 → 1.73, Yellow
 2.61 → 2.28. Brand (w −0.07) and Edge (w −0.04) take a small dark-end lift;
 the Figma ramps carry none.
 
@@ -438,17 +422,41 @@ comes out `#11191A` against the drawn `#141D1F`.
 Assets exported from the Figma frame live in `assets/partner/`; the display face
 is Pilat Wide Bold, served from `fonts/pilat/pilat_wide_bold.woff2`.
 
-## Hue 245 tab (removed)
+## Hue 245 — the brand ramp drawn with the pen
 
-A third tab drew the brand ramp at 245 as two editable Béziers (lightness and
-saturation) on the checkout; the brand correction was fitted to the curves drawn
-there. It is gone from the page and lives on in `backup-v11-hue-245-tab/`.
+Hue 245 is where the brand ramp is hardest to get right, so it has its own tab
+in the app bar (**Hue 245**, kept in `xcf.mode` like the others). The tab is the
+Partner Customisation checkout with brand and neutral both at 245°, and a
+wider sidebar holding two pen editors — **Lightness** and **Saturation** — and a
+palette card under them.
+
+Each editor is one cubic Bézier from a fixed anchor at scale 0 to a fixed
+anchor at scale 100 (L 100 → 0, S 100 → 70), with one handle on each anchor.
+The two **Saturation** end points can also be dragged up and down (their x
+stays at 0 and 100), and each carries its handle with it so the curve keeps its
+shape; the Lightness end points are fixed. Drag a square handle to reshape the curve; handle x is held inside 0–100, which
+keeps the curve a function of the scale, and the plot window (L −20…120,
+S 20…120) is wider than the curve so the handles have room. The dots are the
+named steps; the dashed line is the page's adjusted formula at 245 for
+reference. `build.py` fits the default handles to that formula
+(`build_h245_v7`), so the tab opens on it, within about 2 L / 1 S.
+
+The brand swatches come from the two curves (`hsl(245, S(t), L(t))`); the
+neutral is the page's built neutral formula at 245 and is not edited here. The
+card compares the formula (left) with the pen curves (right), with ΔE.
+
+**Fully independent.** Edits are kept in `localStorage` (`xcf.h245`) and read by
+nothing else; nothing on the other tabs is read here, and the Current / Adjusted
+switch is hidden on this tab. The checkout frame is one DOM node that the two
+tabs borrow in turn, each repainting it with its own colours when it takes it.
+**Reset to formula** restores the fitted handles and end points; **Copy values**
+copies the end values and handle positions.
 
 ## Files
 
 | | |
 |---|---|
-| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals, a playground under each, Xsolla Palettes / Partner Customisation tabs and the Current / Adjusted switch in the app bar |
+| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals, a playground under each, Xsolla Palettes / Partner Customisation / Hue 245 tabs and the Current / Adjusted switch in the app bar |
 | `template.html` | source (`/*__DATA__*/`, `/*__MEANV5__*/`) |
 | `build.py` | applies v1–v7 → `data/generated.json` |
 | `page.py` | injects v7 into the template |
@@ -457,7 +465,6 @@ there. It is gone from the page and lives on in `backup-v11-hue-245-tab/`.
 | `assets/partner/` | icons, logos and images from the Figma checkout frame |
 | `backup-all-versions/` | the previous page, all seven versions, unmodified |
 | `backup-v8-pen-tool/` | the page with the Math / Pen tool switch, before Partner Customisation |
-| `backup-v11-hue-245-tab/` | the page with the Hue 245 pen-curve tab, before the √ target got its finite end (includes `assets/` and `fonts/`) |
 | `backup-v10-neutral-correction/` | the page with the separate neutral curve and its editor hidden, before the dark-end lift moved onto 700–850 (includes `assets/` and `fonts/`) |
 | `backup-v9-adjusted-correction/` | the page with the adjusted brand correction and its sidebar, before the neutrals took it (includes `assets/` and `fonts/`) |
 

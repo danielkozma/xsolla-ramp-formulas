@@ -213,8 +213,8 @@ footer b{color:var(--ink);font-weight:500}
    as a palette card — two of the three columns, third left empty. */
 .playground{display:grid;gap:4px;align-items:stretch;margin:0 0 44px;
             grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
-/* …and where the cards come in sets of three, each set starts its own row. */
-.playground--pairs > :nth-child(3n+1){grid-column:1}
+/* …and where the cards come in pairs, each pair starts its own row. */
+.playground--pairs > :nth-child(odd){grid-column:1}
 /* Probe cards read as the same bare plates as the family cards — no frame,
    no radius, no rule under the head. */
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
@@ -262,6 +262,36 @@ footer b{color:var(--ink);font-weight:500}
 @font-face{font-family:'Pilat Wide';src:url('fonts/pilat/pilat_wide_bold.woff2') format('woff2');
   font-weight:700;font-style:normal;font-display:swap}
 body.partner-on{overflow:hidden}
+/* the pen editors want room, so this tab widens the sidebar */
+body.h245-on .side{flex-basis:380px}
+body.h245-on #corr-switch{visibility:hidden}
+.pen{margin-top:18px}
+.pen__head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.pen__head h3{margin:0;font-size:15px;line-height:1.2;font-family:var(--body);font-weight:500}
+.pen__head .play-meta{margin-left:auto}
+.pen svg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.pen .gridline{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+.pen .gridline.strong{stroke:var(--rule-2);stroke-dasharray:none}
+.pen .label{fill:var(--ink-3);font:10px var(--body);font-variant-numeric:tabular-nums}
+.pen .curve{fill:none;stroke-width:2}
+.pen .curve.L{stroke:#E24B4A}
+.pen .curve.S{stroke:#2F6FED}
+.pen .ref{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.pen .leader{stroke:var(--ink-2);stroke-width:1}
+.pen .anchor{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+.pen .handle{fill:var(--ink);stroke:var(--panel);stroke-width:1.5;cursor:grab}
+.pen .handle:hover,.pen .handle.drag{fill:var(--brand-edge,#2F6FED)}
+.pen .handle.drag{cursor:grabbing}
+.pen .hit{fill:transparent;cursor:grab}
+.pen .hit.ns{cursor:ns-resize}
+.pen .anchor.movable{fill:var(--ink);stroke:var(--panel)}
+.pen .anchor.movable.drag{fill:var(--brand-edge,#2F6FED)}
+.pen .stepdot{fill:var(--panel);stroke-width:1.2}
+.pen .stepdot.L{stroke:#E24B4A}
+.pen .stepdot.S{stroke:#2F6FED}
+.h245 .adj__btns{margin-top:14px}
+.h245__card{margin-top:22px}
+.h245__card .fam{margin:0}
 /* One sidebar for both tabs. It sticks under the app bar while the palettes
    scroll past it; on
    Partner Customisation the page is one viewport tall and nothing scrolls. */
@@ -434,10 +464,12 @@ body.partner-on{overflow:hidden}
   <div class="seg" id="mode-switch" role="group" aria-label="Formula mode">
     <button type="button" class="seg__opt" data-mode="math" aria-pressed="true">Xsolla Palettes</button>
     <button type="button" class="seg__opt" data-mode="partner" aria-pressed="false">Partner Customisation</button>
+    <button type="button" class="seg__opt" data-mode="h245" aria-pressed="false">Hue 245</button>
   </div>
+  <span class="appbar__ctx">Xsolla Colour Formulas</span>
   <span class="appbar__spacer"></span>
   <div class="seg" id="corr-switch" role="group" aria-label="Brand hue correction">
-    <button type="button" class="seg__opt" data-corr="current" aria-pressed="false">Match current</button>
+    <button type="button" class="seg__opt" data-corr="current" aria-pressed="false">Current</button>
     <button type="button" class="seg__opt" data-corr="adjusted" aria-pressed="true">Adjusted</button>
   </div>
 </header>
@@ -469,6 +501,21 @@ body.partner-on{overflow:hidden}
     </div>
     <label class="link-ctl"><input type="checkbox" id="pc-link" checked> Move both hues together</label>
     <button type="button" class="btn" id="pc-reset">Reset to Xsolla</button>
+  </div>
+  <!-- Hue 245: its own brand curves, drawn with the pen. Nothing here touches
+       the other tabs, and nothing on them touches this. -->
+  <div class="h245" data-only="h245" hidden>
+    <h2>Hue 245</h2>
+    <p>Brand and neutral at 245°. Drag the square handles to reshape the brand
+       ramp. The saturation end points also slide up and down; the lightness
+       ones stay put. Edits stay on this tab.</p>
+    <div class="pen" id="h245-pen-L"></div>
+    <div class="pen" id="h245-pen-S"></div>
+    <div class="adj__btns">
+      <button type="button" class="btn" id="h245-reset">Reset to formula</button>
+      <button type="button" class="btn" id="h245-copy">Copy values</button>
+    </div>
+    <div class="h245__card" id="h245-card"></div>
   </div>
   <!-- The neutral curve editor, hidden now the values are settled. Remove
        `hidden` to bring it back; while hidden, saved edits are ignored. -->
@@ -672,6 +719,9 @@ body.partner-on{overflow:hidden}
     </div>
   </div>
 </main>
+<main class="partner" id="h245" data-only="h245" hidden>
+  <div class="partner__canvas" id="h245-canvas"></div>
+</main>
 </div>
 </div>
 
@@ -710,8 +760,7 @@ ${K('// lightness')}
 b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
 ${adjusted()
 ? `e(t) = ${V('0.84 − 0.20·w·b(t)')}   if w ≥ 0   ${K('dips the light end')}
-L(t,H) = ${V('(1 − s)·(100 − 100·t^0.84) + s·T(t)')}   if w < 0
-T(t) = ${V(`100·(1 − t) / √(1 − ${numStr(F.adj_soft)}·t)`)}   ${K('≈ 100·√(1 − t), finite at the end')}
+L(t,H) = ${V('(1 − s)·(100 − 100·t^0.84) + s·100·√(1 − t)')}   if w < 0
 s = ${V(`min(1, ${numStr(F.adj_lift)}·|w|)`)}               ${K('1 on the 245 trough')}
 u(t) = ${V('2t·(1 − t⁴)')}                   ${K('0 at both ends')}`
 : `e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}`}
@@ -720,9 +769,9 @@ L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
 ${K('// saturation and hue')}
 r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
 S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}${adjusted() ? `
-${K('// brand, w < 0 — the same switch, later, deeper and gentler by a = w²/0.4')}
+${K('// brand, w < 0 — the same switch, later, deeper and gentler by |w|')}
 S(t) = ${V('100 − D·r/(1 + r)')},  r = ${V('(t/k)ⁿ')}
-k = ${V(`1/3 + ${numStr(playF().adj_s_knee)}·a`)},  D = ${V(`30 + ${numStr(playF().adj_s_drop)}·a`)},  n = ${V(`6 − ${numStr(playF().adj_s_order)}·a`)}` : ''}
+k = ${V(`1/3 + ${numStr(playF().adj_s_knee)}·|w|`)},  D = ${V(`30 + ${numStr(playF().adj_s_drop)}·|w|`)},  n = ${V(`6 − ${numStr(playF().adj_s_order)}·|w|`)}` : ''}
 H(t) = ${V('H₀')}
 
 ${K('// UI families — Pulse · Flash · Pink')}
@@ -811,12 +860,13 @@ function dEhex(a, b){
 const okLhex = hex => 100*oklabHex(hex)[0];
 
 /* ---------- render ---------- */
-function famCard(f){
+function famCard(f, cols=['Current','Formula']){
   /* Lift is quoted on the neutrals only, and only in the swatch tooltips — there
      it is the evidence that they need no correction. On a chromatic ramp the dip
      already answers for it. */
   const showLift = f.kind==='neutral';
-  const param = f.kind==='grey' ? 'achromatic'
+  const param = f.paramText ? f.paramText
+    : f.kind==='grey' ? 'achromatic'
     : f.lift!=null ? `H₀ ${f.hue} · √ blend ${Number(f.lift).toFixed(2)}`
     : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
   const grad = f.gradient;
@@ -845,7 +895,7 @@ function famCard(f){
   const th = f.theme==='both' ? '' : `<span class="theme">${f.theme}</span>`;
   return `<article class="fam">
     <header><h3>${f.name}</h3>${th}<span class="param">${param}</span></header>
-    <div class="colhead"><span></span><span>Current</span><span>Formula</span><span>Gradient</span><span>Δ</span></div>
+    <div class="colhead"><span></span><span>${cols[0]}</span><span>${cols[1]}</span><span>Gradient</span><span>Δ</span></div>
     <div class="ramp-wrap" style="grid-template-rows:repeat(${n},32px)">
       ${body}
       <div class="grad-col" style="background:${grad}" title="Full continuous scale"></div>
@@ -856,12 +906,12 @@ function render(){
   const list = ALL.v7.families;
   const put=(id,sel)=>{
     const l = list.filter(sel);
-    document.getElementById(id).innerHTML = l.length ? l.map(famCard).join('')
+    document.getElementById(id).innerHTML = l.length ? l.map(f=>famCard(f)).join('')
       : `<p style="color:var(--ink-3);font-size:13px;margin:0">Every family here regenerates within a just-noticeable difference.</p>`;
   };
-  document.getElementById('g-brand').innerHTML = brandFamilies().map(famCard).join('');
+  document.getElementById('g-brand').innerHTML = brandFamilies().map(f=>famCard(f)).join('');
   put('g-semantic', f=>f.group==='UI (Semantic)');
-  document.getElementById('g-theme').innerHTML = neutralFamilies().map(famCard).join('');
+  document.getElementById('g-theme').innerHTML = neutralFamilies().map(f=>famCard(f)).join('');
 }
 
 
@@ -920,17 +970,17 @@ function hueWeight(H, F, adj=false, cv=brandCurve(F)){
   const c=Math.cos(Math.PI/2*d);
   return c*c;
 }
-/* how far a negative weight moves the ramp onto T(t) */
+/* how far a negative weight moves the ramp onto 100·√(1 − t) */
 const liftBlend = (w, cv) => w<0 ? Math.min(1, -cv.lift*w) : 0;
 function Lplay(t, H, F, corr, adj=false, cv=brandCurve(F)){
   if(t<=0) return F.L0;
   /* the exponent goes straight into the power law */
   let L=F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr,adj,cv));
-  /* adjusted, negative weight: blend towards T(t) = 100·(1 − t)/√(1 − 0.97t), a
-     √-like curve with a finite end — both fall 100 → 0, so every blend does too */
+  /* adjusted, negative weight: blend towards 100·√(1 − t), the lightness drawn
+     on the Hue 245 tab — both curves fall 100 → 0, so every blend does too */
   if(adj){
     const sb=liftBlend(hueWeight(H,F,true,cv), cv);
-    if(sb>0) L = (1-sb)*L + sb*100*(1-t)/Math.sqrt(1 - F.adj_soft*t);
+    if(sb>0) L = (1-sb)*L + sb*100*Math.sqrt(Math.max(0, 1-t));
   }
   return L;
 }
@@ -955,7 +1005,7 @@ function sGain(H, F){
 function Sbrand(t, F, H, adj){
   const w = adj ? hueWeight(H,F,true) : 0;
   if(w>=0) return Splay(t,F);
-  const a=w*w/F.adj_s_ref, k=F.S_knee + F.adj_s_knee*a;   /* w² — no corner where w crosses 0 */
+  const a=-w, k=F.S_knee + F.adj_s_knee*a;
   const r=Math.pow(t/k, F.S_order - F.adj_s_order*a);
   return Math.max(0, Math.min(100, 100 - (F.S_drop + F.adj_s_drop*a)*r/(1 + r)));
 }
@@ -1020,11 +1070,10 @@ function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null, adj=false){
    w(H) is the bell that scales the lightness dip; on the UI card g(H), the
    saturation gain, rides the same 0–1 axis. The strip under the axis is the
    wheel itself, and the dashed rule is where the slider sits. */
-function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
-                    wFn=h=>hueWeight(h,F,adj), sFn=h=> ui ? sGain(h,F) : Sbrand(1,F,h,adj)/100, cv=brandCurve(F)){
+function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false){
   const W=380, padL=34, padR=32, padT=14, padB=38;
   const plotW=W-padL-padR, plotH=H-padT-padB;
-  const lo = adj ? Math.min(-0.5, Math.floor(Math.min(...cv.knots.map(k=>cv.k*k[1]))*4)/4) : 0;
+  const lo = adj ? Math.min(-0.5, Math.floor(Math.min(...F.adj_knots.map(k=>k[1]))*4)/4) : 0;
   const xOf=h=> padL + h/360*plotW;
   const yOf=v=> padT + (1 - v)/(1 - lo)*plotH;
 
@@ -1047,7 +1096,7 @@ function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
   const stops=[];
   for(let h=0;h<=360;h+=30) stops.push(`<stop offset="${(h/360).toFixed(4)}" stop-color="${hsl2hex(h,70,55)}"/>`);
 
-  const x=xOf(hue), w=wFn(hue);
+  const x=xOf(hue), w=hueWeight(hue,F,adj), g=sGain(hue,F);
   return `<defs><linearGradient id="${id}-wheel" x1="0" x2="1" y1="0" y2="0">${stops.join('')}</linearGradient></defs>
     ${grid}
     <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
@@ -1058,9 +1107,9 @@ function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
     <text class="title" x="${padL}" y="${padT-3}">weight</text>
     <text class="title" x="${W-padR}" y="${H-4}" text-anchor="end">hue 0 → 360</text>
     <line class="marker" x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}"/>
-    <path class="S" d="${path(sFn)}"/>
-    <path class="L" d="${path(wFn)}"/>
-    <circle class="dot S" cx="${x}" cy="${yOf(sFn(hue))}" r="3.5"/>
+    ${ui ? `<path class="S" d="${path(h=>sGain(h,F))}"/>` : ''}
+    <path class="L" d="${path(h=>hueWeight(h,F,adj))}"/>
+    ${ui ? `<circle class="dot S" cx="${x}" cy="${yOf(g)}" r="3.5"/>` : ''}
     <circle class="dot L" cx="${x}" cy="${yOf(w)}" r="3.5"/>`;
 }
 
@@ -1106,8 +1155,7 @@ function updatePlayground(key){
   const hsvg=document.getElementById(id+'-hue-svg');
   hsvg.innerHTML = playHueSvg(F, fitSvg(hsvg), hue, P.ui, id, adj);
   document.getElementById(id+'-hue-meta').textContent =
-    `H ${hue}° · w ${w.toFixed(2).replace('-','−')}` +
-    (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : ` · S end ${Sbrand(1,F,hue,adj).toFixed(0)}`);
+    `H ${hue}° · w ${w.toFixed(2).replace('-','−')}` + (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
 }
 
 function renderPlayground(key){
@@ -1160,7 +1208,7 @@ function renderPlayground(key){
           </div>
           <div class="curves__legend">
             <span><i class="L"></i>w · L dip</span>
-            ${P.ui ? '<span><i class="S"></i>g · S gain</span>' : '<span><i class="S"></i>S at 100 ÷ 100</span>'}
+            ${P.ui ? '<span><i class="S"></i>g · S gain</span>' : ''}
           </div>
         </div>
         <div class="play-curves__body">
@@ -1257,15 +1305,6 @@ function updateNeutralTheme(theme){
   const wn = adjusted() ? hueWeight(hue,F,true,neutralCurve(F)) : 0;
   document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`
     + (adjusted() ? ` · w ${wn.toFixed(2).replace('-','−')}` : '');
-
-  /* the neutral curve's weight round the wheel, and where S ends at each hue */
-  const cv=neutralCurve(F);
-  const wFn=h=> adjusted() ? hueWeight(h,F,true,cv) : 0;
-  const sFn=h=> neutralS(theme, neutralL(1,h,F))/100;
-  const hsvg=document.getElementById(`nplay-${theme}-hue-svg`);
-  hsvg.innerHTML = playHueSvg(F, fitSvg(hsvg), hue, false, `nplay-${theme}`, adjusted(), wFn, sFn, cv);
-  document.getElementById(`nplay-${theme}-hue-meta`).textContent =
-    `H ${hue}° · w ${wn.toFixed(2).replace('-','−')} · S end ${(100*sFn(hue)).toFixed(1)}`;
 }
 
 function neutralCardPair(theme, n){
@@ -1299,22 +1338,6 @@ function neutralCardPair(theme, n){
       <div class="play-curves__body">
         <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
              role="img" aria-label="Neutral ${theme} lightness and saturation"></svg>
-      </div>
-    </article>
-    <article class="fam play-card play-curves">
-      <div class="play-head">
-        <div class="play-head__top">
-          <h3>Hue</h3>
-          <span class="play-meta" id="nplay-${theme}-hue-meta"></span>
-        </div>
-        <div class="curves__legend">
-          <span><i class="L"></i>w · L dip</span>
-          <span><i class="S"></i>S at 100 ÷ 100</span>
-        </div>
-      </div>
-      <div class="play-curves__body">
-        <svg class="curves__svg play-curves__svg" id="nplay-${theme}-hue-svg" viewBox="0 0 380 300"
-             role="img" aria-label="Neutral ${theme} correction weight across the hue wheel"></svg>
       </div>
     </article>`;
 }
@@ -1388,7 +1411,18 @@ function paintStrip(key, fn, hue){
   sl.style.setProperty('--thumb', fn(key==='brand' ? 300 : 700, hue));
 }
 
+/* write the frame's palette variables from two step → hex functions */
+function paintXs(B, N){
+  const xs=document.getElementById('xs');
+  XS_USE.brand.forEach(s=> xs.style.setProperty(`--b${s}`, B(s)));
+  XS_USE.neutral.forEach(s=> xs.style.setProperty(`--n${s}`, N(s)));
+  xs.style.setProperty('--ink',   N(50));
+  xs.style.setProperty('--ink-3', hexA(N(50), .58));
+  xs.style.setProperty('--line',  hexA(B(100), .15));
+  xs.style.setProperty('--wash',  hexA(B(100), .06));
+}
 function paintPartner(){
+  if(mode!=='partner') return;        /* the frame is on loan to another tab */
   const xs=document.getElementById('xs');
   const B=s=>brandHexAt(s, partner.brand), N=s=>neutralHexAt(s, partner.neutral);
   XS_USE.brand.forEach(s=> xs.style.setProperty(`--b${s}`, B(s)));
@@ -1403,8 +1437,13 @@ function paintPartner(){
 }
 
 /* shrink the whole frame, never reflow it */
+/* The checkout frame is one DOM node; each tab that shows it borrows it. */
+function moveStage(canvasId){
+  const stage=document.getElementById('pc-stage'), c=document.getElementById(canvasId);
+  if(stage.parentElement!==c) c.appendChild(stage);
+}
 function fitPartner(){
-  const c=document.getElementById('pc-canvas');
+  const c=document.getElementById('pc-stage').parentElement;
   const w=c.clientWidth-2*XS_GUTTER, h=c.clientHeight-2*XS_GUTTER;
   if(w<=0 || h<=0) return;
   const s=Math.min(1, w/XS_W, h/XS_H);
@@ -1445,18 +1484,212 @@ function partnerEnsure(){
   document.getElementById('pc-reset').addEventListener('click', ()=>{
     Object.assign(partner, PARTNER_DEF); save(); paintPartner();
   });
-  if(window.ResizeObserver) new ResizeObserver(fitPartner).observe(document.getElementById('pc-canvas'));
+  if(window.ResizeObserver){
+    const ro=new ResizeObserver(fitPartner);
+    ro.observe(document.getElementById('pc-canvas'));
+    ro.observe(document.getElementById('h245-canvas'));
+  }
   else addEventListener('resize', fitPartner);
   paintPartner();
 }
 const clampTo = (v,lo,hi)=> v<lo?lo:v>hi?hi:v;
+
+/* ==================================================================
+   Hue 245 — the brand ramp as two pen-drawn curves
+   Each curve is one cubic Bézier between fixed anchors at scale 0 and
+   100; the handle on each anchor is what you drag. State lives in its
+   own key and is read by nothing else on the page.
+   ================================================================== */
+const H245_KEY='xcf.h245';
+const H245_DEF = ALL.v7.h245;
+const H245 = H245_DEF.hue;
+const h245 = {L:null, S:null};
+const cloneCurve = c => ({p0:[...c.p0], p3:[...c.p3], h1:[...c.h1], h2:[...c.h2]});
+/* the plot window for each curve — wider than the curve so handles have room */
+const PEN_BOX = {L:{lo:-20, hi:120, label:'Lightness'}, S:{lo:20, hi:120, label:'Saturation'}};
+/* end points that can slide up and down (their x stays at 0 / 100) */
+const PEN_MOVABLE = {L:false, S:true};
+const PEN_PAIR = {p0:'h1', p3:'h2'};      /* the handle that rides with each end point */
+
+function bezPt(c, s){
+  const m=1-s, a=m*m*m, b=3*m*m*s, d=3*m*s*s, e=s*s*s;
+  return [a*c.p0[0]+b*c.h1[0]+d*c.h2[0]+e*c.p3[0], a*c.p0[1]+b*c.h1[1]+d*c.h2[1]+e*c.p3[1]];
+}
+/* y at x — handle x stays inside [0, 1], so x(s) never folds back */
+function bezY(c, x){
+  let lo=0, hi=1;
+  for(let i=0;i<32;i++){ const mid=(lo+hi)/2; if(bezPt(c,mid)[0]<x) lo=mid; else hi=mid; }
+  return bezPt(c,(lo+hi)/2)[1];
+}
+const h245L = t => Math.max(0, Math.min(100, bezY(h245.L, t)));
+const h245S = t => Math.max(0, Math.min(100, bezY(h245.S, t)));
+const h245Brand = step => { const t=step/1000; return hsl2hex(H245, h245S(t), h245L(t)); };
+/* the neutral is the page's built neutral formula at 245, whatever the switch says */
+const h245Neutral = step => {
+  const F=playF(), t=step/1000, L=Lplay(t, H245, F, PLAY_CORR, true, neutralCurve(F));
+  return hsl2hex(H245, neutralS('dark', L), L);
+};
+/* the reference: the page's adjusted brand formula at 245 */
+const h245RefL = t => Lplay(t, H245, playF(), PLAY_CORR, true, brandCurve(playF()));
+const h245RefS = t => Sbrand(t, playF(), H245, true);
+
+function penSvg(key){
+  const c=h245[key], box=PEN_BOX[key];
+  const W=340, H=230, padL=30, padR=10, padT=10, padB=24;
+  const pw=W-padL-padR, ph=H-padT-padB;
+  const X=x=> padL + x*pw, Y=v=> padT + (box.hi-v)/(box.hi-box.lo)*ph;
+  const grid=[], labels=[];
+  for(let v=Math.ceil(box.lo/20)*20; v<=box.hi; v+=20){
+    grid.push(`<line class="gridline${v===0||v===100?' strong':''}" x1="${padL}" y1="${Y(v)}" x2="${W-padR}" y2="${Y(v)}"/>`);
+    labels.push(`<text class="label" x="${padL-5}" y="${Y(v)+3.5}" text-anchor="end">${v}</text>`);
+  }
+  for(let x=0;x<=1.0001;x+=.25){
+    grid.push(`<line class="gridline" x1="${X(x)}" y1="${padT}" x2="${X(x)}" y2="${H-padB}"/>`);
+    labels.push(`<text class="label" x="${X(x)}" y="${H-padB+15}" text-anchor="middle">${Math.round(x*100)}</text>`);
+  }
+  const d=`M${X(c.p0[0])} ${Y(c.p0[1])} C${X(c.h1[0])} ${Y(c.h1[1])} ${X(c.h2[0])} ${Y(c.h2[1])} ${X(c.p3[0])} ${Y(c.p3[1])}`;
+  const refFn = key==='L' ? h245RefL : h245RefS;
+  const ref=[]; for(let i=0;i<=100;i++){ const t=i/100; ref.push(`${i?'L':'M'}${X(t).toFixed(1)} ${Y(refFn(t)).toFixed(1)}`); }
+  const fn = key==='L' ? h245L : h245S;
+  const dots=playF().steps.map(s=>`<circle class="stepdot ${key}" cx="${X(s/1000)}" cy="${Y(fn(s/1000))}" r="2.6"/>`).join('');
+  const hd=(h,p,name)=>`<line class="leader" x1="${X(p[0])}" y1="${Y(p[1])}" x2="${X(h[0])}" y2="${Y(h[1])}"/>`+
+    `<rect class="handle" data-h="${name}" x="${X(h[0])-5}" y="${Y(h[1])-5}" width="10" height="10"/>`+
+    `<circle class="hit" data-h="${name}" cx="${X(h[0])}" cy="${Y(h[1])}" r="13"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" data-key="${key}" role="img" aria-label="${box.label} curve editor">
+    ${grid.join('')}${labels.join('')}
+    <path class="ref" d="${ref.join(' ')}"/>
+    <path class="curve ${key}" d="${d}"/>
+    ${dots}
+    ${hd(c.h1,c.p0,'h1')}${hd(c.h2,c.p3,'h2')}
+    ${['p0','p3'].map(a=> PEN_MOVABLE[key]
+      ? `<circle class="anchor movable" data-a="${a}" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="4.5"/>`+
+        `<circle class="hit ns" data-a="${a}" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="11"/>`
+      : `<circle class="anchor" cx="${X(c[a][0])}" cy="${Y(c[a][1])}" r="4.5"/>`).join('')}
+  </svg>`;
+}
+function penDraw(key){
+  const host=document.getElementById(`h245-pen-${key}`), c=h245[key];
+  const f=v=>Math.round(v*10)/10;
+  host.innerHTML = `<div class="pen__head"><h3>${PEN_BOX[key].label}</h3>`+
+    `<span class="play-meta">${PEN_MOVABLE[key] ? `${f(c.p0[1])} → ${f(c.p3[1])} · ` : ''}`+
+    `(${f(c.h1[0]*100)}, ${f(c.h1[1])}) · (${f(c.h2[0]*100)}, ${f(c.h2[1])})</span></div>`+
+    penSvg(key);
+}
+/* dragging: the SVG is redrawn under the pointer, so the drag is tracked on the
+   host, which stays put */
+function penBind(key){
+  const host=document.getElementById(`h245-pen-${key}`);
+  let drag=null;
+  const toPlot=e=>{
+    const svg=host.querySelector('svg'), pt=svg.createSVGPoint();
+    pt.x=e.clientX; pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    const box=PEN_BOX[key], W=340, H=230, padL=30, padR=10, padT=10, padB=24;
+    const x=(p.x-padL)/(W-padL-padR);
+    const v=box.hi - (p.y-padT)/(H-padT-padB)*(box.hi-box.lo);
+    return [Math.max(0, Math.min(1, x)), Math.max(box.lo, Math.min(box.hi, v))];
+  };
+  host.addEventListener('pointerdown', e=>{
+    const ds=e.target.dataset||{}, h=ds.h || (PEN_MOVABLE[key] && ds.a);
+    if(!h) return;
+    e.preventDefault();
+    drag=h;
+    host.setPointerCapture(e.pointerId);
+  });
+  host.addEventListener('pointermove', e=>{
+    if(!drag) return;
+    const c=h245[key], p=toPlot(e).map(v=>Math.round(v*10000)/10000);
+    if(drag in PEN_PAIR){
+      /* an end point moves only up and down, and carries its handle with it */
+      const box=PEN_BOX[key], dy=p[1]-c[drag][1], hk=PEN_PAIR[drag];
+      c[drag][1]=p[1];
+      c[hk][1]=Math.max(box.lo, Math.min(box.hi, Math.round((c[hk][1]+dy)*10000)/10000));
+    }else{
+      c[drag]=p;
+    }
+    h245Changed(key);
+    const r=host.querySelector(`[data-h="${drag}"].handle, [data-a="${drag}"].anchor`); if(r) r.classList.add('drag');
+  });
+  const end=e=>{
+    if(!drag) return;
+    drag=null;
+    try{ host.releasePointerCapture(e.pointerId); }catch(_){}
+    h245Save();
+    penDraw(key);
+  };
+  host.addEventListener('pointerup', end);
+  host.addEventListener('pointercancel', end);
+}
+let h245Raf=0;
+function h245Changed(key){
+  penDraw(key);
+  cancelAnimationFrame(h245Raf);
+  h245Raf=requestAnimationFrame(()=>{ h245Paint(); h245Card(); });
+}
+function h245Save(){
+  const pick=c=>({p0:c.p0, p3:c.p3, h1:c.h1, h2:c.h2});
+  try{ localStorage.setItem(H245_KEY, JSON.stringify({L:pick(h245.L), S:pick(h245.S)})); }catch(e){}
+}
+function h245Paint(){
+  if(mode!=='h245') return;
+  paintXs(h245Brand, h245Neutral);
+}
+function h245Card(){
+  const F=playF();
+  const rows=F.steps.map(step=>{
+    const t=step/1000, L=h245L(t), S=h245S(t), hex=hsl2hex(H245,S,L);
+    const ref=hsl2hex(H245, h245RefS(t), h245RefL(t));
+    return {step:String(step), orig:ref, hsl:hex, missing:false, dE_hsl:dEhex(ref,hex),
+            t, scale:step/10, H:H245, S, L};
+  });
+  const stops=[];
+  for(let i=0;i<40;i++){ const t=i/39; stops.push(`${hsl2hex(H245,h245S(t),h245L(t))} ${Math.round(10000*t)/100}%`); }
+  document.getElementById('h245-card').innerHTML = famCard({
+    name:'Brand 245', kind:'chromatic', theme:'both', hue:H245, rows,
+    gradient:`linear-gradient(to bottom, ${stops.join(', ')})`,
+    paramText:'pen curves vs formula'
+  }, ['Formula','Pen']);
+}
+let h245Built=false;
+function h245Ensure(){
+  if(h245Built) return;
+  h245Built=true;
+  h245.L=cloneCurve(H245_DEF.L); h245.S=cloneCurve(H245_DEF.S);
+  try{
+    const o=JSON.parse(localStorage.getItem(H245_KEY)||'null');
+    const okP=p=>Array.isArray(p) && p.length===2 && p.every(Number.isFinite) && p[0]>=0 && p[0]<=1;
+    for(const k of ['L','S']) if(o && o[k] && okP(o[k].h1) && okP(o[k].h2)){
+      h245[k].h1=[...o[k].h1]; h245[k].h2=[...o[k].h2];
+      /* only the movable end points are restored; the others stay where the build put them */
+      if(PEN_MOVABLE[k]) for(const a of ['p0','p3'])
+        if(o[k][a] && Number.isFinite(o[k][a][1])) h245[k][a][1]=o[k][a][1];
+    }
+  }catch(e){}
+  ['L','S'].forEach(k=>{ penDraw(k); penBind(k); });
+  h245Card();
+  document.getElementById('h245-reset').addEventListener('click', ()=>{
+    h245.L=cloneCurve(H245_DEF.L); h245.S=cloneCurve(H245_DEF.S);
+    try{ localStorage.removeItem(H245_KEY); }catch(e){}
+    penDraw('L'); penDraw('S'); h245Paint(); h245Card();
+  });
+  const copyBtn=document.getElementById('h245-copy');
+  copyBtn.addEventListener('click', async ()=>{
+    const r=v=>Math.round(v*1000)/1000;
+    const text=['L','S'].map(k=>`${k}: ends ${r(h245[k].p0[1])} → ${r(h245[k].p3[1])} · h1 (${r(h245[k].h1[0]*100)}, ${r(h245[k].h1[1])}) · h2 (${r(h245[k].h2[0]*100)}, ${r(h245[k].h2[1])})`).join('\n');
+    let ok=false;
+    try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){}
+    if(!ok){ window.prompt('Copy these values', text); return; }
+    copyBtn.textContent='Copied';
+    setTimeout(()=>{ copyBtn.textContent='Copy values'; }, 1400);
+  });
+}
 
 /* ---- mode switch ---- */
 /* Xsolla Palettes is the default; the choice is kept per viewer. */
 const MODE_KEY='xcf.mode';
 let mode='math';
 function applyMode(m, persist){
-  mode = m==='partner' ? 'partner' : 'math';
+  mode = (m==='partner' || m==='h245') ? m : 'math';
   document.querySelectorAll('[data-only]').forEach(el=>{ el.hidden = el.dataset.only!==mode; });
   /* the sidebar only shows when something in it does */
   const side=document.getElementById('side');
@@ -1465,9 +1698,17 @@ function applyMode(m, persist){
     b.setAttribute('aria-pressed', b.dataset.mode===mode ? 'true' : 'false'));
   if(persist){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
   document.body.classList.toggle('partner-on', mode!=='math');
+  document.body.classList.toggle('h245-on', mode==='h245');
   if(mode==='partner'){
+    moveStage('pc-canvas');
     partnerEnsure();
     paintPartner();
+    fitPartner();
+  }else if(mode==='h245'){
+    moveStage('h245-canvas');
+    partnerEnsure();          /* builds the frame's listeners once */
+    h245Ensure();
+    h245Paint();
     fitPartner();
   }else{
     render();
@@ -1674,7 +1915,7 @@ function renderPage(){
     if(m && m!==mode) applyMode(m, true);
   });
   let start='math';
-  try{ if(localStorage.getItem(MODE_KEY)==='partner') start='partner'; }catch(e){}
+  try{ const m=localStorage.getItem(MODE_KEY); if(m==='partner' || m==='h245') start=m; }catch(e){}
   applyMode(start, false);
 }
 

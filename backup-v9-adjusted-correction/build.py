@@ -1019,70 +1019,26 @@ def dip_shape_v7(t):
 # peaks at 75 (the light-end dip, as before), lifts hardest at 245, nearly
 # lets go at 290 and lifts a little again at 359.
 # Where w is positive it dips the light end exactly as before. Where it is
-# negative the ramp blends towards one fixed, simpler curve instead:
+# negative it lifts the dark end instead — not through the exponent, which is
+# pinned to black at t = 1 and so can only lift the darks by flattening the
+# middle into a plateau, but by taking a share off the darkness:
 #
-#     L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·T(t),   s = min(1, λ·|w|)
-#     T(t)   = 100·(1 − t) / √(1 − 0.97·t)
+#     L(t,H) = 100 − 100·t^0.84·(1 + λ·w·u(t)),   u(t) = t·(1 − t⁶)   w < 0
 #
-# T is the lightness drawn on the (since removed) Hue 245 tab: nearly straight
-# through the lights and mids, bending down only at the dark end. With 1 in
-# place of 0.97 it is exactly 100·√(1 − t) (rms 1.6 L against the drawing), but
-# that meets black vertically; 0.97 gives the end a finite slope and moves the
-# mids by 1–3 L. Both curves run 100 → 0 and only fall, so every blend of them
-# does too — no limit needed. λ 2.5 puts the brand trough (w −0.4) fully on it.
-# (This replaced a lift along 2t·(1 − t⁴) plus a light-end ease, which drew a
-# double wave.)
+# u grows with t, so the lights barely move and the darks move most, and the
+# (1 − t⁶) hands the share back just past step 900, so the ramp still runs all
+# the way from 100 to 0. It keeps falling everywhere while λ·|w| < 0.93.
 ADJ_KNOTS_V7 = [(75.0, 1.0), (245.0, -0.4), (290.0, -0.05), (359.0, -0.1)]
-ADJ_LIFT_V7 = 2.5          # λ — s = 1 at the 245 trough
-ADJ_SOFT_V7 = 0.97         # 1 would be √(1 − t), which ends vertically
+ADJ_LIFT_V7 = 0.7          # λ — up to 0.17 of the darkness gone on the 245 trough
 
-def lift_target_v7(t):
-    return 100.0 * (1.0 - t) / math.sqrt(1.0 - ADJ_SOFT_V7 * t)
+def lift_shape_v7(t):
+    """0 at both ends of the scale, most of the way up by the dark steps."""
+    return t * (1.0 - t ** 6)
 
-# Brand saturation takes the correction too. Where w is negative the shared
-# Hill switches later, drops deeper and turns more gently, each in proportion
-# to a = w²/0.4 — at hue 245 (w −0.4, a 0.4) that is knee 0.62, drop 55.6,
-# order 4.4, the fit to the Hue 245 pen curve (rms 1.8 S):
-#     S(t) = 100 − D·r/(1 + r),  r = (t/k)ⁿ
-#     k = 1/3 + 0.72·a,  D = 30 + 64·a,  n = 6 − 4·a
-# a grows from 0 with zero slope, so S changes smoothly across hue where w
-# crosses 0 (a = |w| left a corner there); small weights take less of it.
-ADJ_S_KNEE_V7 = 0.72
-ADJ_S_DROP_V7 = 64.0
-ADJ_S_ORDER_V7 = 4.0
-ADJ_S_REF_V7 = 0.4           # a = w²/0.4 equals |w| at the 245 trough
-
-def S_brand_v7(t, H, adjusted):
-    """Brand saturation: the shared Hill, reshaped where the adjusted weight is negative."""
-    w = hue_weight_v7(H, True) if adjusted else 0.0
-    if w >= 0.0:
-        return S_v7(t)
-    a = w * w / ADJ_S_REF_V7
-    k = S_KNEE_V7 + ADJ_S_KNEE_V7 * a
-    r = (t / k) ** (S_ORDER_V7 - ADJ_S_ORDER_V7 * a)
-    return clamp(100.0 - (S_DROP_V7 + ADJ_S_DROP_V7 * a) * r / (1.0 + r), 0.0, 100.0)
-# The neutrals have their own curve — same half-cosine form, five points, much
-# smaller weights, since they are near grey — with their own lift and an overall
-# strength on top. Both are fixed here; the page's editor for this one is hidden.
-ADJ_NEUTRAL_KNOTS_V7 = [(140.0, 0.1), (190.0, 0.0), (240.0, -0.1), (290.0, -0.05), (359.0, -0.05)]
-ADJ_NEUTRAL_LIFT_V7 = 0.7
-ADJ_NEUTRAL_V7 = 1.0
-
-# (points, lift, strength) for each adjusted ramp
-BRAND_CURVE_V7 = (ADJ_KNOTS_V7, ADJ_LIFT_V7, 1.0)
-NEUTRAL_CURVE_V7 = (ADJ_NEUTRAL_KNOTS_V7, ADJ_NEUTRAL_LIFT_V7, ADJ_NEUTRAL_V7)
-
-def lift_blend_v7(w, curve):
-    """How far a negative weight moves the ramp onto T(t): 0 → 1."""
-    return min(1.0, -curve[1] * w) if w < 0.0 else 0.0
-
-def hue_weight_v7(H, adjusted=False, curve=BRAND_CURVE_V7):
+def hue_weight_v7(H, adjusted=False):
     if not adjusted:
         return hue_light_weight_v5(H)
-    return curve[2] * adj_curve_v7(H, curve[0])
-
-def adj_curve_v7(H, knots):
-    k = sorted(knots)
+    k = ADJ_KNOTS_V7
     for n in range(len(k)):
         (h0, w0), (h1, w1) = k[n], k[(n + 1) % len(k)]
         span = (h1 - h0) % 360.0
@@ -1091,24 +1047,24 @@ def adj_curve_v7(H, knots):
             return w1 + (w0 - w1) * (1.0 + math.cos(math.pi * x)) / 2.0
     return 0.0
 
-def L_exponent_v7(t, H=None, adjusted=False, curve=BRAND_CURVE_V7):
+def L_exponent_v7(t, H=None, adjusted=False):
     """The exponent at this point on the scale — v5's bent q, done by hand."""
     if H is None:
         return P_BASE_V7
-    w = hue_weight_v7(H, adjusted, curve)
+    w = hue_weight_v7(H, adjusted)
     if w < 0.0:
-        return P_BASE_V7            # a negative weight blends in L_v7 instead
+        return P_BASE_V7            # the dark-end lift is applied in L_v7
     return P_BASE_V7 - DIP_V7 * w * dip_shape_v7(t)
 
-def L_v7(t, H=None, adjusted=False, curve=BRAND_CURVE_V7):
+def L_v7(t, H=None, adjusted=False):
     if t <= 0.0:
         return 100.0
-    L = 100.0 - 100.0 * t ** L_exponent_v7(t, H, adjusted, curve)
+    dark = t ** L_exponent_v7(t, H, adjusted)
     if adjusted and H is not None:
-        s_ = lift_blend_v7(hue_weight_v7(H, True, curve), curve)
-        if s_ > 0.0:                # adjusted only: blend towards T(t)
-            L = (1.0 - s_) * L + s_ * lift_target_v7(t)
-    return L
+        w = hue_weight_v7(H, True)
+        if w < 0.0:
+            dark *= 1.0 + ADJ_LIFT_V7 * w * lift_shape_v7(t)   # adjusted only: lift the darks
+    return 100.0 - 100.0 * dark
 
 # The light ramp never reaches neutral grey: the palette holds ~2 points of tint
 # at its darkest step, where L/10 alone has already fallen to 0.85. The slope was
@@ -1119,19 +1075,10 @@ NEUTRAL_S_FLOOR_V7 = 0.7
 def neutral_S_v7(theme, L):
     return L / 10.0 + NEUTRAL_S_FLOOR_V7 if theme == "light" else 22.0 - L / 9.0
 
-def L_args_v7(kind, hue, adjusted):
-    """(H, curve) for the lightness: chromatic ramps always carry their hue;
-    neutrals only in the adjusted correction, on the neutral curve."""
-    if kind == "chromatic":
-        return hue, BRAND_CURVE_V7
-    return (hue, NEUTRAL_CURVE_V7) if adjusted else (None, BRAND_CURVE_V7)
-
 def sample_hex_v7(kind, hue, theme, t, semantic=False, adjusted=False):
-    H_for_L, k = L_args_v7(kind, hue, adjusted)
-    L = L_v7(t, H_for_L, adjusted, k)
+    L = L_v7(t, hue if kind == "chromatic" else None, adjusted)
     if kind == "chromatic":
-        S = S_v7(t, hue) if semantic else S_brand_v7(t, hue, adjusted)
-        return hsl2hex(hue, S, L)
+        return hsl2hex(hue, S_v7(t, hue if semantic else None), L)
     return hsl2hex(hue, neutral_S_v7(theme, L), L)
 
 def gradient_css_v7(kind, hue, theme, n=40, semantic=False, adjusted=False):
@@ -1153,19 +1100,19 @@ def curve_samples_v7(kind="chromatic", theme="both", H=None, n=64, semantic=Fals
 def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, group="",
                     adjusted=False):
     rows, positions = [], []
-    H_for_L, k = L_args_v7(kind, hue, adjusted)
+    H_for_L = hue if kind == "chromatic" else None
     sem = name in SEMANTIC_V7
-    w = hue_weight_v7(hue, adjusted, k) if H_for_L is not None else 0.0
+    w = hue_weight_v7(hue, adjusted) if kind == "chromatic" else 0.0
     dip = round(DIP_V7 * max(w, 0.0), 4)
-    lift = round(lift_blend_v7(w, k), 3) if w < 0.0 else None   # the blend s
+    lift = round(-ADJ_LIFT_V7 * w, 3) if w < 0.0 else None   # λ·|w|, the multiplier on u(t)
     v5_by_step = {r["step"]: r["hsl"] for r in v5_rows}
     d5 = []
     for key in step_keys:
         t = step_to_t_v5(key)
         positions.append(t)
         gen = sample_hex_v7(kind, hue, theme, t, sem, adjusted)
-        L = L_v7(t, H_for_L, adjusted, k)
-        S = ((S_v7(t, hue) if sem else S_brand_v7(t, hue, adjusted)) if kind == "chromatic"
+        L = L_v7(t, H_for_L, adjusted)
+        S = (S_v7(t, hue if sem else None) if kind == "chromatic"
              else neutral_S_v7(theme, L))
         ref = v5_by_step.get(key)
         e5 = round(dE(ref, gen), 2) if ref else None
@@ -1179,7 +1126,7 @@ def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, group=
                 "L": round(L, 2),
                 "S": round(S, 2),
                 "H": round(hue, 1),
-                "e": round(L_exponent_v7(t, H_for_L, adjusted, k), 3),
+                "e": round(L_exponent_v7(t, H_for_L, adjusted), 3),
                 "dE_v5": e5,
             }),
         })
@@ -1202,11 +1149,7 @@ def build_v7(v5):
             "p_base": P_BASE_V7, "dip": DIP_V7, "dip_c": DIP_C_V7,
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "adj_knots": [[h, round(w, 6)] for h, w in ADJ_KNOTS_V7],
-            "adj_lift": ADJ_LIFT_V7, "adj_soft": ADJ_SOFT_V7,
-            "adj_s_knee": ADJ_S_KNEE_V7, "adj_s_drop": ADJ_S_DROP_V7,
-            "adj_s_order": ADJ_S_ORDER_V7, "adj_s_ref": ADJ_S_REF_V7,
-            "adj_n_knots": [[h, round(w, 6)] for h, w in ADJ_NEUTRAL_KNOTS_V7],
-            "adj_n_lift": ADJ_NEUTRAL_LIFT_V7, "adj_neutral": ADJ_NEUTRAL_V7,
+            "adj_lift": ADJ_LIFT_V7,
             "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
             "S_order": S_ORDER_V7,
             "S_ui_drop": S_UI_DROP_V7, "S_ui_knee": round(S_UI_KNEE_V7, 6),
@@ -1235,8 +1178,8 @@ def build_v7(v5):
         },
     }
 
-    # The adjusted correction is for the brand colours and the neutrals, so those
-    # get a second set of cards; the page swaps them in when its switch says Adjusted.
+    # The adjusted correction is for the brand colours, so only that group gets a
+    # second set of cards; the page swaps them in when its switch says Adjusted.
     out["families_adjusted"] = []
     for group, fams in GROUPS_V7:
         for fam in fams:
@@ -1255,9 +1198,6 @@ def build_v7(v5):
         out["families"].append(build_family_v7(
             "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
             v5_fam[("Neutral", theme)], "Neutrals"))
-        out["families_adjusted"].append(build_family_v7(
-            "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
-            v5_fam[("Neutral", theme)], "Neutrals", adjusted=True))
 
     rows = [r for f in out["families"] for r in f["rows"]]
     d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]
@@ -1302,7 +1242,7 @@ def main():
             print("vs v5:", out["v7"]["vs_v5"], " vs current:", out["v7"]["vs_current"])
             for f in out["v7"]["families_adjusted"]:
                 dh = [r["dE_hsl"] for r in f["rows"] if r["dE_hsl"] is not None]
-                print(f"adjusted {f['name']+'·'+f['theme']:<14} w {hue_weight_v7(f['hue'], True, BRAND_CURVE_V7 if f['kind'] == 'chromatic' else NEUTRAL_CURVE_V7):+.3f}  mean ΔE {sum(dh)/len(dh):.2f}  L",
+                print(f"adjusted {f['name']:<8} w {hue_weight_v7(f['hue'], True):+.3f}  mean ΔE {sum(dh)/len(dh):.2f}  L",
                       [r["hsl_hsl"][2] for r in f["rows"]])
             print("dip per family:", {f["name"]: f["dip"] for f in out["v7"]["families"]
                                       if f["kind"] == "chromatic"})

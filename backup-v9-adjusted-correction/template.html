@@ -213,8 +213,8 @@ footer b{color:var(--ink);font-weight:500}
    as a palette card — two of the three columns, third left empty. */
 .playground{display:grid;gap:4px;align-items:stretch;margin:0 0 44px;
             grid-template-columns:repeat(auto-fill,minmax(max(300px,(100% - 8px)/3),1fr))}
-/* …and where the cards come in sets of three, each set starts its own row. */
-.playground--pairs > :nth-child(3n+1){grid-column:1}
+/* …and where the cards come in pairs, each pair starts its own row. */
+.playground--pairs > :nth-child(odd){grid-column:1}
 /* Probe cards read as the same bare plates as the family cards — no frame,
    no radius, no rule under the head. */
 .play-card .play-head{display:flex;flex-direction:column;gap:10px;
@@ -375,7 +375,7 @@ body.partner-on{overflow:hidden}
 .xs-widgets{display:flex;flex-direction:column;gap:4px}
 .xs-widget{display:flex}
 .xs-widget__ico{flex:0 0 52px;height:52px;display:flex;align-items:center;justify-content:center;
-                background:var(--n800)}   /* drawn #253536 — N800 is the nearest step */
+                background:#253536}
 /* Figma strokes sit inside the frame, so the padding gives up the border's pixel */
 .xs-widget__main{flex:1 1 auto;display:flex;align-items:center;gap:12px;padding:7px 11px;
                  background:var(--n850);border:1px solid var(--n850)}
@@ -383,9 +383,9 @@ body.partner-on{overflow:hidden}
 .xs-widget__main .m{font-weight:500}
 .xs-widget__main .sub{color:var(--n400)}
 .xs-switch{flex:0 0 40px;height:24px;padding:4px;display:flex;background:var(--n700)}
-.xs-switch i{width:16px;height:16px;background:var(--n400)}
+.xs-switch i{width:16px;height:16px;background:var(--n25)}
 .xs-switch.on{justify-content:flex-end;background:var(--b700)}
-.xs-switch.on i{background:var(--b300)}
+.xs-switch.on i{background:var(--b400)}
 .xs-foot{display:flex;flex-direction:column;gap:20px;padding-top:24px}
 .xs-chat{width:40px;height:40px;display:flex;align-items:center;justify-content:center;
          background:var(--wash);border:1px solid var(--line)}
@@ -435,9 +435,10 @@ body.partner-on{overflow:hidden}
     <button type="button" class="seg__opt" data-mode="math" aria-pressed="true">Xsolla Palettes</button>
     <button type="button" class="seg__opt" data-mode="partner" aria-pressed="false">Partner Customisation</button>
   </div>
+  <span class="appbar__ctx">Xsolla Colour Formulas</span>
   <span class="appbar__spacer"></span>
   <div class="seg" id="corr-switch" role="group" aria-label="Brand hue correction">
-    <button type="button" class="seg__opt" data-corr="current" aria-pressed="false">Match current</button>
+    <button type="button" class="seg__opt" data-corr="current" aria-pressed="false">Current</button>
     <button type="button" class="seg__opt" data-corr="adjusted" aria-pressed="true">Adjusted</button>
   </div>
 </header>
@@ -470,24 +471,17 @@ body.partner-on{overflow:hidden}
     <label class="link-ctl"><input type="checkbox" id="pc-link" checked> Move both hues together</label>
     <button type="button" class="btn" id="pc-reset">Reset to Xsolla</button>
   </div>
-  <!-- The neutral curve editor, hidden now the values are settled. Remove
-       `hidden` to bring it back; while hidden, saved edits are ignored. -->
-  <section class="adj" id="adj" hidden>
-    <h2>Neutral correction</h2>
-    <p>The adjusted hue curve for the neutrals: a smooth wave through five
-       points. Positive weight darkens the light end, negative lifts the dark
-       end. The brand colours keep their own built curve.</p>
+  <section class="adj" id="adj">
+    <h2>Adjusted correction</h2>
+    <p>The brand hue curve: a smooth wave through four points. Positive weight
+       darkens the light end, negative lifts the dark end.</p>
     <p class="adj__off" id="adj-off">Switch the app bar to <b>Adjusted</b> to edit.</p>
     <fieldset class="adj__form" id="adj-form">
       <div class="adj__row adj__row--head"><span></span><span>Hue °</span><span>Weight</span></div>
       <div id="adj-points"></div>
       <div class="adj__row adj__row--lift">
         <label for="adj-lift">Lift strength</label><span></span>
-        <input id="adj-lift" type="number" min="0" max="5" step="0.05" inputmode="decimal">
-      </div>
-      <div class="adj__row">
-        <label for="adj-neutral">Strength</label><span></span>
-        <input id="adj-neutral" type="number" min="0" max="2" step="0.05" inputmode="decimal">
+        <input id="adj-lift" type="number" min="0" max="2" step="0.05" inputmode="decimal">
       </div>
       <p class="adj__err" id="adj-err" hidden></p>
       <div class="adj__btns">
@@ -696,7 +690,7 @@ function renderFormula(){
   const VD=ALL.v7, F=ALL.v7.formula;
   const hueW = adjusted()
 ? `${K('// hue weight, adjusted — brand colours · one smooth curve through')}
-${K('// '+knotStr(F.adj_knots)+', a half-cosine between each pair')}
+${K('// '+adjKnotsSorted().map(([h,w])=>`(${h}, ${numStr(w)})`).join(' · ')+', a half-cosine between each pair')}
 x    = ${V('(H − H₀) / (H₁ − H₀)')}
 w(H) = ${V('w₁ + (w₀ − w₁)·(1 + cos(π·x)) / 2')}
 `
@@ -710,19 +704,14 @@ ${K('// lightness')}
 b(t) = ${V('4c·t / (t + c)²')},  c = ${V('0.09')}   ${K('a bell · 0 at t=0 · 1 at t=c')}
 ${adjusted()
 ? `e(t) = ${V('0.84 − 0.20·w·b(t)')}   if w ≥ 0   ${K('dips the light end')}
-L(t,H) = ${V('(1 − s)·(100 − 100·t^0.84) + s·T(t)')}   if w < 0
-T(t) = ${V(`100·(1 − t) / √(1 − ${numStr(F.adj_soft)}·t)`)}   ${K('≈ 100·√(1 − t), finite at the end')}
-s = ${V(`min(1, ${numStr(F.adj_lift)}·|w|)`)}               ${K('1 on the 245 trough')}
-u(t) = ${V('2t·(1 − t⁴)')}                   ${K('0 at both ends')}`
+L(t,H) = ${V(`100 − 100·t^0.84·(1 + ${numStr(F.adj_lift)}·w·u)`)}   if w < 0   ${K('lifts the dark end')}
+u(t) = ${V('t·(1 − t⁶)')}                    ${K('0 at both ends · still 100 → 0')}`
 : `e(t) = ${V('0.84 − 0.20·w(H)·b(t)')}       ${K('dips where the light steps are')}`}
 L(t,H) = ${V('100 − 100·t^e(t)')}          ${K('both ends pin themselves')}
 
 ${K('// saturation and hue')}
 r(t) = ${V('(3t)⁶')}                        ${K('1 at the knee · t = 1/3')}
-S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}${adjusted() ? `
-${K('// brand, w < 0 — the same switch, later, deeper and gentler by a = w²/0.4')}
-S(t) = ${V('100 − D·r/(1 + r)')},  r = ${V('(t/k)ⁿ')}
-k = ${V(`1/3 + ${numStr(playF().adj_s_knee)}·a`)},  D = ${V(`30 + ${numStr(playF().adj_s_drop)}·a`)},  n = ${V(`6 − ${numStr(playF().adj_s_order)}·a`)}` : ''}
+S(t) = ${V('100 − 30·r/(1 + r)')}           ${K('100 → 70, one curve, every hue')}
 H(t) = ${V('H₀')}
 
 ${K('// UI families — Pulse · Flash · Pink')}
@@ -732,10 +721,7 @@ u(t) = ${V('(1.6t)³')}                      ${K('1 at the knee · t = 5/8')}
 S(t) = ${V('100 − 106·g·u/(1 + u)')}        ${K('the same switch, three numbers')}
 
 ${K('// neutrals')}
-${adjusted() ? `${K('// neutrals: the same form on their own curve')}
-${K('// '+knotStr(F.adj_n_knots))}
-${K(`// lift ${numStr(F.adj_n_lift)} · strength ${numStr(F.adj_neutral)}`)}
-` : ''}neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
+neutral·lt  hsl(  ${V('75')}, L/10 + 0.7,  L )
 neutral·dk  hsl( ${V('190')}, 22 − L/9,    L )
 
 ${K('// named tokens sample the scale')}
@@ -817,7 +803,7 @@ function famCard(f){
      already answers for it. */
   const showLift = f.kind==='neutral';
   const param = f.kind==='grey' ? 'achromatic'
-    : f.lift!=null ? `H₀ ${f.hue} · √ blend ${Number(f.lift).toFixed(2)}`
+    : f.lift!=null ? `H₀ ${f.hue} · lift ${Number(f.lift).toFixed(2)}·u`
     : `H₀ ${f.hue} · dip ${Number(f.dip).toFixed(2)}`;
   const grad = f.gradient;
   const n = f.rows.length;
@@ -861,7 +847,7 @@ function render(){
   };
   document.getElementById('g-brand').innerHTML = brandFamilies().map(famCard).join('');
   put('g-semantic', f=>f.group==='UI (Semantic)');
-  document.getElementById('g-theme').innerHTML = neutralFamilies().map(famCard).join('');
+  put('g-theme',    f=>f.kind==='neutral');
 }
 
 
@@ -899,19 +885,16 @@ function hsl2hex(h,s,l){
 /* Adjusted (the default, brand colours only) swaps the lobe for one smooth curve
    round the wheel that goes negative on the blues, which the current curve
    leaves reading far too dark. */
-/* the two adjusted curves: points, lift and an overall strength */
-const brandCurve   = (F=playF())=> ({knots:F.adj_knots,   lift:F.adj_lift,   k:1});
-const neutralCurve = (F=playF())=> ({knots:F.adj_n_knots, lift:F.adj_n_lift, k:F.adj_neutral});
-function hueWeight(H, F, adj=false, cv=brandCurve(F)){
+function hueWeight(H, F, adj=false){
   if(H==null) return 0;
   const delta=((H-F.L_peak_hue+180)%360+360)%360-180;
   if(adj){
     /* half-cosines between consecutive (hue, weight) points — flat at every join */
-    const pts=sortKnots(cv.knots), m=(v)=>((v%360)+360)%360;
-    for(let n=0;n<pts.length;n++){
-      const [h0,w0]=pts[n], [h1,w1]=pts[(n+1)%pts.length];
+    const k=adjKnotsSorted(F), m=(v)=>((v%360)+360)%360;
+    for(let n=0;n<k.length;n++){
+      const [h0,w0]=k[n], [h1,w1]=k[(n+1)%k.length];
       const x=m(H-h0)/m(h1-h0);
-      if(x<=1) return cv.k*(w1 + (w0-w1)*(1+Math.cos(Math.PI*x))/2);
+      if(x<=1) return w1 + (w0-w1)*(1+Math.cos(Math.PI*x))/2;
     }
     return 0;
   }
@@ -920,26 +903,20 @@ function hueWeight(H, F, adj=false, cv=brandCurve(F)){
   const c=Math.cos(Math.PI/2*d);
   return c*c;
 }
-/* how far a negative weight moves the ramp onto T(t) */
-const liftBlend = (w, cv) => w<0 ? Math.min(1, -cv.lift*w) : 0;
-function Lplay(t, H, F, corr, adj=false, cv=brandCurve(F)){
+function Lplay(t, H, F, corr, adj=false){
   if(t<=0) return F.L0;
   /* the exponent goes straight into the power law */
-  let L=F.L0 - F.L_range*Math.pow(t, Qplay(t,H,F,corr,adj,cv));
-  /* adjusted, negative weight: blend towards T(t) = 100·(1 − t)/√(1 − 0.97t), a
-     √-like curve with a finite end — both fall 100 → 0, so every blend does too */
-  if(adj){
-    const sb=liftBlend(hueWeight(H,F,true,cv), cv);
-    if(sb>0) L = (1-sb)*L + sb*100*(1-t)/Math.sqrt(1 - F.adj_soft*t);
-  }
-  return L;
+  let dark=Math.pow(t, Qplay(t,H,F,corr,adj));
+  /* adjusted, negative weight: take a share off the darkness along
+     u(t) = t·(1 − t⁶) — grows into the darks so they lift most, hands the share
+     back just past 900 so the ramp still ends at 0, and never flattens */
+  if(adj){ const w=hueWeight(H,F,true); if(w<0) dark *= 1 + F.adj_lift*w*t*(1 - Math.pow(t,6)); }
+  return F.L0 - F.L_range*dark;
 }
 /* local exponent of the ramp at t — the curve the dip actually reshapes */
-function Qplay(t, H, F, corr, adj=false, cv=brandCurve(F)){
-  const w=hueWeight(H,F,adj,cv);
-  /* negative weight: the same bell flipped, easing the light end; the dark-end
-     lift is applied in Lplay */
-  if(w<0) return F.p_base;
+function Qplay(t, H, F, corr, adj=false){
+  const w=hueWeight(H,F,adj);
+  if(w<0) return F.p_base;     /* the dark-end lift is applied in Lplay */
   return F.p_base - F.dip*w*dipShape(t,F)*(corr==null ? 1 : corr);
 }
 /* how much of the UI drop a hue takes — 1 away from the lobe, 0.2 at its centre */
@@ -949,15 +926,6 @@ function sGain(H, F){
   if(d>=1) return 1;
   const c=Math.cos(Math.PI/2*d);
   return 1 - F.S_ui_cut*c*c;
-}
-/* Brand saturation: the shared Hill, switching later, dropping deeper and
-   turning more gently where the adjusted weight is negative. */
-function Sbrand(t, F, H, adj){
-  const w = adj ? hueWeight(H,F,true) : 0;
-  if(w>=0) return Splay(t,F);
-  const a=w*w/F.adj_s_ref, k=F.S_knee + F.adj_s_knee*a;   /* w² — no corner where w crosses 0 */
-  const r=Math.pow(t/k, F.S_order - F.adj_s_order*a);
-  return Math.max(0, Math.min(100, 100 - (F.S_drop + F.adj_s_drop*a)*r/(1 + r)));
 }
 function Splay(t,F,uiHue){
   /* Hill switch: flat on 100 below the knee, flat on the floor above it.
@@ -1012,7 +980,7 @@ function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null, adj=false){
     ${yLabels}${xLabels}
     <text class="title" x="${padL}" y="${padT-3}">L</text>
     <text class="title" x="${W-padR}" y="${H-6}" text-anchor="end">scale 0 → 100</text>
-    <path class="S" d="${path(t=> uiHue==null ? Sbrand(t,F,hue,adj) : Splay(t,F,uiHue))}"/>
+    <path class="S" d="${path(t=>Splay(t,F,uiHue))}"/>
     <path class="L" d="${path(t=>Lplay(t,hue,F,corr,adj))}"/>`;
 }
 
@@ -1020,11 +988,10 @@ function playCurvesSvg(F, corr, H=300, hue=75, uiHue=null, adj=false){
    w(H) is the bell that scales the lightness dip; on the UI card g(H), the
    saturation gain, rides the same 0–1 axis. The strip under the axis is the
    wheel itself, and the dashed rule is where the slider sits. */
-function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
-                    wFn=h=>hueWeight(h,F,adj), sFn=h=> ui ? sGain(h,F) : Sbrand(1,F,h,adj)/100, cv=brandCurve(F)){
+function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false){
   const W=380, padL=34, padR=32, padT=14, padB=38;
   const plotW=W-padL-padR, plotH=H-padT-padB;
-  const lo = adj ? Math.min(-0.5, Math.floor(Math.min(...cv.knots.map(k=>cv.k*k[1]))*4)/4) : 0;
+  const lo = adj ? Math.min(-0.5, Math.floor(Math.min(...F.adj_knots.map(k=>k[1]))*4)/4) : 0;
   const xOf=h=> padL + h/360*plotW;
   const yOf=v=> padT + (1 - v)/(1 - lo)*plotH;
 
@@ -1047,7 +1014,7 @@ function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
   const stops=[];
   for(let h=0;h<=360;h+=30) stops.push(`<stop offset="${(h/360).toFixed(4)}" stop-color="${hsl2hex(h,70,55)}"/>`);
 
-  const x=xOf(hue), w=wFn(hue);
+  const x=xOf(hue), w=hueWeight(hue,F,adj), g=sGain(hue,F);
   return `<defs><linearGradient id="${id}-wheel" x1="0" x2="1" y1="0" y2="0">${stops.join('')}</linearGradient></defs>
     ${grid}
     <line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}"/>
@@ -1058,9 +1025,9 @@ function playHueSvg(F, H=300, hue=75, ui=false, id='play', adj=false,
     <text class="title" x="${padL}" y="${padT-3}">weight</text>
     <text class="title" x="${W-padR}" y="${H-4}" text-anchor="end">hue 0 → 360</text>
     <line class="marker" x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}"/>
-    <path class="S" d="${path(sFn)}"/>
-    <path class="L" d="${path(wFn)}"/>
-    <circle class="dot S" cx="${x}" cy="${yOf(sFn(hue))}" r="3.5"/>
+    ${ui ? `<path class="S" d="${path(h=>sGain(h,F))}"/>` : ''}
+    <path class="L" d="${path(h=>hueWeight(h,F,adj))}"/>
+    ${ui ? `<circle class="dot S" cx="${x}" cy="${yOf(g)}" r="3.5"/>` : ''}
     <circle class="dot L" cx="${x}" cy="${yOf(w)}" r="3.5"/>`;
 }
 
@@ -1076,13 +1043,13 @@ function updatePlayground(key){
   const rows=F.steps.map(step=>{
     const t=step/1000;
     const L=Lplay(t, hue, F, corr, adj);
-    const S=P.ui ? Splay(t, F, uiHue) : Sbrand(t, F, hue, adj);
+    const S=Splay(t, F, uiHue);
     return {step, L, S, hex:hsl2hex(hue, S, L)};
   });
   const gradStops=[];
   for(let i=0;i<48;i++){
     const t=i/47;
-    gradStops.push(`${hsl2hex(hue, P.ui ? Splay(t,F,uiHue) : Sbrand(t,F,hue,adj), Lplay(t,hue,F,corr,adj))} ${(100*t).toFixed(2)}%`);
+    gradStops.push(`${hsl2hex(hue, Splay(t,F,uiHue), Lplay(t,hue,F,corr,adj))} ${(100*t).toFixed(2)}%`);
   }
   const body=rows.map((r,i)=>
     `<span class="st" style="grid-row:${i+1};grid-column:1">${r.step}</span>`+
@@ -1095,7 +1062,7 @@ function updatePlayground(key){
     `title="Playground continuous scale"></div>`;
   document.getElementById(id+'-hue-val').textContent  = hue+'°';
   document.getElementById(id+'-stats').textContent =
-    (w<0 ? `w ${w.toFixed(2)} · √ blend ${liftBlend(w, brandCurve(F)).toFixed(2)}` : `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`).replace(/-/g,'−')+
+    (w<0 ? `w ${w.toFixed(2)} · lift ${(-F.adj_lift*w).toFixed(2)}·u` : `w ${w.toFixed(2)} · dip ${(F.dip*w).toFixed(2)}`).replace(/-/g,'−')+
     (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
 
   const psvg=document.getElementById(id+'-svg');
@@ -1106,8 +1073,7 @@ function updatePlayground(key){
   const hsvg=document.getElementById(id+'-hue-svg');
   hsvg.innerHTML = playHueSvg(F, fitSvg(hsvg), hue, P.ui, id, adj);
   document.getElementById(id+'-hue-meta').textContent =
-    `H ${hue}° · w ${w.toFixed(2).replace('-','−')}` +
-    (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : ` · S end ${Sbrand(1,F,hue,adj).toFixed(0)}`);
+    `H ${hue}° · w ${w.toFixed(2).replace('-','−')}` + (P.ui ? ` · g ${sGain(hue,F).toFixed(2)}` : '');
 }
 
 function renderPlayground(key){
@@ -1160,7 +1126,7 @@ function renderPlayground(key){
           </div>
           <div class="curves__legend">
             <span><i class="L"></i>w · L dip</span>
-            ${P.ui ? '<span><i class="S"></i>g · S gain</span>' : '<span><i class="S"></i>S at 100 ÷ 100</span>'}
+            ${P.ui ? '<span><i class="S"></i>g · S gain</span>' : ''}
           </div>
         </div>
         <div class="play-curves__body">
@@ -1177,11 +1143,6 @@ function renderPlayground(key){
 
 
 /* ---------- neutrals: functions and playgrounds ---------- */
-/* Neutral lightness: the unbent power law, or — with the adjusted correction —
-   the same hue curve as the brand colours at the neutral strength. */
-function neutralL(t, hue, F=playF()){
-  return adjusted() ? Lplay(t, hue, F, PLAY_CORR, true, neutralCurve(F)) : Lplay(t, null, F, 0);
-}
 function neutralS(theme, L){
   /* the light ramp keeps a floor of tint — it never reaches neutral grey */
   return theme==='light' ? L/10 + 0.7 : 22 - L/9;
@@ -1199,7 +1160,7 @@ function neutralSvg(F, hue, theme, H=300){
   for(let i=0;i<=N;i++) ts.push(i/N);
   const path=(fn,map)=> ts.map((t,i)=>
     `${i===0?'M':'L'}${xOf(t).toFixed(2)} ${(map||yOf)(fn(t)).toFixed(2)}`).join(' ');
-  const Lb=t=> neutralL(t, hue, F);
+  const Lb=t=> Lplay(t, null, F, 0);         /* neutrals ride the unbent power law */
 
   const yTicks=[0,25,50,75,100], xTicks=[0,.25,.5,.75,1];
   const grid = yTicks.map(v=>
@@ -1230,13 +1191,13 @@ function updateNeutralTheme(theme){
   const steps=(ALL.v7.families.find(f=>f.kind==='neutral')||{rows:[]}).rows.map(r=>r.step);
   const rows=steps.map(step=>{
     const t=Number(step)/1000;
-    const L=neutralL(t, hue, F);
+    const L=Lplay(t, null, F, 0);
     const S=neutralS(theme, L);
     return {step, L, S, hex:hsl2hex(hue,S,L), lift:perceptualLift(hue,S,L)};
   });
   const stops=[];
   for(let i=0;i<40;i++){
-    const t=i/39, L=neutralL(t,hue,F);
+    const t=i/39, L=Lplay(t,null,F,0);
     stops.push(`${hsl2hex(hue, neutralS(theme,L), L)} ${(100*t).toFixed(2)}%`);
   }
   const body=rows.map((r,i)=>
@@ -1254,18 +1215,7 @@ function updateNeutralTheme(theme){
     `S ${rows[0].S.toFixed(1)}→${rows[rows.length-1].S.toFixed(1)}`;
   const nsvg=document.getElementById(`nplay-${theme}-svg`);
   nsvg.innerHTML = neutralSvg(F, hue, theme, fitSvg(nsvg));
-  const wn = adjusted() ? hueWeight(hue,F,true,neutralCurve(F)) : 0;
-  document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`
-    + (adjusted() ? ` · w ${wn.toFixed(2).replace('-','−')}` : '');
-
-  /* the neutral curve's weight round the wheel, and where S ends at each hue */
-  const cv=neutralCurve(F);
-  const wFn=h=> adjusted() ? hueWeight(h,F,true,cv) : 0;
-  const sFn=h=> neutralS(theme, neutralL(1,h,F))/100;
-  const hsvg=document.getElementById(`nplay-${theme}-hue-svg`);
-  hsvg.innerHTML = playHueSvg(F, fitSvg(hsvg), hue, false, `nplay-${theme}`, adjusted(), wFn, sFn, cv);
-  document.getElementById(`nplay-${theme}-hue-meta`).textContent =
-    `H ${hue}° · w ${wn.toFixed(2).replace('-','−')} · S end ${(100*sFn(hue)).toFixed(1)}`;
+  document.getElementById(`nplay-${theme}-meta`).textContent = `H ${hue}° · p ${basePow(F)}`;
 }
 
 function neutralCardPair(theme, n){
@@ -1299,22 +1249,6 @@ function neutralCardPair(theme, n){
       <div class="play-curves__body">
         <svg class="curves__svg play-curves__svg" id="nplay-${theme}-svg" viewBox="0 0 380 300"
              role="img" aria-label="Neutral ${theme} lightness and saturation"></svg>
-      </div>
-    </article>
-    <article class="fam play-card play-curves">
-      <div class="play-head">
-        <div class="play-head__top">
-          <h3>Hue</h3>
-          <span class="play-meta" id="nplay-${theme}-hue-meta"></span>
-        </div>
-        <div class="curves__legend">
-          <span><i class="L"></i>w · L dip</span>
-          <span><i class="S"></i>S at 100 ÷ 100</span>
-        </div>
-      </div>
-      <div class="play-curves__body">
-        <svg class="curves__svg play-curves__svg" id="nplay-${theme}-hue-svg" viewBox="0 0 380 300"
-             role="img" aria-label="Neutral ${theme} correction weight across the hue wheel"></svg>
       </div>
     </article>`;
 }
@@ -1359,11 +1293,11 @@ const partner = {...PARTNER_DEF};
 
 const brandHexAt = (step, hue)=>{
   const F=playF(), t=step/1000;
-  return hsl2hex(hue, Sbrand(t,F,hue,adjusted()), Lplay(t,hue,F,PLAY_CORR,adjusted()));
+  return hsl2hex(hue, Splay(t,F), Lplay(t,hue,F,PLAY_CORR,adjusted()));
 };
 /* the dark neutral: the unbent power law, tinted with 22 − L/9 */
 const neutralHexAt = (step, hue)=>{
-  const F=playF(), t=step/1000, L=neutralL(t,hue,F);
+  const F=playF(), t=step/1000, L=Lplay(t,null,F,0);
   return hsl2hex(hue, neutralS('dark',L), L);
 };
 const hexA = (hex, a)=>{
@@ -1458,16 +1392,12 @@ let mode='math';
 function applyMode(m, persist){
   mode = m==='partner' ? 'partner' : 'math';
   document.querySelectorAll('[data-only]').forEach(el=>{ el.hidden = el.dataset.only!==mode; });
-  /* the sidebar only shows when something in it does */
-  const side=document.getElementById('side');
-  side.hidden = ![...side.children].some(el=>!el.hidden);
   document.querySelectorAll('#mode-switch .seg__opt').forEach(b=>
     b.setAttribute('aria-pressed', b.dataset.mode===mode ? 'true' : 'false'));
   if(persist){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
-  document.body.classList.toggle('partner-on', mode!=='math');
+  document.body.classList.toggle('partner-on', mode==='partner');
   if(mode==='partner'){
     partnerEnsure();
-    paintPartner();
     fitPartner();
   }else{
     render();
@@ -1480,68 +1410,54 @@ function applyMode(m, persist){
 const CORR_KEY='xcf.corr';
 let corrMode='adjusted';
 const adjusted = ()=> corrMode==='adjusted';
-const brandFamilies = ()=> adjusted() ? liveFamilies().filter(f=>f.kind==='chromatic')
+const brandFamilies = ()=> adjusted() ? liveBrandFamilies()
   : ALL.v7.families.filter(f=>f.group==='Brand & Labels');
-const neutralFamilies = ()=> adjusted() ? liveFamilies().filter(f=>f.kind==='neutral')
-  : ALL.v7.families.filter(f=>f.kind==='neutral');
 
 /* ---- adjusted correction: editable points ----
    The built data carries the defaults; the sidebar edits a copy that lives in
    the formula object, so every function that reads F sees the edit. The brand
    cards are recomputed here from the same functions (and the same 8-bit ΔE)
    that build.py uses, so at the defaults they match the built cards exactly. */
-/* v3: the sidebar edits the neutral curve (five points); older saves are dropped */
-const ADJ_KEY='xcf.adjn';
-const ADJ_DEF = {knots: ALL.v7.formula.adj_n_knots.map(k=>[...k]), lift: ALL.v7.formula.adj_n_lift,
-                 neutral: ALL.v7.formula.adj_neutral};
+const ADJ_KEY='xcf.adj2';     /* v2: the lift changed scale, old values are dropped */
+const ADJ_DEF = {knots: ALL.v7.formula.adj_knots.map(k=>[...k]), lift: ALL.v7.formula.adj_lift};
 const numStr = v => (Math.round(v*1000)/1000).toString().replace('-','−');
 const hueNorm = h => ((h%360)+360)%360;
-function sortKnots(knots){
-  return knots.slice().sort((a,b)=>hueNorm(a[0])-hueNorm(b[0]));
+function adjKnotsSorted(F=playF()){
+  return F.adj_knots.slice().sort((a,b)=>hueNorm(a[0])-hueNorm(b[0]));
 }
-const knotStr = knots => sortKnots(knots).map(([h,w])=>`(${h}, ${numStr(w)})`).join(' · ');
-function adjSet(knots, lift, neutral){
-  ALL.v7.formula.adj_n_knots = knots.map(k=>[hueNorm(k[0]), k[1]]);
-  ALL.v7.formula.adj_n_lift = lift;
-  ALL.v7.formula.adj_neutral = neutral;
+function adjSet(knots, lift){
+  ALL.v7.formula.adj_knots = knots.map(k=>[hueNorm(k[0]), k[1]]);
+  ALL.v7.formula.adj_lift = lift;
 }
-function liveFamilies(){
+function liveBrandFamilies(){
   const F=playF();
   return ALL.v7.families_adjusted.map(f=>{
-    const H=f.hue, cv = f.kind==='neutral' ? neutralCurve(F) : brandCurve(F), w=hueWeight(H,F,true,cv);
-    const LS = t=>{
-      const L=Lplay(t,H,F,PLAY_CORR,true,cv);
-      return [L, f.kind==='neutral' ? neutralS(f.theme, L) : Sbrand(t,F,H,true)];
-    };
+    const H=f.hue, w=hueWeight(H,F,true);
     const rows=f.rows.map(r=>{
-      const t=r.t, [L,S]=LS(t), hex=hsl2hex(H,S,L);
-      return {...r, L, S, hsl:hex, e:Qplay(t,H,F,PLAY_CORR,true,cv),
+      const t=r.t, L=Lplay(t,H,F,PLAY_CORR,true), S=Splay(t,F), hex=hsl2hex(H,S,L);
+      return {...r, L, S, hsl:hex, e:Qplay(t,H,F,PLAY_CORR,true),
               dE_hsl: r.orig ? dEhex(r.orig, hex) : null};
     });
     const stops=[];
     for(let i=0;i<40;i++){
-      const t=i/39, [L,S]=LS(t);
-      stops.push(`${hsl2hex(H, S, L)} ${Math.round(10000*t)/100}%`);
+      const t=i/39;
+      stops.push(`${hsl2hex(H, Splay(t,F), Lplay(t,H,F,PLAY_CORR,true))} ${Math.round(10000*t)/100}%`);
     }
     return {...f, rows, gradient:`linear-gradient(to bottom, ${stops.join(', ')})`,
-            dip: w>0 ? F.dip*w : 0, lift: w<0 ? -cv.lift*w : null};
+            dip: w>0 ? F.dip*w : 0, lift: w<0 ? -F.adj_lift*w : null};
   });
 }
 
-/* repaint whatever shows the adjusted curve on the current tab */
+/* repaint whatever shows the brand curve on the current tab */
 function refreshBrand(){
   renderFormula();
   if(mode==='partner') paintPartner();
-  else if(mode==='math'){
-    render();
-    if(PLAYS.brand.built) updatePlayground('brand');
-    if(nPlayBuilt){ updateNeutralTheme('light'); updateNeutralTheme('dark'); }
-  }
+  else{ render(); if(PLAYS.brand.built) updatePlayground('brand'); }
 }
 
 function adjFields(){
   const F=playF();
-  document.getElementById('adj-points').innerHTML = F.adj_n_knots.map((k,i)=>
+  document.getElementById('adj-points').innerHTML = F.adj_knots.map((k,i)=>
     `<div class="adj__row">
       <span>Point ${i+1}</span>
       <input type="number" data-i="${i}" data-f="h" min="0" max="359" step="1" inputmode="numeric"
@@ -1549,8 +1465,7 @@ function adjFields(){
       <input type="number" data-i="${i}" data-f="w" min="-1" max="1" step="0.01" inputmode="decimal"
              aria-label="Point ${i+1} weight" value="${Math.round(k[1]*1000)/1000}">
     </div>`).join('');
-  document.getElementById('adj-lift').value = F.adj_n_lift;
-  document.getElementById('adj-neutral').value = F.adj_neutral;
+  document.getElementById('adj-lift').value = F.adj_lift;
 }
 function adjState(){
   const on=adjusted();
@@ -1561,7 +1476,7 @@ function adjState(){
    number never reaches the palette. */
 function adjRead(){
   const form=document.getElementById('adj-form'), err=document.getElementById('adj-err');
-  const knots=playF().adj_n_knots.map(k=>[...k]);
+  const knots=playF().adj_knots.map(k=>[...k]);
   let msg='';
   form.querySelectorAll('input').forEach(el=>el.removeAttribute('aria-invalid'));
   const bad=(el,m)=>{ el.setAttribute('aria-invalid','true'); msg=msg||m; };
@@ -1581,41 +1496,39 @@ function adjRead(){
       if(hs.indexOf(hs[i])!==i || hs.lastIndexOf(hs[i])!==i) bad(el,'Two points share a hue.');
     });
   const liftEl=document.getElementById('adj-lift'), lift=liftEl.valueAsNumber;
-  const neuEl=document.getElementById('adj-neutral'), neutral=neuEl.valueAsNumber;
-  if(!Number.isFinite(neutral) || neutral<0 || neutral>2) bad(neuEl,'Neutral strength must be 0–2.');
-  if(!Number.isFinite(lift) || lift<0 || lift>5) bad(liftEl,'Lift strength must be 0–5.');
+  if(!Number.isFinite(lift) || lift<0 || lift>2) bad(liftEl,'Lift strength must be 0–2.');
   /* past this the darkness share outruns the power law and the ramp turns back up */
-
+  else if(lift*Math.max(0, ...knots.map(k=>-k[1])) > 0.9)
+    bad(liftEl,'Lift × strongest negative weight must stay at or under 0.9, or the ramp turns back up.');
   err.hidden=!msg; err.textContent=msg;
   if(msg) return;
-  adjSet(knots, lift, neutral);
-  try{ localStorage.setItem(ADJ_KEY, JSON.stringify({knots, lift, neutral})); }catch(e){}
+  adjSet(knots, lift);
+  try{ localStorage.setItem(ADJ_KEY, JSON.stringify({knots, lift})); }catch(e){}
   cancelAnimationFrame(adjRaf);
   adjRaf=requestAnimationFrame(refreshBrand);
 }
 let adjRaf=0;
 function adjInit(){
-  if(!document.getElementById('adj').hidden) try{
+  try{
     const o=JSON.parse(localStorage.getItem(ADJ_KEY)||'null');
     if(o && Array.isArray(o.knots) && o.knots.length===ADJ_DEF.knots.length &&
        o.knots.every(k=>Array.isArray(k) && k.length===2 && k.every(Number.isFinite)) &&
        Number.isFinite(o.lift))
-      adjSet(o.knots, o.lift, Number.isFinite(o.neutral) ? o.neutral : ADJ_DEF.neutral);
+      adjSet(o.knots, o.lift);
   }catch(e){}
   adjFields(); adjState();
   const form=document.getElementById('adj-form');
   form.addEventListener('input', adjRead);
   document.getElementById('adj-reset').addEventListener('click', ()=>{
-    adjSet(ADJ_DEF.knots, ADJ_DEF.lift, ADJ_DEF.neutral);
+    adjSet(ADJ_DEF.knots, ADJ_DEF.lift);
     try{ localStorage.removeItem(ADJ_KEY); }catch(e){}
     adjFields(); adjRead();
   });
   const copyBtn=document.getElementById('adj-copy');
   copyBtn.addEventListener('click', async ()=>{
     const F=playF(), f=v=>{ const r=Math.round(v*10000)/10000; return Number.isInteger(r) ? r.toFixed(1) : String(r); };
-    const text = `ADJ_NEUTRAL_KNOTS_V7 = [${sortKnots(F.adj_n_knots).map(([h,w])=>`(${f(h)}, ${f(w)})`).join(', ')}]\n`
-               + `ADJ_NEUTRAL_LIFT_V7 = ${f(F.adj_n_lift)}\n`
-               + `ADJ_NEUTRAL_V7 = ${f(F.adj_neutral)}`;
+    const text = `ADJ_KNOTS_V7 = [${adjKnotsSorted(F).map(([h,w])=>`(${f(h)}, ${f(w)})`).join(', ')}]\n`
+               + `ADJ_LIFT_V7 = ${f(F.adj_lift)}`;
     let ok=false;
     try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){}
     if(!ok){ window.prompt('Copy these into build.py', text); return; }

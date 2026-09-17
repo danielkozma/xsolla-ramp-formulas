@@ -1021,43 +1021,33 @@ def dip_shape_v7(t):
 # Where w is positive it dips the light end exactly as before. Where it is
 # negative the ramp blends towards one fixed, simpler curve instead:
 #
-#     L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·T(t),   s = min(1, λ·|w|)
-#     T(t)   = 100·(1 − t) / √(1 − 0.97·t)
+#     L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·100·√(1 − t),   s = min(1, λ·|w|)
 #
-# T is the lightness drawn on the (since removed) Hue 245 tab: nearly straight
-# through the lights and mids, bending down only at the dark end. With 1 in
-# place of 0.97 it is exactly 100·√(1 − t) (rms 1.6 L against the drawing), but
-# that meets black vertically; 0.97 gives the end a finite slope and moves the
-# mids by 1–3 L. Both curves run 100 → 0 and only fall, so every blend of them
+# 100·√(1 − t) is the lightness drawn on the Hue 245 tab, almost exactly
+# (rms 1.6 L): nearly straight through the lights and mids, bending down only at
+# the dark end. Both curves run 100 → 0 and only fall, so every blend of them
 # does too — no limit needed. λ 2.5 puts the brand trough (w −0.4) fully on it.
 # (This replaced a lift along 2t·(1 − t⁴) plus a light-end ease, which drew a
 # double wave.)
 ADJ_KNOTS_V7 = [(75.0, 1.0), (245.0, -0.4), (290.0, -0.05), (359.0, -0.1)]
 ADJ_LIFT_V7 = 2.5          # λ — s = 1 at the 245 trough
-ADJ_SOFT_V7 = 0.97         # 1 would be √(1 − t), which ends vertically
-
-def lift_target_v7(t):
-    return 100.0 * (1.0 - t) / math.sqrt(1.0 - ADJ_SOFT_V7 * t)
 
 # Brand saturation takes the correction too. Where w is negative the shared
 # Hill switches later, drops deeper and turns more gently, each in proportion
-# to a = w²/0.4 — at hue 245 (w −0.4, a 0.4) that is knee 0.62, drop 55.6,
-# order 4.4, the fit to the Hue 245 pen curve (rms 1.8 S):
+# to |w| — at hue 245 (w −0.4) that is knee 0.62, drop 55.6, order 4.4, the fit
+# to the Hue 245 pen curve (rms 1.8 S):
 #     S(t) = 100 − D·r/(1 + r),  r = (t/k)ⁿ
-#     k = 1/3 + 0.72·a,  D = 30 + 64·a,  n = 6 − 4·a
-# a grows from 0 with zero slope, so S changes smoothly across hue where w
-# crosses 0 (a = |w| left a corner there); small weights take less of it.
+#     k = 1/3 + 0.72·|w|,  D = 30 + 64·|w|,  n = 6 − 4·|w|
 ADJ_S_KNEE_V7 = 0.72
 ADJ_S_DROP_V7 = 64.0
 ADJ_S_ORDER_V7 = 4.0
-ADJ_S_REF_V7 = 0.4           # a = w²/0.4 equals |w| at the 245 trough
 
 def S_brand_v7(t, H, adjusted):
     """Brand saturation: the shared Hill, reshaped where the adjusted weight is negative."""
     w = hue_weight_v7(H, True) if adjusted else 0.0
     if w >= 0.0:
         return S_v7(t)
-    a = w * w / ADJ_S_REF_V7
+    a = -w
     k = S_KNEE_V7 + ADJ_S_KNEE_V7 * a
     r = (t / k) ** (S_ORDER_V7 - ADJ_S_ORDER_V7 * a)
     return clamp(100.0 - (S_DROP_V7 + ADJ_S_DROP_V7 * a) * r / (1.0 + r), 0.0, 100.0)
@@ -1073,7 +1063,7 @@ BRAND_CURVE_V7 = (ADJ_KNOTS_V7, ADJ_LIFT_V7, 1.0)
 NEUTRAL_CURVE_V7 = (ADJ_NEUTRAL_KNOTS_V7, ADJ_NEUTRAL_LIFT_V7, ADJ_NEUTRAL_V7)
 
 def lift_blend_v7(w, curve):
-    """How far a negative weight moves the ramp onto T(t): 0 → 1."""
+    """How far a negative weight moves the ramp onto 100·√(1 − t): 0 → 1."""
     return min(1.0, -curve[1] * w) if w < 0.0 else 0.0
 
 def hue_weight_v7(H, adjusted=False, curve=BRAND_CURVE_V7):
@@ -1106,8 +1096,8 @@ def L_v7(t, H=None, adjusted=False, curve=BRAND_CURVE_V7):
     L = 100.0 - 100.0 * t ** L_exponent_v7(t, H, adjusted, curve)
     if adjusted and H is not None:
         s_ = lift_blend_v7(hue_weight_v7(H, True, curve), curve)
-        if s_ > 0.0:                # adjusted only: blend towards T(t)
-            L = (1.0 - s_) * L + s_ * lift_target_v7(t)
+        if s_ > 0.0:                # adjusted only: blend towards 100·√(1 − t)
+            L = (1.0 - s_) * L + s_ * 100.0 * math.sqrt(max(0.0, 1.0 - t))
     return L
 
 # The light ramp never reaches neutral grey: the palette holds ~2 points of tint
@@ -1193,6 +1183,64 @@ def build_family_v7(name, kind, theme, hue, step_keys, orig_map, v5_rows, group=
         "positions": [round(t, 4) for t in positions],
     }
 
+# ---- Hue 245 tab: the brand ramp at 245 as two editable cubic Béziers ----
+# Each curve runs from a fixed anchor at scale 0 to a fixed anchor at scale 100;
+# the page lets you drag the one handle on each anchor. The defaults here are
+# the handles that best fit the adjusted formula at 245, so the tab opens on it.
+H245 = 245.0
+
+def bezier_y_at(x, p0, h1, h2, p3):
+    """y on the cubic at abscissa x. Handle x is kept in [0, 1], which keeps x(s)
+    monotone, so bisection on s is enough."""
+    def bx(s):
+        m = 1.0 - s
+        return m*m*m*p0[0] + 3*m*m*s*h1[0] + 3*m*s*s*h2[0] + s*s*s*p3[0]
+    lo, hi = 0.0, 1.0
+    for _ in range(40):
+        mid = (lo + hi) / 2.0
+        if bx(mid) < x: lo = mid
+        else: hi = mid
+    s_ = (lo + hi) / 2.0
+    m = 1.0 - s_
+    return m*m*m*p0[1] + 3*m*m*s_*h1[1] + 3*m*s_*s_*h2[1] + s_*s_*s_*p3[1]
+
+def fit_bezier_v7(fn, p0, p3, h1, h2):
+    """Coordinate descent on the four handle numbers against fn over 0..1."""
+    xs = [i / 80.0 for i in range(81)]
+    target = [fn(x) for x in xs]
+    def err(v):
+        a, b = (v[0], v[1]), (v[2], v[3])
+        return sum((bezier_y_at(x, p0, a, b, p3) - y) ** 2 for x, y in zip(xs, target))
+    v = [h1[0], h1[1], h2[0], h2[1]]
+    step = [0.1, 10.0, 0.1, 10.0]
+    best = err(v)
+    for _ in range(60):
+        moved = False
+        for i in range(4):
+            for d in (step[i], -step[i]):
+                w = v[:]
+                w[i] += d
+                if i in (0, 2): w[i] = min(1.0, max(0.0, w[i]))
+                e = err(w)
+                if e < best:
+                    v, best, moved = w, e, True
+        if not moved:
+            step = [x / 2.0 for x in step]
+    return [round(v[0], 3), round(v[1], 2)], [round(v[2], 3), round(v[3], 2)]
+
+def build_h245_v7():
+    L1 = L_v7(1.0, H245, True)                       # 0 — the ramp still ends on black
+    S1 = S_brand_v7(1.0, H245, True)
+    Lh1, Lh2 = fit_bezier_v7(lambda t: L_v7(t, H245, True),
+                             (0.0, 100.0), (1.0, L1), (0.2, 70.0), (0.8, 30.0))
+    Sh1, Sh2 = fit_bezier_v7(lambda t: S_brand_v7(t, H245, True),
+                             (0.0, 100.0), (1.0, S1), (0.3, 100.0), (0.4, 70.0))
+    return {
+        "hue": H245,
+        "L": {"p0": [0.0, 100.0], "p3": [1.0, round(L1, 2)], "h1": Lh1, "h2": Lh2},
+        "S": {"p0": [0.0, 100.0], "p3": [1.0, round(S1, 2)], "h1": Sh1, "h2": Sh2},
+    }
+
 def build_v7(v5):
     v5_fam = {(f["name"], f["theme"]): f["rows"] for f in v5["families"]}
     out = {
@@ -1202,9 +1250,9 @@ def build_v7(v5):
             "p_base": P_BASE_V7, "dip": DIP_V7, "dip_c": DIP_C_V7,
             "L_peak_hue": L_PEAK_HUE_V5, "lobe_up": LOBE_UP_V5, "lobe_dn": LOBE_DN_V5,
             "adj_knots": [[h, round(w, 6)] for h, w in ADJ_KNOTS_V7],
-            "adj_lift": ADJ_LIFT_V7, "adj_soft": ADJ_SOFT_V7,
+            "adj_lift": ADJ_LIFT_V7,
             "adj_s_knee": ADJ_S_KNEE_V7, "adj_s_drop": ADJ_S_DROP_V7,
-            "adj_s_order": ADJ_S_ORDER_V7, "adj_s_ref": ADJ_S_REF_V7,
+            "adj_s_order": ADJ_S_ORDER_V7,
             "adj_n_knots": [[h, round(w, 6)] for h, w in ADJ_NEUTRAL_KNOTS_V7],
             "adj_n_lift": ADJ_NEUTRAL_LIFT_V7, "adj_neutral": ADJ_NEUTRAL_V7,
             "S_drop": S_DROP_V7, "S_knee": round(S_KNEE_V7, 6),
@@ -1258,6 +1306,8 @@ def build_v7(v5):
         out["families_adjusted"].append(build_family_v7(
             "Neutral", "neutral", theme, NEUTRAL_H[theme], keys, steps,
             v5_fam[("Neutral", theme)], "Neutrals", adjusted=True))
+
+    out["h245"] = build_h245_v7()
 
     rows = [r for f in out["families"] for r in f["rows"]]
     d5 = [r["dE_v5"] for r in rows if r["dE_v5"] is not None]

@@ -1,6 +1,4 @@
 import json
-import re
-from urllib.parse import quote
 
 D = json.load(open('data/generated.json'))
 
@@ -9,14 +7,6 @@ payload = {"v7": D["v7"]}
 
 body = open('template.html', encoding='utf-8').read()
 body = body.replace('/*__DATA__*/', json.dumps(payload, separators=(',', ':')))
-
-# CSS masks are CORS-checked, so url(assets/...) masks vanish when the page is
-# opened from disk. Inline them as data URIs so the icons show either way.
-def _inline_mask(m):
-    svg = open(m.group(1), encoding='utf-8').read().strip()
-    return 'url(data:image/svg+xml,' + quote(svg, safe='') + ')'
-
-body = re.sub(r'url\((assets/[^)]+\.svg)\)', _inline_mask, body)
 
 doc = ('<!DOCTYPE html>\n<html lang="en">\n<head>\n'
        '<meta charset="utf-8">\n'

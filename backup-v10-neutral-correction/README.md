@@ -242,13 +242,8 @@ points: (75, 1) · (245, −0.4) · (290, −0.05) · (359, −0.1)
 x    = (H − H₀) / (H₁ − H₀)                       # between neighbours H₀ → H₁
 w(H) = w₁ + (w₀ − w₁)·(1 + cos(π·x)) / 2
 e(t)   = 0.84 − 0.20·w·b(t)                  if w ≥ 0   # the light-end dip, as before
-L(t,H) = (1 − s)·(100 − 100·t^0.84) + s·T(t)        if w < 0
-T(t)   = 100·(1 − t) / √(1 − 0.97·t)             # ≈ 100·√(1 − t), with a finite end
-s      = min(1, λ·|w|)                       # brand λ 2.5 (s = 1 on the 245 trough), neutrals 0.7
-
-# brand saturation, w < 0 — the shared Hill, later, deeper and gentler by a = w²/0.4
-S(t)   = 100 − D·r/(1 + r),  r = (t/k)ⁿ
-k = 1/3 + 0.72·a,  D = 30 + 64·a,  n = 6 − 4·a
+L(t,H) = 100 − 100·t^0.84·(1 + 0.7·w·u(t)) if w < 0   # the dark-end lift
+u(t)   = t·(1 − t⁶)                                      # 0 at both ends
 ```
 
 It dips the light end around 75, lifts hardest at 245, nearly lets go at 290
@@ -260,15 +255,12 @@ The first versions raised the exponent by `λ·|w|·t²`, then `t⁴`. Because
 lifted the middle just as hard (`t²`) or squeezed it into a near-flat plateau
 (`t⁴`). Multiplying the darkness by `1 + λ·w·u(t)` has no pinned end to fight.
 `u` is ~0 on the lights and grows into the darks. A plain `u = t` left the
-lifted ramp stopping at L 28 instead of black, so `u = t·(1 − t⁶)` handed the
-share back just past step 900 and every ramp ran from 100 to 0 again. That
-still left 700–850 too dark, since its lift fell away late and gently; the
-current `u = (1.5t)²·(1 − t⁴)` is the same form with the peak moved onto those
-steps (0.87 at t ≈ 0.76). Against `t·(1 − t⁶)` it moves 25–500 by a point at
-most, lifts 600 by 2, 700 / 800 / 850 by 4 / 6 / 6 and 900 by 5, and still ends
-at 0. The ramp keeps falling everywhere as long as `λ·|w|` stays under about
-0.53 (the hidden editor refuses anything above 0.5); at its flattest it falls
-at half the plain ramp's rate, around step 600. With the same points, Core (250):
+lifted ramp stopping at L 28 instead of black, so `u = t·(1 − t⁶)`, which hands
+the share back just past step 900, lets every ramp still run from 100 to 0. The
+ramp keeps falling everywhere as long as `λ·|w|` stays under about 0.93; the
+sidebar refuses anything above 0.9. The only steep stretch is the last
+sliver past 900, where the lifted ramp drops to black about three times as
+fast as the plain one. With the same points, Core (250):
 
 | step | 300 | 400 | 500 | 600 | 700 | 800 | 850 | 900 |
 |---|---|---|---|---|---|---|---|---|
@@ -277,76 +269,9 @@ at half the plain ramp's rate, around step 600. With the same points, Core (250)
 | exponent, `t⁴/0.64` | 65 | 59 | 55 | 53 | 51 | 47 | 42 | 35 |
 | darkness × `(1 + 0.7·w·t)` | 67 | 59 | 52 | 45 | 40 | 35 | 33 | 31 |
 | darkness × `(1 + 0.7·w·t·(1 − t⁶))` | 67 | 59 | 52 | 45 | 38 | 30 | 25 | 19 |
-| darkness × `(1 + 0.7·w·(1.5t)²·(1 − t⁴))` | 66 | 58 | 52 | 47 | 43 | 36 | 31 | 24 |
-| … plus the light-end ease | 72 | 63 | 56 | 50 | 45 | 38 | 32 | 25 |
-| … and brand λ 0.7 → 1.0 | 73 | 65 | 59 | 55 | 52 | 46 | 40 | 31 |
 
-**The brand Hue diagram shows saturation too.** Beside the red weight curve,
-a blue line plots the saturation each hue's brand ramp ends on (S at scale 100,
-÷ 100 to share the axis): a flat 0.70 wherever w ≥ 0, dipping to 0.50 at 245
-and slightly around 359. The saturation correction scales with `a = w²/0.4`
-rather than `|w|`: the same at the 245 trough, but it starts from 0 with zero
-slope, so the line has no corners where w crosses 0, and small weights (Brand
-190, the 290–359 shoulder) take much less of it. The meta line quotes it as `S end`.
-
-**The blend target has a finite end.** `100·√(1 − t)` meets black vertically,
-which read as a cliff at the very end of the ramp. `T(t) = 100·(1 − t)/√(1 − b·t)`
-is exactly that curve at b = 1 and ends with a finite slope below it; b = 0.97
-(`ADJ_SOFT_V7`) softens the last stretch and moves the mids by 1–3 L. Core at
-245 now reads 99 / 95 / 89 / 83 / 76 / 69 / 61 / 52 / 42 / 28 across
-25 / 100 / 200 … 800 / 900 (from 99 / 95 / 89 / 84 / 77 / 71 / 63 / 55 / 45 / 32).
-
-**Lightness is a blend onto a √ curve.** The fitted lift below
-(`2t·(1 − t⁴)` with the flipped light-end bell) matched the drawn curve to
-1.2 L but drew a double wave. The drawn lightness is almost exactly
-`100·√(1 − t)` (rms 1.6 L) — straight through the lights and mids, bending down
-only at the dark end — so a negative weight now simply blends the ramp from the
-plain power law onto that curve, all the way at the brand trough. Both curves
-fall from 100 to 0, so every blend does too and no limit is needed (the hidden
-neutral editor's check is gone; its lift field now runs 0–5). The light-end
-ease is gone with it. At 245, drawn → formula: 99 → 99, 94 → 95, 88 → 89,
-82 → 84, 76 → 77, 69 → 71, 62 → 63, 55 → 55, 45 → 45, 31 → 32 across
-25 / 100 / 200 … 800 / 900. Brand (190, s 0.17) moves its darks up 1–4.
-
-**Fitted to the Hue 245 pen curves** (the earlier lightness fit, kept as history). The lightness and saturation drawn on
-the Hue 245 tab are the target for the brand correction at its deepest point
-(245, w −0.4). The lift shape became `u = 2t·(1 − t⁴)` with λ 0.85 and the ease
-1.3 (rms 1.2 L against the drawn curve), and brand saturation got its own
-correction: the Hill's knee, drop and order move with |w|, landing on knee
-0.62, drop 55.6, order 4.4 at 245 (rms 1.8 S). At 245:
-
-| step | 25 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| drawn L | 99 | 94 | 88 | 82 | 76 | 69 | 62 | 55 | 45 | 31 |
-| formula L | 99 | 96 | 89 | 81 | 74 | 68 | 63 | 56 | 46 | 29 |
-| drawn S | 100 | 100 | 98 | 96 | 92 | 85 | 76 | 65 | 55 | 53 |
-| formula S | 100 | 100 | 100 | 98 | 93 | 85 | 74 | 65 | 58 | 54 |
-
-The one thing the formula cannot follow is the drawn saturation's turn back up
-at the very end (53 → 57 at scale 100); the Hill only falls, so it ends at
-50.5. The rows above the fit (the earlier λ 1.0 and `(1.5t)²·(1 − t⁴)` steps)
-are kept as history. The Hue 245 tab's default handles are refitted to the new
-formula, so its dashed reference and its starting curves are this fit.
-
-**The brand lift was λ 1.0** before the fit. 600–800 still read dark at 0.7, so the brand
-strength went up with the shape unchanged: at 250 that lifts 600 / 700 / 800 by
-5 / 7 / 8, 500 by 3, 900 by 7 and 25–400 by 2 at most. The cost is a shoulder:
-600 → 700 is now only 3 L, and at its flattest (around step 650) the ramp
-falls at 0.37 of the plain rate. The neutral curve keeps its own λ 0.7.
-
-**The light end is eased where the lift is.** With only the dark lift, the
-lifted ramp kept the plain power law's steep start: at 250 it fell 14 / 13 / 11
-L per 100 of scale across 25–200 against 5–7 through the darks. Where w is
-negative the light-end bell `b(t)` now runs the other way, at 3× the dip's
-strength (`ADJ_EASE_V7 = 0.6`), raising the exponent over the lights: those
-rates become 7 / 8 / 10, and 25 / 50 / 100 / 200 read 97 / 96 / 92 / 82
-(from 95 / 92 / 86 / 75). The bell is broad, so 300–500 come up 4–6 too; 700–900
-barely move. The ease also steadies the ramp, so the 0.5 limit on `λ·|w|`
-stays safe. Both curves share it; the neutral weights are too small for it to
-show on the shipped neutrals.
-
-Mean ΔE against Figma, current → adjusted: Brand 0.92 → 2.85, Core 0.92 →
-17.62, Edge 1.29 → 1.86, Mindaro 3.12 → 3.11, Mint 1.82 → 1.73, Yellow
+Mean ΔE against Figma, current → adjusted: Brand 0.92 → 1.62, Core 0.92 →
+4.69, Edge 1.29 → 1.18, Mindaro 3.12 → 3.11, Mint 1.82 → 1.73, Yellow
 2.61 → 2.28. Brand (w −0.07) and Edge (w −0.04) take a small dark-end lift;
 the Figma ramps carry none.
 
@@ -377,7 +302,8 @@ Remove the attribute to bring the editor back. When shown, it edits the neutral 
 a hue and a weight field for each of the five points, plus **Lift strength** and
 **Strength**. The brand curve is fixed in `build.py`. Edits apply as you type,
 once every field is valid (hue 0–359, no two points on the same hue, weight −1
-to 1, lift 0–5 and strength 0–2). The fields are disabled while the switch is on Current.
+to 1, lift and strength 0–2, and lift × strength × the strongest negative weight
+at most 0.9). The fields are disabled while the switch is on Current.
 
 An edit redraws the Neutrals cards (recomputed in the browser, ΔE included, and
 identical to the built cards at the defaults), the formula panel, the neutral
@@ -438,17 +364,11 @@ comes out `#11191A` against the drawn `#141D1F`.
 Assets exported from the Figma frame live in `assets/partner/`; the display face
 is Pilat Wide Bold, served from `fonts/pilat/pilat_wide_bold.woff2`.
 
-## Hue 245 tab (removed)
-
-A third tab drew the brand ramp at 245 as two editable Béziers (lightness and
-saturation) on the checkout; the brand correction was fitted to the curves drawn
-there. It is gone from the page and lives on in `backup-v11-hue-245-tab/`.
-
 ## Files
 
 | | |
 |---|---|
-| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals, a playground under each, Xsolla Palettes / Partner Customisation tabs and the Current / Adjusted switch in the app bar |
+| `index.html` | built page — v7 only, cards grouped Brand & Labels · UI (Semantic) · Neutrals, a playground under each, Xsolla Palettes / Partner Customisation switch and Current / Adjusted correction switch in the app bar |
 | `template.html` | source (`/*__DATA__*/`, `/*__MEANV5__*/`) |
 | `build.py` | applies v1–v7 → `data/generated.json` |
 | `page.py` | injects v7 into the template |
@@ -457,8 +377,6 @@ there. It is gone from the page and lives on in `backup-v11-hue-245-tab/`.
 | `assets/partner/` | icons, logos and images from the Figma checkout frame |
 | `backup-all-versions/` | the previous page, all seven versions, unmodified |
 | `backup-v8-pen-tool/` | the page with the Math / Pen tool switch, before Partner Customisation |
-| `backup-v11-hue-245-tab/` | the page with the Hue 245 pen-curve tab, before the √ target got its finite end (includes `assets/` and `fonts/`) |
-| `backup-v10-neutral-correction/` | the page with the separate neutral curve and its editor hidden, before the dark-end lift moved onto 700–850 (includes `assets/` and `fonts/`) |
 | `backup-v9-adjusted-correction/` | the page with the adjusted brand correction and its sidebar, before the neutrals took it (includes `assets/` and `fonts/`) |
 
 ```bash
